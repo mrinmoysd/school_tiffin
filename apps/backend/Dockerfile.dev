@@ -1,0 +1,31 @@
+FROM node:18-alpine AS development
+
+# Install pnpm
+RUN npm install -g pnpm
+
+WORKDIR /app
+
+# Copy root package files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY turbo.json ./
+
+# Copy all workspace package.json files
+COPY apps/backend/package.json ./apps/backend/
+COPY packages/*/package.json ./packages/*/
+
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Generate Prisma Client
+WORKDIR /app/apps/backend
+RUN npx prisma generate
+
+WORKDIR /app
+
+EXPOSE 3000
+
+# Start development server
+CMD ["pnpm", "--filter", "backend", "start:dev"]

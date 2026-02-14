@@ -1,0 +1,16 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "prisma.prisma",
+    "ms-vscode.vscode-typescript-next",
+    "editorconfig.editorconfig",
+    "christian-kohler.path-intellisense",
+    "ms-azuretools.vscode-docker",
+    "eamodio.gitlens",
+    "gruntfuggly.todo-tree",
+    "bradlc.vscode-tailwindcss",
+    "formulahendry.auto-rename-tag",
+    "mikestead.dotenv"
+  ]
+}

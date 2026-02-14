@@ -1,0 +1,463 @@
+// School Tiffin Platform - Prisma Schema (FIXED TO MATCH CODE)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================
+// 1. USERS & AUTHENTICATION
+// ================================
+
+model User {
+  id             String    @id @default(uuid()) @db.Uuid
+  email          String    @unique @db.VarChar(255)
+  phone          String?   @unique @db.VarChar(20)
+  passwordHash   String    @map("password_hash") @db.VarChar(255)
+  fullName       String    @map("full_name") @db.VarChar(255)
+  role           Role      // Changed from UserRole to Role
+  isActive       Boolean   @default(true) @map("is_active")
+  emailVerified  Boolean   @default(false) @map("email_verified")
+  phoneVerified  Boolean   @default(false) @map("phone_verified")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  lastLoginAt    DateTime? @map("last_login_at")
+
+  // Relations
+  refreshTokens         RefreshToken[]
+  students              Student[]
+  subscriptions         Subscription[]
+  pauseRequests         PauseRequest[]
+  orders                Order[]
+  notifications         Notification[]
+  cmsPages              CmsPage[]
+  auditLogs             AuditLog[]
+  approvedPauseRequests PauseRequest[]   @relation("ApprovedBy")
+  fcmTokens             FCMToken[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([role])
+  @@map("users")
+}
+
+enum Role {
+  // Changed enum name from UserRole to Role
+  PARENT
+  ADMIN
+  SCHOOL_ADMIN
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique @db.VarChar(500)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  isRevoked Boolean  @default(false) @map("is_revoked")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+// FCM Token model (for push notifications)
+model FCMToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @db.VarChar(500)
+  device    String?  @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, token])
+  @@index([userId])
+  @@map("fcm_tokens")
+}
+
+// ================================
+// 2. STUDENTS
+// ================================
+
+model Student {
+  id                 String    @id @default(uuid()) @db.Uuid
+  parentId           String    @map("parent_id") @db.Uuid
+  fullName           String    @map("full_name") @db.VarChar(255)
+  dateOfBirth        DateTime? @map("date_of_birth") @db.Date
+  grade              String?   @db.VarChar(50)
+  schoolId           String?   @map("school_id") @db.Uuid
+  allergies          String?   @db.Text
+  dietaryPreferences String?   @map("dietary_preferences") @db.Text
+  isActive           Boolean   @default(true) @map("is_active")
+  deletedAt          DateTime? @map("deleted_at") // Soft delete
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  parent        User           @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  school        School?        @relation(fields: [schoolId], references: [id])
+  subscriptions Subscription[]
+
+  @@index([parentId])
+  @@index([schoolId])
+  @@index([deletedAt])
+  @@map("students")
+}
+
+// ================================
+// 3. SCHOOLS & MEAL PLANS
+// ================================
+
+model School {
+  id                   String    @id @default(uuid()) @db.Uuid
+  name                 String    @db.VarChar(255)
+  code                 String    @unique @db.VarChar(50)
+  address              String    @db.Text
+  city                 String?   @db.VarChar(100)
+  state                String?   @db.VarChar(100)
+  pincode              String?   @db.VarChar(10)
+  contactEmail         String?   @map("contact_email") @db.VarChar(255)
+  contactPhone         String?   @map("contact_phone") @db.VarChar(20)
+  isServiceAvailable   Boolean   @default(true) @map("is_service_available")
+  deliveryInstructions String?   @map("delivery_instructions") @db.Text
+  operatingDays        String    @default("MON,TUE,WED,THU,FRI") @map("operating_days") @db.VarChar(50)
+  deletedAt            DateTime? @map("deleted_at") // Soft delete
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  students      Student[]
+  mealPlans     MealPlan[]
+  subscriptions Subscription[]
+
+  @@index([code])
+  @@index([city])
+  @@index([deletedAt])
+  @@map("schools")
+}
+
+model MealPlan {
+  id           String       @id @default(uuid()) @db.Uuid
+  schoolId     String       @map("school_id") @db.Uuid
+  name         String       @db.VarChar(255)
+  description  String?      @db.Text
+  planType     MealPlanType @map("plan_type")
+  durationDays Int          @map("duration_days")
+  pricePerDay  Decimal      @map("price_per_day") @db.Decimal(10, 2)
+  totalPrice   Decimal      @map("total_price") @db.Decimal(10, 2)
+  isActive     Boolean      @default(true) @map("is_active")
+  imageUrl     String?      @map("image_url") @db.Text
+  deletedAt    DateTime?    @map("deleted_at") // Soft delete
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  school        School         @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  menuItems     MenuItem[]
+  subscriptions Subscription[]
+
+  @@index([schoolId])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("meal_plans")
+}
+
+enum MealPlanType {
+  BREAKFAST
+  LUNCH
+  SNACK
+  COMBO
+}
+
+model MenuItem {
+  id           String    @id @default(uuid()) @db.Uuid
+  mealPlanId   String    @map("meal_plan_id") @db.Uuid
+  dayOfWeek    String?   @map("day_of_week") @db.VarChar(20)
+  dayNumber    Int?      @map("day_number")
+  items        String    @db.Text
+  description  String?   @db.Text
+  calories     Int?
+  allergenInfo String?   @map("allergen_info") @db.Text
+  imageUrl     String?   @map("image_url") @db.Text
+  deletedAt    DateTime? @map("deleted_at") // Soft delete
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  mealPlan MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+
+  @@index([mealPlanId])
+  @@index([deletedAt])
+  @@map("menu_items")
+}
+
+// ================================
+// 4. SUBSCRIPTIONS
+// ================================
+
+model Subscription {
+  id                 String             @id @default(uuid()) @db.Uuid
+  subscriptionNumber String             @unique @map("subscription_number") @db.VarChar(50)
+  parentId           String             @map("parent_id") @db.Uuid
+  studentId          String             @map("student_id") @db.Uuid
+  schoolId           String             @map("school_id") @db.Uuid
+  mealPlanId         String             @map("meal_plan_id") @db.Uuid
+  startDate          DateTime           @map("start_date") @db.Date
+  endDate            DateTime           @map("end_date") @db.Date // Added for code compatibility
+  totalDays          Int                @map("total_days")
+  deliveredDays      Int                @default(0) @map("delivered_days")
+  pausedDays         Int                @default(0) @map("paused_days")
+  remainingDays      Int                @map("remaining_days")
+  totalPrice         Decimal            @map("total_price") @db.Decimal(10, 2) // Added
+  paidAmount         Decimal            @default(0) @map("paid_amount") @db.Decimal(10, 2)
+  status             SubscriptionStatus
+  cancelledAt        DateTime?          @map("cancelled_at") // Added
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  activatedAt        DateTime?          @map("activated_at")
+  completedAt        DateTime?          @map("completed_at")
+
+  // Relations
+  parent           User              @relation(fields: [parentId], references: [id])
+  student          Student           @relation(fields: [studentId], references: [id])
+  school           School            @relation(fields: [schoolId], references: [id])
+  mealPlan         MealPlan          @relation(fields: [mealPlanId], references: [id])
+  subscriptionDays SubscriptionDay[]
+  pauseRequests    PauseRequest[]
+  orders           Order[]
+
+  @@index([parentId])
+  @@index([studentId])
+  @@index([schoolId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@map("subscriptions")
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+model SubscriptionDay {
+  id                  String         @id @default(uuid()) @db.Uuid
+  subscriptionId      String         @map("subscription_id") @db.Uuid
+  scheduledDate       DateTime       @map("scheduled_date") @db.Date
+  status              DeliveryStatus
+  deliveryConfirmedAt DateTime?      @map("delivery_confirmed_at")
+  notes               String?        @db.Text
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@unique([subscriptionId, scheduledDate])
+  @@index([subscriptionId])
+  @@index([scheduledDate])
+  @@index([status])
+  @@map("subscription_days")
+}
+
+enum DeliveryStatus {
+  SCHEDULED
+  DELIVERED
+  PAUSED
+  CANCELLED
+  SKIPPED
+}
+
+// ================================
+// 5. PAUSE MANAGEMENT
+// ================================
+
+model PauseRequest {
+  id             String             @id @default(uuid()) @db.Uuid
+  subscriptionId String             @map("subscription_id") @db.Uuid
+  parentId       String             @map("parent_id") @db.Uuid
+  startDate      DateTime           @map("start_date") @db.Date // Changed from pauseFromDate
+  endDate        DateTime           @map("end_date") @db.Date // Changed from pauseToDate
+  pauseDays      Int                @map("pause_days")
+  reason         String?            @db.Text
+  status         PauseRequestStatus
+  approvedBy     String?            @map("approved_by") @db.Uuid
+  approvedAt     DateTime?          @map("approved_at")
+  processedAt    DateTime?          @map("processed_at")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+
+  // Relations
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  parent       User         @relation(fields: [parentId], references: [id])
+  approver     User?        @relation("ApprovedBy", fields: [approvedBy], references: [id])
+
+  @@index([subscriptionId])
+  @@index([status])
+  @@map("pause_requests")
+}
+
+enum PauseRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSED
+}
+
+// ================================
+// 6. ORDERS & PAYMENTS
+// ================================
+
+model Order {
+  id                    String        @id @default(uuid()) @db.Uuid
+  orderNumber           String        @unique @map("order_number") @db.VarChar(50)
+  subscriptionId        String        @map("subscription_id") @db.Uuid
+  parentId              String        @map("parent_id") @db.Uuid
+  amount                Decimal       @db.Decimal(10, 2)
+  taxAmount             Decimal       @default(0) @map("tax_amount") @db.Decimal(10, 2)
+  discountAmount        Decimal       @default(0) @map("discount_amount") @db.Decimal(10, 2)
+  finalAmount           Decimal       @map("final_amount") @db.Decimal(10, 2)
+  currency              String        @default("INR") @db.VarChar(10) // Added
+  status                OrderStatus   @map("status") // Added with new enum
+  paymentMethod         String?       @map("payment_method") @db.VarChar(50)
+  paymentGatewayOrderId String?       @map("payment_gateway_order_id") @db.VarChar(255)
+  paidAt                DateTime?     @map("paid_at") // Added
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  subscription        Subscription         @relation(fields: [subscriptionId], references: [id])
+  parent              User                 @relation(fields: [parentId], references: [id])
+  paymentTransactions PaymentTransaction[]
+
+  @@index([subscriptionId])
+  @@index([parentId])
+  @@index([status])
+  @@map("orders")
+}
+
+enum OrderStatus {
+  // New enum for Order status
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+model PaymentTransaction {
+  id                   String            @id @default(uuid()) @db.Uuid
+  orderId              String            @map("order_id") @db.Uuid
+  transactionId        String            @unique @map("transaction_id") @db.VarChar(255)
+  paymentGateway       String            @map("payment_gateway") @db.VarChar(50)
+  gatewayTransactionId String?           @map("gateway_transaction_id") @db.VarChar(255)
+  amount               Decimal           @db.Decimal(10, 2)
+  currency             String            @default("INR") @db.VarChar(10)
+  status               TransactionStatus
+  gatewayResponse      Json?             @map("gateway_response") @db.JsonB
+  errorMessage         String?           @map("error_message") @db.Text
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@index([status])
+  @@map("payment_transactions")
+}
+
+enum TransactionStatus {
+  INITIATED
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+// ================================
+// 7. NOTIFICATIONS
+// ================================
+
+model Notification {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  title            String    @db.VarChar(255)
+  body             String    @db.Text
+  data             Json?     @db.JsonB // Added for additional data
+  notificationType String    @map("notification_type") @db.VarChar(50)
+  referenceId      String?   @map("reference_id") @db.Uuid
+  referenceType    String?   @map("reference_type") @db.VarChar(50)
+  isRead           Boolean   @default(false) @map("is_read")
+  readAt           DateTime? @map("read_at") // Added
+  isSent           Boolean   @default(false) @map("is_sent")
+  sentAt           DateTime? @map("sent_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ================================
+// 8. CMS & CONTENT
+// ================================
+
+model CmsPage {
+  id          String    @id @default(uuid()) @db.Uuid
+  slug        String    @unique @db.VarChar(255)
+  title       String    @db.VarChar(255)
+  content     String    @db.Text
+  version     Int       @default(1)
+  isPublished Boolean   @default(false) @map("is_published")
+  publishedAt DateTime? @map("published_at")
+  createdBy   String?   @map("created_by") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  creator User? @relation(fields: [createdBy], references: [id])
+
+  @@index([slug])
+  @@map("cms_pages")
+}
+
+// ================================
+// 9. AUDIT LOGS
+// ================================
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  action     String   @db.VarChar(100)
+  entityType String   @map("entity_type") @db.VarChar(100)
+  entityId   String?  @map("entity_id") @db.Uuid
+  oldData    Json?    @map("old_data") @db.JsonB
+  newData    Json?    @map("new_data") @db.JsonB
+  ipAddress  String?  @map("ip_address") @db.VarChar(50)
+  userAgent  String?  @map("user_agent") @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

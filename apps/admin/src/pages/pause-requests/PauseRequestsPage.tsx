@@ -1,0 +1,280 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Table,
+  Input,
+  Select,
+  Typography,
+  Card,
+  Tag,
+  DatePicker,
+  Button,
+  Space,
+  Modal,
+  message,
+  Tooltip,
+} from 'antd';
+import {
+  SearchOutlined,
+  CheckOutlined,
+  CloseOutlined,
+  ExclamationCircleOutlined,
+  EyeOutlined,
+} from '@ant-design/icons';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { pauseRequestService } from '@/services';
+import { PauseRequest, PauseRequestFilters, PauseRequestStatus } from '@/types';
+import type { ColumnsType } from 'antd/es/table';
+import dayjs from 'dayjs';
+
+const { Title, Text } = Typography;
+const { RangePicker } = DatePicker;
+const { confirm } = Modal;
+
+const PauseRequestsPage = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [filters, setFilters] = useState<PauseRequestFilters>({});
+
+  // Fetch pause requests
+  const { data: pauseRequests, isLoading } = useQuery({
+    queryKey: ['pauseRequests', filters],
+    queryFn: () => pauseRequestService.getAll(filters),
+  });
+
+  // Approve mutation
+  const approveMutation = useMutation({
+    mutationFn: pauseRequestService.approve,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pauseRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['pendingPauseRequests'] });
+      message.success('Pause request approved');
+    },
+    onError: (error: Error) => {
+      message.error(error.message);
+    },
+  });
+
+  // Reject mutation
+  const rejectMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      pauseRequestService.reject(id, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pauseRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['pendingPauseRequests'] });
+      message.success('Pause request rejected');
+    },
+    onError: (error: Error) => {
+      message.error(error.message);
+    },
+  });
+
+  // Handle approve
+  const handleApprove = (request: PauseRequest) => {
+    confirm({
+      title: 'Approve Pause Request',
+      icon: <ExclamationCircleOutlined />,
+      content: (
+        <div>
+          <p>Approve pause for <strong>{request.subscription?.student?.fullName}</strong>?</p>
+          <div className="mt-3 p-3 bg-gray-50 rounded text-sm">
+            <div>Period: {dayjs(request.startDate).format('MMM DD')} - {dayjs(request.endDate).format('MMM DD, YYYY')}</div>
+            <div>Days: {request.pauseDays}</div>
+            {request.newEndDate && (
+              <div className="text-blue-600">New subscription end date: {dayjs(request.newEndDate).format('MMM DD, YYYY')}</div>
+            )}
+          </div>
+        </div>
+      ),
+      okText: 'Approve',
+      onOk: () => approveMutation.mutate(request.id),
+    });
+  };
+
+  // Handle reject
+  const handleReject = (request: PauseRequest) => {
+    confirm({
+      title: 'Reject Pause Request',
+      icon: <ExclamationCircleOutlined />,
+      content: `Are you sure you want to reject this pause request?`,
+      okText: 'Reject',
+      okType: 'danger',
+      onOk: () => rejectMutation.mutate({ id: request.id }),
+    });
+  };
+
+  // Status colors
+  const statusColors: Record<PauseRequestStatus, string> = {
+    [PauseRequestStatus.PENDING]: 'orange',
+    [PauseRequestStatus.APPROVED]: 'green',
+    [PauseRequestStatus.REJECTED]: 'red',
+    [PauseRequestStatus.PROCESSED]: 'blue',
+  };
+
+  // Table columns
+  const columns: ColumnsType<PauseRequest> = [
+    {
+      title: 'Parent',
+      dataIndex: ['parent', 'fullName'],
+      key: 'parent',
+      render: (name: string) => <Text strong>{name}</Text>,
+    },
+    {
+      title: 'Student',
+      dataIndex: ['subscription', 'student', 'fullName'],
+      key: 'student',
+    },
+    {
+      title: 'Subscription',
+      dataIndex: ['subscription', 'subscriptionNumber'],
+      key: 'subscription',
+      render: (text: string, record) => (
+        <Button
+          type="link"
+          className="p-0"
+          onClick={() => navigate(`/subscriptions/${record.subscriptionId}`)}
+        >
+          {text}
+        </Button>
+      ),
+    },
+    {
+      title: 'Pause Period',
+      key: 'period',
+      render: (_, record) => (
+        <div>
+          <div>{dayjs(record.startDate).format('MMM DD')} - {dayjs(record.endDate).format('MMM DD')}</div>
+          <div className="text-xs text-gray-500">{record.pauseDays} days</div>
+        </div>
+      ),
+    },
+    {
+      title: 'Reason',
+      dataIndex: 'reason',
+      key: 'reason',
+      ellipsis: true,
+      render: (reason: string) => reason || '-',
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: PauseRequestStatus) => (
+        <Tag color={statusColors[status]}>{status}</Tag>
+      ),
+    },
+    {
+      title: 'Requested',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (date: string) => dayjs(date).format('MMM DD, YYYY'),
+      sorter: (a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix(),
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_, record) => (
+        <Space>
+          {record.status === PauseRequestStatus.PENDING && (
+            <>
+              <Tooltip title="Approve">
+                <Button
+                  type="text"
+                  icon={<CheckOutlined />}
+                  className="text-green-600"
+                  onClick={() => handleApprove(record)}
+                  loading={approveMutation.isPending}
+                />
+              </Tooltip>
+              <Tooltip title="Reject">
+                <Button
+                  type="text"
+                  danger
+                  icon={<CloseOutlined />}
+                  onClick={() => handleReject(record)}
+                  loading={rejectMutation.isPending}
+                />
+              </Tooltip>
+            </>
+          )}
+          <Tooltip title="View Subscription">
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
+              onClick={() => navigate(`/subscriptions/${record.subscriptionId}`)}
+            />
+          </Tooltip>
+        </Space>
+      ),
+    },
+  ];
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="mb-6">
+        <Title level={2} className="!mb-1">Pause Requests</Title>
+        <Text type="secondary">Review and manage subscription pause requests</Text>
+      </div>
+
+      {/* Filters */}
+      <Card className="mb-4">
+        <div className="flex flex-wrap gap-4">
+          <Input
+            placeholder="Search..."
+            prefix={<SearchOutlined />}
+            value={filters.search}
+            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+            style={{ width: 250 }}
+            allowClear
+          />
+          <Select
+            placeholder="Filter by status"
+            value={filters.status}
+            onChange={(value) => setFilters({ ...filters, status: value })}
+            style={{ width: 150 }}
+            allowClear
+            options={Object.values(PauseRequestStatus).map((s) => ({
+              label: s,
+              value: s,
+            }))}
+          />
+          <RangePicker
+            onChange={(dates) => {
+              if (dates) {
+                setFilters({
+                  ...filters,
+                  startDate: dates[0]?.format('YYYY-MM-DD'),
+                  endDate: dates[1]?.format('YYYY-MM-DD'),
+                });
+              } else {
+                setFilters({ ...filters, startDate: undefined, endDate: undefined });
+              }
+            }}
+          />
+        </div>
+      </Card>
+
+      {/* Table */}
+      <Card>
+        <Table
+          columns={columns}
+          dataSource={pauseRequests}
+          rowKey="id"
+          loading={isLoading}
+          pagination={{
+            total: pauseRequests?.length,
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total) => `Total ${total} requests`,
+          }}
+          rowClassName={(record) =>
+            record.status === PauseRequestStatus.PENDING ? 'bg-orange-50' : ''
+          }
+        />
+      </Card>
+    </div>
+  );
+};
+
+export default PauseRequestsPage;

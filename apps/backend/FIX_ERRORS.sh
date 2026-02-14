@@ -1,0 +1,25 @@
+#!/bin/bash
+
+echo "🔧 Installing date-fns..."
+pnpm add date-fns
+
+echo "✅ date-fns installed!"
+echo ""
+echo "⚠️  CRITICAL: Schema mismatches detected!"
+echo ""
+echo "The Prisma schema doesn't match the code. Main issues:"
+echo ""
+echo "1. Missing 'Role' enum - schema has 'UserRole'"
+echo "2. Missing 'OrderStatus' enum - schema has 'PaymentStatus'"  
+echo "3. Field 'phone' in schema, code uses 'phoneNumber'"
+echo "4. No 'deletedAt' fields in schema (soft deletes not configured)"
+echo "5. Subscription missing 'endDate', 'totalPrice', 'currency' fields"
+echo "6. Order missing 'currency', 'status', 'paidAt' fields"
+echo "7. No 'fcmToken' model in schema"
+echo "8. Notification missing 'readAt', 'data' fields"
+echo ""
+echo "You need to either:"
+echo "  A) Update Prisma schema to match the code"
+echo "  B) Update the code to match the Prisma schema"
+echo ""
+echo "Run: pnpm prisma:generate after schema fixes"

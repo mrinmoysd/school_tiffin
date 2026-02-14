@@ -1,0 +1,378 @@
+import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  Table,
+  Button,
+  Typography,
+  Card,
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  message,
+  Space,
+  Tooltip,
+  Tag,
+  Spin,
+  Descriptions,
+} from 'antd';
+import {
+  ArrowLeftOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { mealPlanService, menuItemService } from '@/services';
+import { MenuItem, CreateMenuItemDto, UpdateMenuItemDto } from '@/types';
+import type { ColumnsType } from 'antd/es/table';
+
+const { Title, Text } = Typography;
+const { TextArea } = Input;
+const { confirm } = Modal;
+
+const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+const MenuManagementPage = () => {
+  const navigate = useNavigate();
+  const { id: mealPlanId } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [form] = Form.useForm();
+
+  // Fetch meal plan
+  const { data: mealPlan, isLoading: mealPlanLoading } = useQuery({
+    queryKey: ['mealPlan', mealPlanId],
+    queryFn: () => mealPlanService.getById(mealPlanId!),
+    enabled: !!mealPlanId,
+  });
+
+  // Fetch menu items
+  const { data: menuItems, isLoading: menuItemsLoading } = useQuery({
+    queryKey: ['menuItems', mealPlanId],
+    queryFn: () => menuItemService.getByMealPlan(mealPlanId!),
+    enabled: !!mealPlanId,
+  });
+
+  // Create mutation
+  const createMutation = useMutation({
+    mutationFn: menuItemService.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menuItems', mealPlanId] });
+      message.success('Menu item created successfully');
+      handleCloseModal();
+    },
+    onError: (error: Error) => {
+      message.error(error.message);
+    },
+  });
+
+  // Update mutation
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateMenuItemDto }) =>
+      menuItemService.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menuItems', mealPlanId] });
+      message.success('Menu item updated successfully');
+      handleCloseModal();
+    },
+    onError: (error: Error) => {
+      message.error(error.message);
+    },
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: menuItemService.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menuItems', mealPlanId] });
+      message.success('Menu item deleted successfully');
+    },
+    onError: (error: Error) => {
+      message.error(error.message);
+    },
+  });
+
+  const handleOpenModal = (item?: MenuItem) => {
+    if (item) {
+      setEditingItem(item);
+      form.setFieldsValue(item);
+    } else {
+      setEditingItem(null);
+      form.resetFields();
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingItem(null);
+    form.resetFields();
+  };
+
+  const handleSubmit = (values: CreateMenuItemDto | UpdateMenuItemDto) => {
+    if (editingItem) {
+      updateMutation.mutate({ id: editingItem.id, data: values });
+    } else {
+      createMutation.mutate({ ...values, mealPlanId: mealPlanId! } as CreateMenuItemDto);
+    }
+  };
+
+  const handleDelete = (item: MenuItem) => {
+    confirm({
+      title: 'Delete Menu Item',
+      icon: <ExclamationCircleOutlined />,
+      content: `Are you sure you want to delete "${item.name}"?`,
+      okText: 'Delete',
+      okType: 'danger',
+      onOk: () => deleteMutation.mutate(item.id),
+    });
+  };
+
+  // Table columns
+  const columns: ColumnsType<MenuItem> = [
+    {
+      title: 'Day',
+      key: 'day',
+      width: 120,
+      render: (_, record) => (
+        <div>
+          {record.dayOfWeek && <Tag color="blue">{record.dayOfWeek}</Tag>}
+          {record.dayNumber && <Tag color="green">Day {record.dayNumber}</Tag>}
+          {!record.dayOfWeek && !record.dayNumber && <Tag>General</Tag>}
+        </div>
+      ),
+    },
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (name: string) => <Text strong>{name}</Text>,
+    },
+    {
+      title: 'Items',
+      dataIndex: 'items',
+      key: 'items',
+      ellipsis: true,
+      render: (items: string) => (
+        <Text className="text-gray-600">{items}</Text>
+      ),
+    },
+    {
+      title: 'Calories',
+      dataIndex: 'calories',
+      key: 'calories',
+      width: 100,
+      render: (calories: number) => calories ? `${calories} kcal` : '-',
+    },
+    {
+      title: 'Allergens',
+      dataIndex: 'allergenInfo',
+      key: 'allergenInfo',
+      ellipsis: true,
+      render: (info: string) => info || '-',
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      width: 100,
+      render: (_, record) => (
+        <Space>
+          <Tooltip title="Edit">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => handleOpenModal(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleDelete(record)}
+            />
+          </Tooltip>
+        </Space>
+      ),
+    },
+  ];
+
+  if (mealPlanLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (!mealPlan) {
+    return (
+      <div className="text-center py-12">
+        <Text type="secondary">Meal plan not found</Text>
+        <br />
+        <Button type="link" onClick={() => navigate('/meal-plans')}>
+          Back to Meal Plans
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-6">
+        <Button
+          type="text"
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate('/meal-plans')}
+        />
+        <div>
+          <Title level={2} className="!mb-1">Menu Management</Title>
+          <Text type="secondary">{mealPlan.name}</Text>
+        </div>
+      </div>
+
+      {/* Meal Plan Info */}
+      <Card className="mb-4">
+        <Descriptions column={{ xs: 1, sm: 2, md: 4 }}>
+          <Descriptions.Item label="School">{mealPlan.school?.name}</Descriptions.Item>
+          <Descriptions.Item label="Type">
+            <Tag color="blue">{mealPlan.planType}</Tag>
+          </Descriptions.Item>
+          <Descriptions.Item label="Duration">{mealPlan.durationDays} days</Descriptions.Item>
+          <Descriptions.Item label="Price">
+            ₹{(mealPlan.pricePerDay / 100).toFixed(2)}/day
+          </Descriptions.Item>
+        </Descriptions>
+      </Card>
+
+      {/* Menu Items */}
+      <Card
+        title="Menu Items"
+        extra={
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => handleOpenModal()}
+          >
+            Add Menu Item
+          </Button>
+        }
+      >
+        <Table
+          columns={columns}
+          dataSource={menuItems}
+          rowKey="id"
+          loading={menuItemsLoading}
+          pagination={false}
+        />
+      </Card>
+
+      {/* Add/Edit Modal */}
+      <Modal
+        title={editingItem ? 'Edit Menu Item' : 'Add Menu Item'}
+        open={isModalOpen}
+        onCancel={handleCloseModal}
+        footer={null}
+        width={600}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+        >
+          <Form.Item
+            name="name"
+            label="Item Name"
+            rules={[{ required: true, message: 'Please enter item name' }]}
+          >
+            <Input placeholder="e.g., Monday Lunch Special" />
+          </Form.Item>
+
+          <Form.Item
+            name="items"
+            label="Items (comma-separated)"
+            rules={[{ required: true, message: 'Please enter items' }]}
+          >
+            <TextArea
+              rows={2}
+              placeholder="e.g., Dal, Rice, Mixed Vegetables, Roti, Salad"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="description"
+            label="Description"
+          >
+            <TextArea
+              rows={2}
+              placeholder="Optional description..."
+            />
+          </Form.Item>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Form.Item
+              name="dayOfWeek"
+              label="Day of Week"
+            >
+              <Select
+                placeholder="Select day"
+                allowClear
+                options={DAYS_OF_WEEK.map((day) => ({ label: day, value: day }))}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="dayNumber"
+              label="Day Number"
+            >
+              <InputNumber
+                min={1}
+                max={365}
+                placeholder="e.g., 1"
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Form.Item
+              name="calories"
+              label="Calories (kcal)"
+            >
+              <InputNumber
+                min={0}
+                placeholder="e.g., 450"
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="allergenInfo"
+              label="Allergen Info"
+            >
+              <Input placeholder="e.g., Contains gluten, dairy" />
+            </Form.Item>
+          </div>
+
+          <div className="flex justify-end gap-3 mt-4">
+            <Button onClick={handleCloseModal}>Cancel</Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={createMutation.isPending || updateMutation.isPending}
+            >
+              {editingItem ? 'Save Changes' : 'Add Item'}
+            </Button>
+          </div>
+        </Form>
+      </Modal>
+    </div>
+  );
+};
+
+export default MenuManagementPage;
