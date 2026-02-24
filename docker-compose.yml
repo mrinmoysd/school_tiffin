@@ -8,10 +8,10 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: 76624
       POSTGRES_DB: schooltiffin
     ports:
-      - '5432:5432'
+      - '5433:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -65,33 +65,33 @@ services:
     networks:
       - schooltiffin-network
 
-  # Backend API (Optional - Uncomment when ready)
-  # backend:
-  #   build:
-  #     context: .
-  #     dockerfile: apps/backend/Dockerfile.dev
-  #   container_name: schooltiffin-backend
-  #   restart: unless-stopped
-  #   environment:
-  #     - NODE_ENV=development
-  #     - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/schooltiffin
-  #     - REDIS_HOST=redis
-  #     - REDIS_PORT=6379
-  #     - SMTP_HOST=mailhog
-  #     - SMTP_PORT=1025
-  #   ports:
-  #     - '3000:3000'
-  #   volumes:
-  #     - ./apps/backend:/app/apps/backend
-  #     - /app/node_modules
-  #     - /app/apps/backend/node_modules
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #   networks:
-  #     - schooltiffin-network
+  #Backend API (Optional - Uncomment when ready)
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile.dev
+    container_name: schooltiffin-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:76624@postgres:5432/schooltiffin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SMTP_HOST=mailhog
+      - SMTP_PORT=1025
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./apps/backend:/app/apps/backend
+      - /app/node_modules
+      - /app/apps/backend/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - schooltiffin-network
 
 volumes:
   postgres_data:

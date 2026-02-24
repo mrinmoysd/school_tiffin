@@ -1,5 +1,5 @@
 import { PrismaClient, UserRole } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -16,7 +16,7 @@ async function main() {
 
   if (!existingAdmin) {
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
-    
+
     const admin = await prisma.user.create({
       data: {
         email: adminEmail,
@@ -35,7 +35,7 @@ async function main() {
     console.log(`   Role: ${admin.role}`);
   } else {
     console.log('ℹ️  Admin user already exists');
-    
+
     // Update role to ADMIN if not already
     if (existingAdmin.role !== UserRole.ADMIN) {
       await prisma.user.update({
@@ -75,7 +75,7 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
+  .catch(e => {
     console.error('❌ Seed failed:', e);
     process.exit(1);
   })

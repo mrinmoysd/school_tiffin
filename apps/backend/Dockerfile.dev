@@ -1,5 +1,8 @@
 FROM node:18-alpine AS development
 
+# Prisma: Alpine 3.17+ uses OpenSSL 3; ensure OpenSSL is present
+RUN apk add --no-cache openssl
+
 # Install pnpm
 RUN npm install -g pnpm
 
@@ -14,14 +17,14 @@ COPY apps/backend/package.json ./apps/backend/
 COPY packages/*/package.json ./packages/*/
 
 # Install all dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Copy source code
 COPY . .
 
 # Generate Prisma Client
 WORKDIR /app/apps/backend
-RUN npx prisma generate
+RUN pnpm prisma generate
 
 WORKDIR /app
 
