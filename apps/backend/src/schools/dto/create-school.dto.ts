@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsJSON, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class CreateSchoolDto {
   @ApiProperty({
@@ -33,10 +33,32 @@ export class CreateSchoolDto {
     description: 'City where school is located',
     example: 'Mumbai',
   })
+  @IsOptional()
   @IsString()
   @MinLength(2)
   @MaxLength(100)
-  city: string;
+  city?: string;
+
+  @ApiProperty({
+    description: 'State where school is located',
+    example: 'Maharashtra',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  @MaxLength(100)
+  state?: string;
+
+  @ApiProperty({
+    description: 'Pincode / postal code',
+    example: '400001',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(10)
+  pincode?: string;
 
   @ApiProperty({
     description: 'School contact phone',
@@ -57,11 +79,21 @@ export class CreateSchoolDto {
   contactEmail?: string;
 
   @ApiProperty({
-    description: 'Operating days (JSON array)',
-    example: ['MON', 'TUE', 'WED', 'THU', 'FRI'],
+    description: 'Operating days (comma-separated values)',
+    example: 'MON,TUE,WED,THU,FRI',
   })
-  @IsJSON()
+  @IsString()
   operatingDays: string;
+
+  @ApiProperty({
+    description: 'Delivery instructions',
+    example: 'Deliver to the school cafeteria between 11:30 AM - 12:00 PM',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  deliveryInstructions?: string;
 
   @ApiProperty({
     description: 'Whether service is available',

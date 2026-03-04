@@ -40,9 +40,34 @@ const SchoolEditPage = () => {
   // Update form when data is loaded
   useEffect(() => {
     if (school) {
+      let operatingDaysArray: string[] = [];
+
+      if (Array.isArray((school as any).operatingDays)) {
+        // If backend already returns an array
+        operatingDaysArray = (school as any).operatingDays;
+      } else if (typeof school.operatingDays === 'string') {
+        const value = school.operatingDays.trim();
+        // Try JSON first
+        if (value.startsWith('[')) {
+          try {
+            operatingDaysArray = JSON.parse(value);
+          } catch {
+            operatingDaysArray = value
+              .split(',')
+              .map(d => d.trim())
+              .filter(Boolean);
+          }
+        } else {
+          operatingDaysArray = value
+            .split(',')
+            .map(d => d.trim())
+            .filter(Boolean);
+        }
+      }
+
       form.setFieldsValue({
         ...school,
-        operatingDaysArray: school.operatingDays.split(','),
+        operatingDaysArray,
       });
     }
   }, [school, form]);
@@ -60,10 +85,13 @@ const SchoolEditPage = () => {
     },
   });
 
-  const onFinish = (values: UpdateSchoolDto & { operatingDaysArray: string[] }) => {
-    const { operatingDaysArray, ...rest } = values;
+  const onFinish = (
+    values: UpdateSchoolDto & { operatingDaysArray: string[] } & { code?: string },
+  ) => {
+    const { operatingDaysArray, code: _code, ...rest } = values;
     const data: UpdateSchoolDto = {
       ...rest,
+      // Backend expects comma-separated values
       operatingDays: operatingDaysArray.join(','),
     };
     updateMutation.mutate(data);
@@ -93,25 +121,20 @@ const SchoolEditPage = () => {
     <div>
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Button
-          type="text"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/schools')}
-        />
+        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/schools')} />
         <div>
-          <Title level={2} className="!mb-1">Edit School</Title>
-          <Text type="secondary">{school.name} ({school.code})</Text>
+          <Title level={2} className="!mb-1">
+            Edit School
+          </Title>
+          <Text type="secondary">
+            {school.name} ({school.code})
+          </Text>
         </div>
       </div>
 
       {/* Form */}
       <Card>
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={onFinish}
-          requiredMark="optional"
-        >
+        <Form form={form} layout="vertical" onFinish={onFinish} requiredMark="optional">
           <Row gutter={24}>
             <Col xs={24} md={12}>
               <Form.Item
@@ -129,9 +152,7 @@ const SchoolEditPage = () => {
               <Form.Item
                 name="code"
                 label="School Code"
-                rules={[
-                  { required: true, message: 'Please enter school code' },
-                ]}
+                rules={[{ required: true, message: 'Please enter school code' }]}
               >
                 <Input disabled />
               </Form.Item>
@@ -161,9 +182,7 @@ const SchoolEditPage = () => {
               <Form.Item
                 name="pincode"
                 label="Pincode"
-                rules={[
-                  { pattern: /^\d{6}$/, message: 'Please enter valid 6-digit pincode' },
-                ]}
+                rules={[{ pattern: /^\d{6}$/, message: 'Please enter valid 6-digit pincode' }]}
               >
                 <Input placeholder="e.g., 110001" maxLength={6} />
               </Form.Item>
@@ -175,9 +194,7 @@ const SchoolEditPage = () => {
               <Form.Item
                 name="contactEmail"
                 label="Contact Email"
-                rules={[
-                  { type: 'email', message: 'Please enter valid email' },
-                ]}
+                rules={[{ type: 'email', message: 'Please enter valid email' }]}
               >
                 <Input placeholder="e.g., admin@school.edu" />
               </Form.Item>
@@ -186,9 +203,7 @@ const SchoolEditPage = () => {
               <Form.Item
                 name="contactPhone"
                 label="Contact Phone"
-                rules={[
-                  { pattern: /^\d{10}$/, message: 'Please enter valid 10-digit phone' },
-                ]}
+                rules={[{ pattern: /^\d{10}$/, message: 'Please enter valid 10-digit phone' }]}
               >
                 <Input placeholder="e.g., 9876543210" maxLength={10} />
               </Form.Item>
@@ -198,13 +213,11 @@ const SchoolEditPage = () => {
           <Form.Item
             name="operatingDaysArray"
             label="Operating Days"
-            rules={[
-              { required: true, message: 'Please select at least one day' },
-            ]}
+            rules={[{ required: true, message: 'Please select at least one day' }]}
           >
             <Checkbox.Group>
               <Space wrap>
-                {DAYS_OF_WEEK.map((day) => (
+                {DAYS_OF_WEEK.map(day => (
                   <Checkbox key={day} value={day}>
                     {day}
                   </Checkbox>
@@ -213,29 +226,20 @@ const SchoolEditPage = () => {
             </Checkbox.Group>
           </Form.Item>
 
-          <Form.Item
-            name="deliveryInstructions"
-            label="Delivery Instructions"
-          >
+          <Form.Item name="deliveryInstructions" label="Delivery Instructions">
             <TextArea
               rows={3}
               placeholder="e.g., Deliver to school cafeteria between 11:30 AM - 12:00 PM"
             />
           </Form.Item>
 
-          <Form.Item
-            name="isServiceAvailable"
-            label="Service Available"
-            valuePropName="checked"
-          >
+          <Form.Item name="isServiceAvailable" label="Service Available" valuePropName="checked">
             <Switch checkedChildren="Yes" unCheckedChildren="No" />
           </Form.Item>
 
           {/* Actions */}
           <div className="flex justify-end gap-3 mt-6 pt-6 border-t">
-            <Button onClick={() => navigate('/schools')}>
-              Cancel
-            </Button>
+            <Button onClick={() => navigate('/schools')}>Cancel</Button>
             <Button
               type="primary"
               htmlType="submit"

@@ -1,5 +1,23 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { MealPlanType } from '@prisma/client';
 import { Public, Roles, UserRole } from '../common/decorators';
 import { CreateMealPlanDto, UpdateMealPlanDto } from './dto';
 import { MealPlansService } from './meal-plans.service';
@@ -27,19 +45,40 @@ export class MealPlansController {
   }
 
   /**
-   * Get all meal plans by school (Public)
+   * Get all meal plans with optional filters (Public)
+   *
+   * Used by:
+   * - Public clients: typically provide schoolId only
+   * - Admin panel: may provide schoolId, planType, search, isActive
    */
   @Get()
   @Public()
   @ApiOperation({
-    summary: 'Get meal plans by school',
-    description: 'Public endpoint: Get all active meal plans for a school. Results are cached for 5 minutes.',
+    summary: 'Get meal plans',
+    description:
+      'Public endpoint: Get meal plans with optional filters for school, type, active status, and search. Results are cached for 5 minutes.',
   })
   @ApiQuery({
     name: 'schoolId',
-    required: true,
-    description: 'School UUID',
+    required: false,
+    description: 'School UUID (optional)',
     example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @ApiQuery({
+    name: 'planType',
+    required: false,
+    enum: MealPlanType,
+    description: 'Filter by meal plan type',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Search by meal plan name (case-insensitive)',
+  })
+  @ApiQuery({
+    name: 'isActive',
+    required: false,
+    description: 'Filter by active status (true/false)',
   })
   @ApiResponse({
     status: 200,
@@ -70,8 +109,22 @@ export class MealPlansController {
       },
     },
   })
-  async findBySchool(@Query('schoolId', ParseUUIDPipe) schoolId: string) {
-    return this.mealPlansService.findAll(schoolId, undefined);
+  async findBySchool(
+    @Query('schoolId', new ParseUUIDPipe({ optional: true })) schoolId?: string,
+    @Query('planType') planType?: MealPlanType,
+    @Query('search') search?: string,
+    @Query('isActive') isActiveRaw?: string,
+  ) {
+    const isActive =
+      typeof isActiveRaw === 'string'
+        ? isActiveRaw.toLowerCase() === 'true'
+          ? true
+          : isActiveRaw.toLowerCase() === 'false'
+            ? false
+            : undefined
+        : undefined;
+
+    return this.mealPlansService.findAll(schoolId, isActive, planType, search);
   }
 
   /**
@@ -81,7 +134,8 @@ export class MealPlansController {
   @Public()
   @ApiOperation({
     summary: 'Get meal plan by ID',
-    description: 'Public endpoint: Get detailed information about a specific meal plan including menu items.',
+    description:
+      'Public endpoint: Get detailed information about a specific meal plan including menu items.',
   })
   @ApiParam({
     name: 'id',
@@ -112,7 +166,10 @@ export class MealPlansController {
   @ApiResponse({ status: 200, description: 'Meal plan updated successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
   @ApiResponse({ status: 404, description: 'Meal plan not found' })
-  async update(@Param('id', ParseUUIDPipe) id: string, @Body() updateMealPlanDto: UpdateMealPlanDto) {
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateMealPlanDto: UpdateMealPlanDto,
+  ) {
     return this.mealPlansService.update(id, updateMealPlanDto);
   }
 
@@ -124,7 +181,8 @@ export class MealPlansController {
   @Roles(UserRole.ADMIN)
   @ApiOperation({
     summary: 'Delete meal plan',
-    description: 'Admin only: Soft delete a meal plan. Cannot delete if there are active subscriptions.',
+    description:
+      'Admin only: Soft delete a meal plan. Cannot delete if there are active subscriptions.',
   })
   @ApiParam({
     name: 'id',
