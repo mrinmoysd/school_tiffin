@@ -194,10 +194,11 @@ export class AdminService {
   /**
    * Get all users with filters
    */
-  async getUsers(role?: UserRole, search?: string, skip = 0, take = 20) {
+  async getUsers(role?: UserRole, search?: string, skip = 0, take = 20, isActive?: boolean) {
     const users = await this.prisma.user.findMany({
       where: {
         ...(role && { role }),
+        ...(isActive !== undefined && { isActive }),
         ...(search && {
           OR: [
             { fullName: { contains: search, mode: 'insensitive' } },
@@ -226,6 +227,7 @@ export class AdminService {
     const total = await this.prisma.user.count({
       where: {
         ...(role && { role }),
+        ...(isActive !== undefined && { isActive }),
         ...(search && {
           OR: [
             { fullName: { contains: search, mode: 'insensitive' } },
@@ -244,6 +246,52 @@ export class AdminService {
         pages: Math.ceil(total / take),
       },
     };
+  }
+
+  /**
+   * Get user's students (Admin)
+   */
+  async getUserStudents(userId: string) {
+    return this.prisma.student.findMany({
+      where: {
+        parentId: userId,
+        deletedAt: null,
+      },
+      include: {
+        school: {
+          select: { name: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Get user's subscriptions (Admin)
+   */
+  async getUserSubscriptions(userId: string) {
+    return this.prisma.subscription.findMany({
+      where: {
+        parentId: userId,
+      },
+      include: {
+        student: { select: { fullName: true } },
+        mealPlan: { select: { name: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Get user's orders (Admin)
+   */
+  async getUserOrders(userId: string) {
+    return this.prisma.order.findMany({
+      where: {
+        parentId: userId,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   /**

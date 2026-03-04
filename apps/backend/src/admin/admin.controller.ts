@@ -1,7 +1,15 @@
-import { Controller, Get, Patch, Param, Query, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
-import { AdminService } from './admin.service';
+import { Controller, Get, Param, ParseUUIDPipe, Patch, Query } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { DeliveryStatus } from '@prisma/client';
 import { Roles, UserRole } from '../common/decorators';
+import { AdminService } from './admin.service';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -16,7 +24,8 @@ export class AdminController {
   @Get('dashboard')
   @ApiOperation({
     summary: '[Admin] Get dashboard statistics',
-    description: 'Get comprehensive dashboard statistics including active subscriptions, deliveries, revenue, and more. Cached for 5 minutes.',
+    description:
+      'Get comprehensive dashboard statistics including active subscriptions, deliveries, revenue, and more. Cached for 5 minutes.',
   })
   @ApiResponse({
     status: 200,
@@ -49,7 +58,8 @@ export class AdminController {
   @Get('deliveries')
   @ApiOperation({
     summary: '[Admin] Get deliveries',
-    description: 'Get deliveries filtered by date and/or school. Returns deliveries grouped by school.',
+    description:
+      'Get deliveries filtered by date and/or school. Returns deliveries grouped by school.',
   })
   @ApiQuery({
     name: 'schoolId',
@@ -109,7 +119,8 @@ export class AdminController {
   @Patch('deliveries/:id/status')
   @ApiOperation({
     summary: '[Admin] Update delivery status',
-    description: 'Mark delivery as delivered or cancelled. Updates subscription remaining days if delivered.',
+    description:
+      'Mark delivery as delivered or cancelled. Updates subscription remaining days if delivered.',
   })
   @ApiParam({
     name: 'id',
@@ -117,15 +128,15 @@ export class AdminController {
   })
   @ApiQuery({
     name: 'status',
-    enum: ['DELIVERED', 'CANCELLED', 'SCHEDULED'],
+    enum: DeliveryStatus,
     description: 'New delivery status',
   })
   @ApiResponse({ status: 200, description: 'Delivery status updated successfully' })
   async updateDeliveryStatus(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('status') status: string,
+    @Query('status') status: DeliveryStatus,
   ) {
-    return this.adminService.updateDeliveryStatus(id, status as any);
+    return this.adminService.updateDeliveryStatus(id, status);
   }
 
   /**
@@ -138,8 +149,20 @@ export class AdminController {
   })
   @ApiQuery({ name: 'role', required: false, enum: UserRole, description: 'Filter by role' })
   @ApiQuery({ name: 'search', required: false, description: 'Search by name, email, or phone' })
-  @ApiQuery({ name: 'skip', required: false, type: Number, description: 'Pagination skip', example: 0 })
-  @ApiQuery({ name: 'take', required: false, type: Number, description: 'Pagination take', example: 20 })
+  @ApiQuery({
+    name: 'skip',
+    required: false,
+    type: Number,
+    description: 'Pagination skip',
+    example: 0,
+  })
+  @ApiQuery({
+    name: 'take',
+    required: false,
+    type: Number,
+    description: 'Pagination take',
+    example: 20,
+  })
   @ApiResponse({
     status: 200,
     description: 'Users retrieved successfully',
@@ -175,8 +198,16 @@ export class AdminController {
     @Query('search') search?: string,
     @Query('skip') skip?: number,
     @Query('take') take?: number,
+    @Query('isActive') isActiveRaw?: string,
   ) {
-    return this.adminService.getUsers(role as UserRole, search, skip || 0, take || 20);
+    let isActive: boolean | undefined;
+    if (typeof isActiveRaw === 'string') {
+      const v = isActiveRaw.toLowerCase();
+      if (v === 'true') isActive = true;
+      if (v === 'false') isActive = false;
+    }
+
+    return this.adminService.getUsers(role as UserRole, search, skip || 0, take || 20, isActive);
   }
 
   /**
@@ -185,7 +216,8 @@ export class AdminController {
   @Get('users/:id')
   @ApiOperation({
     summary: '[Admin] Get user details',
-    description: 'Get detailed information about a user including their students and subscriptions.',
+    description:
+      'Get detailed information about a user including their students and subscriptions.',
   })
   @ApiParam({
     name: 'id',
@@ -215,6 +247,45 @@ export class AdminController {
   }
 
   /**
+   * Get user's students (Admin)
+   */
+  @Get('users/:id/students')
+  @ApiOperation({
+    summary: '[Admin] Get user students',
+    description: 'Get students belonging to a specific user (parent).',
+  })
+  @ApiParam({ name: 'id', description: 'User UUID' })
+  async getUserStudents(@Param('id', ParseUUIDPipe) id: string) {
+    return this.adminService.getUserStudents(id);
+  }
+
+  /**
+   * Get user's subscriptions (Admin)
+   */
+  @Get('users/:id/subscriptions')
+  @ApiOperation({
+    summary: '[Admin] Get user subscriptions',
+    description: 'Get subscriptions belonging to a specific user (parent).',
+  })
+  @ApiParam({ name: 'id', description: 'User UUID' })
+  async getUserSubscriptions(@Param('id', ParseUUIDPipe) id: string) {
+    return this.adminService.getUserSubscriptions(id);
+  }
+
+  /**
+   * Get user's orders (Admin)
+   */
+  @Get('users/:id/orders')
+  @ApiOperation({
+    summary: '[Admin] Get user orders',
+    description: 'Get orders belonging to a specific user (parent).',
+  })
+  @ApiParam({ name: 'id', description: 'User UUID' })
+  async getUserOrders(@Param('id', ParseUUIDPipe) id: string) {
+    return this.adminService.getUserOrders(id);
+  }
+
+  /**
    * Get sales report
    */
   @Get('reports/sales')
@@ -222,8 +293,18 @@ export class AdminController {
     summary: '[Admin] Get sales report',
     description: 'Get sales report with revenue breakdown by school for a date range.',
   })
-  @ApiQuery({ name: 'startDate', required: false, description: 'Start date (ISO)', example: '2026-02-01' })
-  @ApiQuery({ name: 'endDate', required: false, description: 'End date (ISO)', example: '2026-02-28' })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Start date (ISO)',
+    example: '2026-02-01',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'End date (ISO)',
+    example: '2026-02-28',
+  })
   @ApiQuery({ name: 'schoolId', required: false, description: 'Filter by school UUID' })
   @ApiResponse({
     status: 200,

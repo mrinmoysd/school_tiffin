@@ -1,16 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Table,
-  Input,
-  Select,
-  Typography,
-  Card,
-  Tag,
-  Switch,
-  Button,
-  message,
-} from 'antd';
+import { Table, Input, Select, Typography, Card, Tag, Switch, Button, message } from 'antd';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userService } from '@/services';
@@ -24,11 +14,14 @@ const UsersListPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<UserFilters>({});
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   // Fetch users
-  const { data: users, isLoading } = useQuery({
-    queryKey: ['users', filters],
-    queryFn: () => userService.getAll(filters),
+  const skip = (page - 1) * pageSize;
+  const { data, isLoading } = useQuery({
+    queryKey: ['users', filters, page, pageSize],
+    queryFn: () => userService.getAll(filters, skip, pageSize),
   });
 
   // Toggle active mutation
@@ -68,7 +61,9 @@ const UsersListPage = () => {
         <div>
           <div>{email}</div>
           {record.emailVerified && (
-            <Tag color="green" className="text-xs">Verified</Tag>
+            <Tag color="green" className="text-xs">
+              Verified
+            </Tag>
           )}
         </div>
       ),
@@ -83,9 +78,7 @@ const UsersListPage = () => {
       title: 'Role',
       dataIndex: 'role',
       key: 'role',
-      render: (role: UserRole) => (
-        <Tag color={roleColors[role]}>{role}</Tag>
-      ),
+      render: (role: UserRole) => <Tag color={roleColors[role]}>{role}</Tag>,
     },
     {
       title: 'Active',
@@ -94,9 +87,7 @@ const UsersListPage = () => {
       render: (isActive: boolean, record) => (
         <Switch
           checked={isActive}
-          onChange={(checked) =>
-            toggleActiveMutation.mutate({ id: record.id, isActive: checked })
-          }
+          onChange={checked => toggleActiveMutation.mutate({ id: record.id, isActive: checked })}
           loading={toggleActiveMutation.isPending}
         />
       ),
@@ -105,7 +96,7 @@ const UsersListPage = () => {
       title: 'Last Login',
       dataIndex: 'lastLoginAt',
       key: 'lastLoginAt',
-      render: (date: string) => date ? dayjs(date).format('MMM DD, HH:mm') : 'Never',
+      render: (date: string) => (date ? dayjs(date).format('MMM DD, HH:mm') : 'Never'),
     },
     {
       title: 'Joined',
@@ -118,11 +109,7 @@ const UsersListPage = () => {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-        <Button
-          type="text"
-          icon={<EyeOutlined />}
-          onClick={() => navigate(`/users/${record.id}`)}
-        >
+        <Button type="text" icon={<EyeOutlined />} onClick={() => navigate(`/users/${record.id}`)}>
           View
         </Button>
       ),
@@ -133,7 +120,9 @@ const UsersListPage = () => {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <Title level={2} className="!mb-1">Users</Title>
+        <Title level={2} className="!mb-1">
+          Users
+        </Title>
         <Text type="secondary">Manage platform users</Text>
       </div>
 
@@ -144,17 +133,17 @@ const UsersListPage = () => {
             placeholder="Search by email or phone..."
             prefix={<SearchOutlined />}
             value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+            onChange={e => setFilters({ ...filters, search: e.target.value })}
             style={{ width: 280 }}
             allowClear
           />
           <Select
             placeholder="Filter by role"
             value={filters.role}
-            onChange={(value) => setFilters({ ...filters, role: value })}
+            onChange={value => setFilters({ ...filters, role: value })}
             style={{ width: 150 }}
             allowClear
-            options={Object.values(UserRole).map((r) => ({
+            options={Object.values(UserRole).map(r => ({
               label: r,
               value: r,
             }))}
@@ -162,7 +151,7 @@ const UsersListPage = () => {
           <Select
             placeholder="Status"
             value={filters.isActive}
-            onChange={(value) => setFilters({ ...filters, isActive: value })}
+            onChange={value => setFilters({ ...filters, isActive: value })}
             style={{ width: 120 }}
             allowClear
             options={[
@@ -177,14 +166,22 @@ const UsersListPage = () => {
       <Card>
         <Table
           columns={columns}
-          dataSource={users}
+          dataSource={data?.users}
           rowKey="id"
           loading={isLoading}
           pagination={{
-            total: users?.length,
-            pageSize: 10,
+            current: page,
+            pageSize,
+            total: data?.pagination.total,
             showSizeChanger: true,
-            showTotal: (total) => `Total ${total} users`,
+            onChange: (nextPage, nextPageSize) => {
+              setPage(nextPage);
+              if (nextPageSize && nextPageSize !== pageSize) {
+                setPageSize(nextPageSize);
+                setPage(1);
+              }
+            },
+            showTotal: total => `Total ${total} users`,
           }}
         />
       </Card>
