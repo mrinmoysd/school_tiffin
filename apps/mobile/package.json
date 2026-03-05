@@ -1,0 +1,30 @@
+{
+  "name": "@school-tiffin/mobile",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "cross-env EXPO_NO_METRO_WORKSPACE_ROOT=1 expo start",
+    "dev:clear": "cross-env EXPO_NO_METRO_WORKSPACE_ROOT=1 expo start --clear",
+    "start": "cross-env EXPO_NO_METRO_WORKSPACE_ROOT=1 expo start",
+    "android": "cross-env EXPO_NO_METRO_WORKSPACE_ROOT=1 ORG_GRADLE_PROJECT_reactNativeArchitectures=arm64-v8a expo run:android --all-arch",
+    "android:no-bundler": "cross-env EXPO_NO_METRO_WORKSPACE_ROOT=1 ORG_GRADLE_PROJECT_reactNativeArchitectures=arm64-v8a expo run:android --all-arch --no-bundler",
+    "ios": "cross-env EXPO_NO_METRO_WORKSPACE_ROOT=1 expo run:ios",
+    "web": "cross-env EXPO_NO_METRO_WORKSPACE_ROOT=1 expo start --web"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.28.4",
+    "expo": "~53.0.0",
+    "expo-asset": "~11.1.7",
+    "expo-constants": "~17.1.8",
+    "expo-dev-client": "~5.2.4",
+    "expo-status-bar": "~2.2.3",
+    "react": "19.0.0",
+    "react-native": "0.79.6"
+  },
+  "devDependencies": {
+    "@types/react": "~19.0.10",
+    "cross-env": "^7.0.3",
+    "typescript": "~5.8.3"
+  },
+  "private": true
+}
