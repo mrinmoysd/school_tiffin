@@ -15,10 +15,15 @@ export const authService = {
   },
 
   // Refresh token
-  refreshToken: async (refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> => {
-    const response = await api.post<ApiResponse<{ accessToken: string; refreshToken: string }>>('/auth/refresh', {
-      refreshToken,
-    });
+  refreshToken: async (
+    refreshToken: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> => {
+    const response = await api.post<ApiResponse<{ accessToken: string; refreshToken: string }>>(
+      '/auth/refresh',
+      {
+        refreshToken,
+      },
+    );
     return response.data.data;
   },
 
@@ -29,6 +34,6 @@ export const authService = {
 
   // Change password
   changePassword: async (data: { currentPassword: string; newPassword: string }): Promise<void> => {
-    await api.post('/auth/change-password', data);
+    await api.patch('/auth/change-password', data);
   },
 };

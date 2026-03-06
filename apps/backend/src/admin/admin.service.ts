@@ -1,8 +1,14 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
-import { SubscriptionStatus, OrderStatus, UserRole, DeliveryStatus } from '@prisma/client';
+import {
+  SubscriptionStatus,
+  OrderStatus,
+  UserRole,
+  DeliveryStatus,
+  PauseRequestStatus,
+} from '@prisma/client';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns';
 
 @Injectable()
@@ -85,6 +91,36 @@ export class AdminService {
     await this.cacheManager.set(cacheKey, stats, 300);
 
     return stats;
+  }
+
+  async getRecentActivity() {
+    const [recentSubscriptions, recentOrders] = await Promise.all([
+      this.prisma.subscription.findMany({
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          parent: { select: { id: true, fullName: true, email: true } },
+          student: { select: { id: true, fullName: true } },
+          school: { select: { id: true, name: true } },
+          mealPlan: { select: { id: true, name: true } },
+        },
+      }),
+      this.prisma.order.findMany({
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          parent: { select: { id: true, fullName: true, email: true } },
+          subscription: {
+            select: { id: true, subscriptionNumber: true },
+          },
+        },
+      }),
+    ]);
+
+    return {
+      recentSubscriptions,
+      recentOrders,
+    };
   }
 
   /**
@@ -189,6 +225,58 @@ export class AdminService {
     }
 
     return updated;
+  }
+
+  async markDeliveriesDelivered(deliveryIds: string[]) {
+    const updates = await Promise.all(
+      deliveryIds.map(deliveryId =>
+        this.updateDeliveryStatus(deliveryId, DeliveryStatus.DELIVERED),
+      ),
+    );
+    return {
+      updatedCount: updates.length,
+    };
+  }
+
+  async exportDeliveriesCsv(schoolId?: string, date?: string) {
+    const report = await this.getDeliveries(schoolId, date);
+    const rows: string[] = [
+      'deliveryId,date,school,studentName,grade,mealPlan,subscriptionNumber,status,parentPhone',
+    ];
+
+    type CsvDelivery = {
+      id: string;
+      scheduledDate: Date | string;
+      status: string;
+      subscription?: {
+        subscriptionNumber?: string;
+        student?: { fullName?: string; grade?: string };
+        mealPlan?: { name?: string };
+        parent?: { phoneNumber?: string };
+      };
+    };
+
+    for (const [schoolName, deliveries] of Object.entries(report.bySchool || {})) {
+      for (const delivery of deliveries as CsvDelivery[]) {
+        rows.push(
+          [
+            delivery.id,
+            delivery.scheduledDate,
+            schoolName,
+            delivery.subscription?.student?.fullName || '',
+            delivery.subscription?.student?.grade || '',
+            delivery.subscription?.mealPlan?.name || '',
+            delivery.subscription?.subscriptionNumber || '',
+            delivery.status,
+            delivery.subscription?.parent?.phoneNumber || '',
+          ]
+            .map(v => `"${String(v ?? '').replace(/"/g, '""')}"`)
+            .join(','),
+        );
+      }
+    }
+
+    return rows.join('\n');
   }
 
   /**
@@ -334,6 +422,373 @@ export class AdminService {
     return updated;
   }
 
+  async getOrders(status?: OrderStatus, search?: string, startDate?: string, endDate?: string) {
+    return this.prisma.order.findMany({
+      where: {
+        ...(status && { status }),
+        ...(search && {
+          OR: [
+            { orderNumber: { contains: search, mode: 'insensitive' } },
+            { parent: { fullName: { contains: search, mode: 'insensitive' } } },
+            { subscription: { subscriptionNumber: { contains: search, mode: 'insensitive' } } },
+          ],
+        }),
+        ...((startDate || endDate) && {
+          createdAt: {
+            ...(startDate && { gte: startOfDay(new Date(startDate)) }),
+            ...(endDate && { lte: endOfDay(new Date(endDate)) }),
+          },
+        }),
+      },
+      include: {
+        parent: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+        subscription: {
+          select: {
+            id: true,
+            subscriptionNumber: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getOrderById(id: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        parent: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+        subscription: {
+          select: {
+            id: true,
+            subscriptionNumber: true,
+          },
+        },
+        transactions: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return order;
+  }
+
+  async exportOrdersCsv(
+    status?: OrderStatus,
+    search?: string,
+    startDate?: string,
+    endDate?: string,
+  ) {
+    const orders = await this.getOrders(status, search, startDate, endDate);
+    const rows: string[] = [
+      'orderId,orderNumber,parentName,parentEmail,subscriptionNumber,status,amount,finalAmount,currency,createdAt,paidAt',
+    ];
+
+    type CsvOrder = {
+      id: string;
+      orderNumber: string;
+      status: string;
+      amount: number;
+      finalAmount: number;
+      currency: string;
+      createdAt: Date | string;
+      paidAt?: Date | string | null;
+      parent?: { fullName?: string; email?: string };
+      subscription?: { subscriptionNumber?: string };
+    };
+
+    for (const order of orders as CsvOrder[]) {
+      rows.push(
+        [
+          order.id,
+          order.orderNumber,
+          order.parent?.fullName || '',
+          order.parent?.email || '',
+          order.subscription?.subscriptionNumber || '',
+          order.status,
+          order.amount,
+          order.finalAmount,
+          order.currency,
+          order.createdAt,
+          order.paidAt || '',
+        ]
+          .map(v => `"${String(v ?? '').replace(/"/g, '""')}"`)
+          .join(','),
+      );
+    }
+
+    return rows.join('\n');
+  }
+
+  async getSubscriptions(
+    status?: SubscriptionStatus,
+    schoolId?: string,
+    search?: string,
+    startDate?: string,
+    endDate?: string,
+  ) {
+    return this.prisma.subscription.findMany({
+      where: {
+        ...(status && { status }),
+        ...(schoolId && { schoolId }),
+        ...(search && {
+          OR: [
+            { subscriptionNumber: { contains: search, mode: 'insensitive' } },
+            { parent: { fullName: { contains: search, mode: 'insensitive' } } },
+            { student: { fullName: { contains: search, mode: 'insensitive' } } },
+          ],
+        }),
+        ...((startDate || endDate) && {
+          createdAt: {
+            ...(startDate && { gte: startOfDay(new Date(startDate)) }),
+            ...(endDate && { lte: endOfDay(new Date(endDate)) }),
+          },
+        }),
+      },
+      include: {
+        parent: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+        student: {
+          select: {
+            id: true,
+            fullName: true,
+            grade: true,
+          },
+        },
+        school: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        mealPlan: {
+          select: {
+            id: true,
+            name: true,
+            pricePerDay: true,
+            currency: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getSubscriptionById(id: string) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id },
+      include: {
+        parent: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+        student: {
+          select: {
+            id: true,
+            fullName: true,
+            grade: true,
+          },
+        },
+        school: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        mealPlan: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            pricePerDay: true,
+            currency: true,
+          },
+        },
+        pauseRequests: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException('Subscription not found');
+    }
+
+    return subscription;
+  }
+
+  async getSubscriptionSchedule(id: string) {
+    await this.getSubscriptionById(id);
+    return this.prisma.subscriptionDay.findMany({
+      where: { subscriptionId: id },
+      orderBy: { scheduledDate: 'asc' },
+    });
+  }
+
+  async cancelSubscription(id: string) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException('Subscription not found');
+    }
+
+    if (subscription.status === SubscriptionStatus.CANCELLED) {
+      throw new BadRequestException('Subscription is already cancelled');
+    }
+
+    if (subscription.status === SubscriptionStatus.COMPLETED) {
+      throw new BadRequestException('Cannot cancel completed subscription');
+    }
+
+    const refundAmount = Math.floor(
+      (subscription.remainingDays / subscription.totalDays) * Number(subscription.totalPrice),
+    );
+
+    const updated = await this.prisma.subscription.update({
+      where: { id },
+      data: {
+        status: SubscriptionStatus.CANCELLED,
+        cancelledAt: new Date(),
+      },
+    });
+
+    return {
+      ...updated,
+      refundAmount,
+      message: 'Subscription cancelled successfully',
+    };
+  }
+
+  async getPauseRequests(
+    status?: PauseRequestStatus,
+    search?: string,
+    startDate?: string,
+    endDate?: string,
+  ) {
+    return this.prisma.pauseRequest.findMany({
+      where: {
+        ...(status && { status }),
+        ...(search && {
+          OR: [
+            { parent: { fullName: { contains: search, mode: 'insensitive' } } },
+            { subscription: { subscriptionNumber: { contains: search, mode: 'insensitive' } } },
+            { subscription: { student: { fullName: { contains: search, mode: 'insensitive' } } } },
+          ],
+        }),
+        ...((startDate || endDate) && {
+          createdAt: {
+            ...(startDate && { gte: startOfDay(new Date(startDate)) }),
+            ...(endDate && { lte: endOfDay(new Date(endDate)) }),
+          },
+        }),
+      },
+      include: {
+        parent: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+        subscription: {
+          select: {
+            id: true,
+            subscriptionNumber: true,
+            student: {
+              select: {
+                fullName: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getPauseRequestById(id: string) {
+    const pauseRequest = await this.prisma.pauseRequest.findUnique({
+      where: { id },
+      include: {
+        parent: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+        subscription: {
+          select: {
+            id: true,
+            subscriptionNumber: true,
+            student: {
+              select: {
+                fullName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!pauseRequest) {
+      throw new NotFoundException('Pause request not found');
+    }
+
+    return pauseRequest;
+  }
+
+  async updatePauseRequestStatus(id: string, status: PauseRequestStatus, reason?: string) {
+    void reason;
+    const pauseRequest = await this.prisma.pauseRequest.findUnique({
+      where: { id },
+    });
+
+    if (!pauseRequest) {
+      throw new NotFoundException('Pause request not found');
+    }
+
+    if (pauseRequest.status !== PauseRequestStatus.PENDING) {
+      throw new BadRequestException('Can only approve/reject pending requests');
+    }
+
+    return this.prisma.pauseRequest.update({
+      where: { id },
+      data: {
+        status,
+        processedAt: status === PauseRequestStatus.REJECTED ? new Date() : undefined,
+      },
+    });
+  }
+
   /**
    * Get sales report
    */
@@ -401,6 +856,41 @@ export class AdminService {
       bySchool,
       orders: orders.slice(0, 50), // Return top 50 orders
     };
+  }
+
+  async exportSalesReportCsv(startDate?: string, endDate?: string, schoolId?: string) {
+    const report = await this.getSalesReport(startDate, endDate, schoolId);
+    const rows: string[] = ['orderId,orderNumber,studentName,school,amount,paidAt'];
+
+    type SalesOrder = {
+      id: string;
+      orderNumber: string;
+      amount: number;
+      paidAt?: Date | string | null;
+      subscription?: {
+        student?: {
+          fullName?: string;
+          school?: { name?: string };
+        };
+      };
+    };
+
+    for (const order of report.orders as SalesOrder[]) {
+      rows.push(
+        [
+          order.id,
+          order.orderNumber,
+          order.subscription?.student?.fullName || '',
+          order.subscription?.student?.school?.name || '',
+          order.amount,
+          order.paidAt || '',
+        ]
+          .map(v => `"${String(v ?? '').replace(/"/g, '""')}"`)
+          .join(','),
+      );
+    }
+
+    return rows.join('\n');
   }
 
   /**

@@ -50,44 +50,44 @@ function App() {
             <Route element={<MainLayout />}>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<DashboardPage />} />
-              
+
               {/* Schools */}
               <Route path="/schools" element={<SchoolsListPage />} />
               <Route path="/schools/create" element={<SchoolCreatePage />} />
               <Route path="/schools/:id/edit" element={<SchoolEditPage />} />
-              
+
               {/* Meal Plans */}
               <Route path="/meal-plans" element={<MealPlansListPage />} />
               <Route path="/meal-plans/create" element={<MealPlanCreatePage />} />
               <Route path="/meal-plans/:id/edit" element={<MealPlanEditPage />} />
               <Route path="/meal-plans/:id/menu" element={<MenuManagementPage />} />
-              
+
               {/* Subscriptions */}
               <Route path="/subscriptions" element={<SubscriptionsListPage />} />
               <Route path="/subscriptions/:id" element={<SubscriptionDetailPage />} />
-              
+
               {/* Orders */}
               <Route path="/orders" element={<OrdersListPage />} />
               <Route path="/orders/:id" element={<OrderDetailPage />} />
-              
+
               {/* Users */}
               <Route path="/users" element={<UsersListPage />} />
               <Route path="/users/:id" element={<UserDetailPage />} />
-              
+
               {/* Pause Requests */}
               <Route path="/pause-requests" element={<PauseRequestsPage />} />
-              
+
               {/* Deliveries */}
               <Route path="/deliveries" element={<DeliveriesPage />} />
-              
+
               {/* Reports */}
               <Route path="/reports/sales" element={<SalesReportPage />} />
               <Route path="/reports/subscriptions" element={<SubscriptionsReportPage />} />
-              
+
               {/* CMS */}
               <Route path="/cms" element={<CMSListPage />} />
               <Route path="/cms/create" element={<CMSEditorPage />} />
-              <Route path="/cms/:id/edit" element={<CMSEditorPage />} />
+              <Route path="/cms/:slug/edit" element={<CMSEditorPage />} />
             </Route>
           </Route>
 

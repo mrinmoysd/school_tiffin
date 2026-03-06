@@ -1,4 +1,16 @@
-import { Controller, Get, Param, ParseUUIDPipe, Patch, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  Res,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -7,7 +19,13 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { DeliveryStatus } from '@prisma/client';
+import {
+  DeliveryStatus,
+  OrderStatus,
+  PauseRequestStatus,
+  SubscriptionStatus,
+} from '@prisma/client';
+import { Response } from 'express';
 import { Roles, UserRole } from '../common/decorators';
 import { AdminService } from './admin.service';
 
@@ -50,6 +68,11 @@ export class AdminController {
   @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
   async getDashboard() {
     return this.adminService.getDashboard();
+  }
+
+  @Get('recent-activity')
+  async getRecentActivity() {
+    return this.adminService.getRecentActivity();
   }
 
   /**
@@ -113,6 +136,14 @@ export class AdminController {
     return this.adminService.getDeliveries(schoolId, date);
   }
 
+  @Post('deliveries/mark-delivered')
+  async markDeliveriesDelivered(@Body('deliveryIds') deliveryIds: string[]) {
+    if (!Array.isArray(deliveryIds) || deliveryIds.length === 0) {
+      throw new BadRequestException('deliveryIds must be a non-empty array');
+    }
+    return this.adminService.markDeliveriesDelivered(deliveryIds);
+  }
+
   /**
    * Update delivery status
    */
@@ -137,6 +168,100 @@ export class AdminController {
     @Query('status') status: DeliveryStatus,
   ) {
     return this.adminService.updateDeliveryStatus(id, status);
+  }
+
+  @Get('deliveries/export')
+  async exportDeliveries(
+    @Query('schoolId', new ParseUUIDPipe({ optional: true })) schoolId: string | undefined,
+    @Query('date') date: string | undefined,
+    @Query('format') format: 'csv' | 'pdf' = 'csv',
+    @Res() res: Response,
+  ) {
+    const csv = await this.adminService.exportDeliveriesCsv(schoolId, date);
+    const ext = format === 'pdf' ? 'pdf' : 'csv';
+    const mime = format === 'pdf' ? 'application/pdf' : 'text/csv';
+    res.setHeader('Content-Type', mime);
+    res.setHeader('Content-Disposition', `attachment; filename="deliveries-export.${ext}"`);
+    return res.status(200).send(csv);
+  }
+
+  @Get('orders')
+  async getOrders(
+    @Query('status') status?: OrderStatus,
+    @Query('search') search?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.adminService.getOrders(status, search, startDate, endDate);
+  }
+
+  @Get('orders/:id')
+  async getOrderById(@Param('id', ParseUUIDPipe) id: string) {
+    return this.adminService.getOrderById(id);
+  }
+
+  @Get('orders/export')
+  async exportOrders(
+    @Query('status') status: OrderStatus | undefined,
+    @Query('search') search: string | undefined,
+    @Query('startDate') startDate: string | undefined,
+    @Query('endDate') endDate: string | undefined,
+    @Res() res: Response,
+  ) {
+    const csv = await this.adminService.exportOrdersCsv(status, search, startDate, endDate);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="orders-export.csv"');
+    return res.status(200).send(csv);
+  }
+
+  @Get('subscriptions')
+  async getSubscriptions(
+    @Query('status') status?: SubscriptionStatus,
+    @Query('schoolId', new ParseUUIDPipe({ optional: true })) schoolId?: string,
+    @Query('search') search?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.adminService.getSubscriptions(status, schoolId, search, startDate, endDate);
+  }
+
+  @Get('subscriptions/:id')
+  async getSubscriptionById(@Param('id', ParseUUIDPipe) id: string) {
+    return this.adminService.getSubscriptionById(id);
+  }
+
+  @Get('subscriptions/:id/schedule')
+  async getSubscriptionSchedule(@Param('id', ParseUUIDPipe) id: string) {
+    return this.adminService.getSubscriptionSchedule(id);
+  }
+
+  @Delete('subscriptions/:id')
+  async cancelSubscription(@Param('id', ParseUUIDPipe) id: string) {
+    return this.adminService.cancelSubscription(id);
+  }
+
+  @Get('pause-requests')
+  async getPauseRequests(
+    @Query('status') status?: PauseRequestStatus,
+    @Query('search') search?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.adminService.getPauseRequests(status, search, startDate, endDate);
+  }
+
+  @Get('pause-requests/:id')
+  async getPauseRequestById(@Param('id', ParseUUIDPipe) id: string) {
+    return this.adminService.getPauseRequestById(id);
+  }
+
+  @Patch('pause-requests/:id/status')
+  async updatePauseRequestStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('status') status: PauseRequestStatus,
+    @Body('reason') reason?: string,
+  ) {
+    return this.adminService.updatePauseRequestStatus(id, status, reason);
   }
 
   /**
@@ -336,6 +461,19 @@ export class AdminController {
     @Query('schoolId', new ParseUUIDPipe({ optional: true })) schoolId?: string,
   ) {
     return this.adminService.getSalesReport(startDate, endDate, schoolId);
+  }
+
+  @Get('reports/sales/export')
+  async exportSalesReport(
+    @Query('startDate') startDate: string | undefined,
+    @Query('endDate') endDate: string | undefined,
+    @Query('schoolId', new ParseUUIDPipe({ optional: true })) schoolId: string | undefined,
+    @Res() res: Response,
+  ) {
+    const csv = await this.adminService.exportSalesReportCsv(startDate, endDate, schoolId);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="sales-report.csv"');
+    return res.status(200).send(csv);
   }
 
   /**

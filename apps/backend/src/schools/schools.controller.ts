@@ -1,5 +1,22 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Public, Roles, UserRole } from '../common/decorators';
 import { CreateSchoolDto, UpdateSchoolDto } from './dto';
 import { SchoolsService } from './schools.service';
@@ -38,7 +55,8 @@ export class SchoolsController {
   @Public()
   @ApiOperation({
     summary: 'Get all schools',
-    description: 'Public endpoint: List all schools with optional city filter. Results are cached for 5 minutes.',
+    description:
+      'Public endpoint: List all schools with optional city filter. Results are cached for 5 minutes.',
   })
   @ApiQuery({
     name: 'city',
@@ -70,8 +88,20 @@ export class SchoolsController {
       },
     },
   })
-  async findAll(@Query('city') city?: string) {
-    return this.schoolsService.findAll(city);
+  async findAll(
+    @Query('city') city?: string,
+    @Query('search') search?: string,
+    @Query('isServiceAvailable') isServiceAvailableRaw?: string,
+  ) {
+    const isServiceAvailable =
+      typeof isServiceAvailableRaw === 'string'
+        ? isServiceAvailableRaw.toLowerCase() === 'true'
+          ? true
+          : isServiceAvailableRaw.toLowerCase() === 'false'
+            ? false
+            : undefined
+        : undefined;
+    return this.schoolsService.findAll(city, search, isServiceAvailable);
   }
 
   /**
@@ -81,7 +111,8 @@ export class SchoolsController {
   @Public()
   @ApiOperation({
     summary: 'Get school by ID',
-    description: 'Public endpoint: Get detailed information about a specific school including available meal plans.',
+    description:
+      'Public endpoint: Get detailed information about a specific school including available meal plans.',
   })
   @ApiParam({
     name: 'id',

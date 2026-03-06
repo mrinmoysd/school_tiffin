@@ -9,21 +9,21 @@ export const orderService = {
     if (filters?.search) params.append('search', filters.search);
     if (filters?.startDate) params.append('startDate', filters.startDate);
     if (filters?.endDate) params.append('endDate', filters.endDate);
-    
-    const response = await api.get<ApiResponse<Order[]>>(`/orders?${params.toString()}`);
+
+    const response = await api.get<ApiResponse<Order[]>>(`/admin/orders?${params.toString()}`);
     return response.data.data;
   },
 
   // Get order by ID
   getById: async (id: string): Promise<Order> => {
-    const response = await api.get<ApiResponse<Order>>(`/orders/${id}`);
+    const response = await api.get<ApiResponse<Order>>(`/admin/orders/${id}`);
     return response.data.data;
   },
 
   // Get order transactions
   getTransactions: async (orderId: string): Promise<PaymentTransaction[]> => {
-    const response = await api.get<ApiResponse<PaymentTransaction[]>>(`/orders/${orderId}/transactions`);
-    return response.data.data;
+    const response = await api.get<ApiResponse<Order>>(`/admin/orders/${orderId}`);
+    return response.data.data.transactions || [];
   },
 
   // Export orders to CSV
@@ -32,8 +32,8 @@ export const orderService = {
     if (filters?.status) params.append('status', filters.status);
     if (filters?.startDate) params.append('startDate', filters.startDate);
     if (filters?.endDate) params.append('endDate', filters.endDate);
-    
-    const response = await api.get(`/orders/export?${params.toString()}`, {
+
+    const response = await api.get(`/admin/orders/export?${params.toString()}`, {
       responseType: 'blob',
     });
     return response.data;
