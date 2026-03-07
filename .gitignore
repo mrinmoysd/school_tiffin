@@ -65,3 +65,4 @@ tmp/
 
 # OS
 Thumbs.db
+eslint.config.mjs
