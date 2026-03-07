@@ -1,20 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  Button,
-  Card,
-  Typography,
-  Descriptions,
-  Tag,
-  Table,
-  Spin,
-  Timeline,
-} from 'antd';
-import {
-  ArrowLeftOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  CloseCircleOutlined,
-} from '@ant-design/icons';
+import { Button, Card, Typography, Descriptions, Tag, Table, Spin, Timeline } from 'antd';
+import { ArrowLeftOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '@/services';
 import { OrderStatus, TransactionStatus } from '@/types';
@@ -93,8 +79,7 @@ const OrderDetailPage = () => {
       title: 'Amount',
       dataIndex: 'amount',
       key: 'amount',
-      render: (amount: number, record: { currency: string }) =>
-        `₹${(amount / 100).toLocaleString()}`,
+      render: (amount: number) => `₹${(amount / 100).toLocaleString()}`,
     },
     {
       title: 'Status',
@@ -116,11 +101,7 @@ const OrderDetailPage = () => {
     <div>
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Button
-          type="text"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/orders')}
-        />
+        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/orders')} />
         <div>
           <div className="flex items-center gap-3">
             <Title level={2} className="!mb-0">

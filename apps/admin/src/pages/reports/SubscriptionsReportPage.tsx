@@ -1,17 +1,8 @@
 import { useState } from 'react';
-import {
-  Typography,
-  Card,
-  DatePicker,
-  Select,
-  Table,
-  Spin,
-  Row,
-  Col,
-} from 'antd';
+import { Typography, Card, DatePicker, Select, Table, Spin, Row, Col } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { adminService, schoolService } from '@/services';
-import { ReportFilters, SchoolSubscriptionItem, SubscriptionTrendItem } from '@/types';
+import { ReportFilters, SchoolSubscriptionItem } from '@/types';
 import {
   LineChart,
   Line,
@@ -63,7 +54,8 @@ const SubscriptionsReportPage = () => {
       title: 'Active',
       dataIndex: 'activeCount',
       key: 'activeCount',
-      sorter: (a: SchoolSubscriptionItem, b: SchoolSubscriptionItem) => a.activeCount - b.activeCount,
+      sorter: (a: SchoolSubscriptionItem, b: SchoolSubscriptionItem) =>
+        a.activeCount - b.activeCount,
     },
     {
       title: 'Total',
@@ -82,22 +74,26 @@ const SubscriptionsReportPage = () => {
   ];
 
   // Format chart data
-  const trendData = report?.trends.map((item) => ({
-    ...item,
-    date: dayjs(item.date).format('MMM DD'),
-  })) || [];
+  const trendData =
+    report?.trends.map(item => ({
+      ...item,
+      date: dayjs(item.date).format('MMM DD'),
+    })) || [];
 
   // Pie chart data
-  const pieData = report?.activeBySchool.map((item) => ({
-    name: item.schoolName,
-    value: item.activeCount,
-  })) || [];
+  const pieData =
+    report?.activeBySchool.map(item => ({
+      name: item.schoolName,
+      value: item.activeCount,
+    })) || [];
 
   return (
     <div>
       {/* Header */}
       <div className="mb-6">
-        <Title level={2} className="!mb-1">Subscriptions Report</Title>
+        <Title level={2} className="!mb-1">
+          Subscriptions Report
+        </Title>
         <Text type="secondary">Subscription trends and analytics</Text>
       </div>
 
@@ -105,10 +101,12 @@ const SubscriptionsReportPage = () => {
       <Card className="mb-6">
         <div className="flex flex-wrap gap-4">
           <div>
-            <Text type="secondary" className="mr-2">Period:</Text>
+            <Text type="secondary" className="mr-2">
+              Period:
+            </Text>
             <RangePicker
               value={[dayjs(filters.startDate), dayjs(filters.endDate)]}
-              onChange={(dates) => {
+              onChange={dates => {
                 if (dates) {
                   setFilters({
                     ...filters,
@@ -120,16 +118,18 @@ const SubscriptionsReportPage = () => {
             />
           </div>
           <div>
-            <Text type="secondary" className="mr-2">School:</Text>
+            <Text type="secondary" className="mr-2">
+              School:
+            </Text>
             <Select
               placeholder="All Schools"
               value={filters.schoolId}
-              onChange={(value) => setFilters({ ...filters, schoolId: value })}
+              onChange={value => setFilters({ ...filters, schoolId: value })}
               style={{ width: 200 }}
               allowClear
               showSearch
               optionFilterProp="label"
-              options={schools?.map((s) => ({ label: s.name, value: s.id }))}
+              options={schools?.map(s => ({ label: s.name, value: s.id }))}
             />
           </div>
         </div>

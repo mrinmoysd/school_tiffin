@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import { Row, Col, Card, Statistic, Table, Typography, Skeleton, Tag, Space, Button } from 'antd';
 import {
   CalendarOutlined,
@@ -7,7 +8,6 @@ import {
   PauseCircleOutlined,
   BankOutlined,
   UserOutlined,
-  TeamOutlined,
   CheckCircleOutlined,
   ArrowRightOutlined,
   ReloadOutlined,
@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import { adminService } from '@/services';
 import { useAuthStore } from '@/stores/authStore';
 import { SubscriptionStatus, OrderStatus, RecentActivity } from '@/types';
+import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -24,7 +25,7 @@ const { Title, Text } = Typography;
 interface StatsCardProps {
   title: string;
   value: number | string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   gradient: string;
   suffix?: string;
   loading?: boolean;
@@ -54,7 +55,11 @@ const DashboardPage = () => {
   const { accessToken } = useAuthStore();
 
   // Fetch dashboard stats - only when we have a token
-  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery({
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    refetch: refetchStats,
+  } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: adminService.getDashboard,
     refetchInterval: 5 * 60 * 1000, // Refresh every 5 minutes
@@ -62,10 +67,20 @@ const DashboardPage = () => {
     enabled: !!accessToken, // Only fetch if we have a token
   });
 
-  // Note: Recent activity endpoint doesn't exist in backend yet
-  // Using empty data for now - can be implemented later
-  const activityLoading = false;
-  const activity: RecentActivity | undefined = undefined;
+  const {
+    data: activity,
+    isLoading: activityLoading,
+    refetch: refetchActivity,
+  } = useQuery({
+    queryKey: ['dashboardRecentActivity'],
+    queryFn: adminService.getRecentActivity,
+    refetchInterval: 5 * 60 * 1000,
+    retry: 1,
+    enabled: !!accessToken,
+  });
+
+  type RecentSubscriptionRow = RecentActivity['recentSubscriptions'][number];
+  type RecentOrderRow = RecentActivity['recentOrders'][number];
 
   // Subscription status tag
   const getStatusTag = (status: SubscriptionStatus) => {
@@ -94,7 +109,7 @@ const DashboardPage = () => {
   };
 
   // Recent subscriptions columns
-  const subscriptionColumns = [
+  const subscriptionColumns: ColumnsType<RecentSubscriptionRow> = [
     {
       title: 'Subscription',
       dataIndex: 'subscriptionNumber',
@@ -127,7 +142,7 @@ const DashboardPage = () => {
   ];
 
   // Recent orders columns
-  const orderColumns = [
+  const orderColumns: ColumnsType<RecentOrderRow> = [
     {
       title: 'Order',
       dataIndex: 'orderNumber',
@@ -138,8 +153,7 @@ const DashboardPage = () => {
       title: 'Amount',
       dataIndex: 'finalAmount',
       key: 'finalAmount',
-      render: (amount: number, record: { currency: string }) => 
-        `₹${(amount / 100).toLocaleString()}`,
+      render: (amount: number) => `₹${(amount / 100).toLocaleString()}`,
     },
     {
       title: 'Status',
@@ -160,10 +174,18 @@ const DashboardPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <Title level={2} className="!mb-1">Dashboard</Title>
+          <Title level={2} className="!mb-1">
+            Dashboard
+          </Title>
           <Text type="secondary">Welcome back! Here's what's happening today.</Text>
         </div>
-        <Button icon={<ReloadOutlined />} onClick={() => refetchStats()}>
+        <Button
+          icon={<ReloadOutlined />}
+          onClick={() => {
+            refetchStats();
+            refetchActivity();
+          }}
+        >
           Refresh
         </Button>
       </div>
@@ -265,7 +287,7 @@ const DashboardPage = () => {
               pagination={false}
               loading={activityLoading}
               size="small"
-              onRow={(record) => ({
+              onRow={record => ({
                 onClick: () => navigate(`/subscriptions/${record.id}`),
                 className: 'cursor-pointer hover:bg-gray-50',
               })}
@@ -293,7 +315,7 @@ const DashboardPage = () => {
               pagination={false}
               loading={activityLoading}
               size="small"
-              onRow={(record) => ({
+              onRow={record => ({
                 onClick: () => navigate(`/orders/${record.id}`),
                 className: 'cursor-pointer hover:bg-gray-50',
               })}

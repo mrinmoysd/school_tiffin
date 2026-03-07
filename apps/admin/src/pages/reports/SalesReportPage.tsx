@@ -12,10 +12,15 @@ import {
   Spin,
   message,
 } from 'antd';
-import { DownloadOutlined, DollarOutlined, ShoppingCartOutlined, PercentageOutlined } from '@ant-design/icons';
+import {
+  DownloadOutlined,
+  DollarOutlined,
+  ShoppingCartOutlined,
+  PercentageOutlined,
+} from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { adminService, schoolService } from '@/services';
-import { ReportFilters, SchoolRevenueItem, DailyRevenueItem } from '@/types';
+import { ReportFilters, SchoolRevenueItem } from '@/types';
 import {
   LineChart,
   Line,
@@ -86,31 +91,35 @@ const SalesReportPage = () => {
       title: 'Subscriptions',
       dataIndex: 'subscriptionCount',
       key: 'subscriptionCount',
-      sorter: (a: SchoolRevenueItem, b: SchoolRevenueItem) => a.subscriptionCount - b.subscriptionCount,
+      sorter: (a: SchoolRevenueItem, b: SchoolRevenueItem) =>
+        a.subscriptionCount - b.subscriptionCount,
     },
     {
       title: 'Avg per Subscription',
       key: 'avg',
       render: (_: unknown, record: SchoolRevenueItem) =>
         record.subscriptionCount > 0
-          ? `₹${((record.revenue / record.subscriptionCount) / 100).toFixed(2)}`
+          ? `₹${(record.revenue / record.subscriptionCount / 100).toFixed(2)}`
           : '-',
     },
   ];
 
   // Format chart data
-  const chartData = report?.dailyRevenue.map((item) => ({
-    ...item,
-    date: dayjs(item.date).format('MMM DD'),
-    revenue: item.revenue / 100,
-  })) || [];
+  const chartData =
+    report?.dailyRevenue.map(item => ({
+      ...item,
+      date: dayjs(item.date).format('MMM DD'),
+      revenue: item.revenue / 100,
+    })) || [];
 
   return (
     <div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <Title level={2} className="!mb-1">Sales Report</Title>
+          <Title level={2} className="!mb-1">
+            Sales Report
+          </Title>
           <Text type="secondary">Revenue and subscription analytics</Text>
         </div>
         <Button icon={<DownloadOutlined />} onClick={handleExport}>
@@ -122,10 +131,12 @@ const SalesReportPage = () => {
       <Card className="mb-6">
         <div className="flex flex-wrap gap-4">
           <div>
-            <Text type="secondary" className="mr-2">Period:</Text>
+            <Text type="secondary" className="mr-2">
+              Period:
+            </Text>
             <RangePicker
               value={[dayjs(filters.startDate), dayjs(filters.endDate)]}
-              onChange={(dates) => {
+              onChange={dates => {
                 if (dates) {
                   setFilters({
                     ...filters,
@@ -137,16 +148,18 @@ const SalesReportPage = () => {
             />
           </div>
           <div>
-            <Text type="secondary" className="mr-2">School:</Text>
+            <Text type="secondary" className="mr-2">
+              School:
+            </Text>
             <Select
               placeholder="All Schools"
               value={filters.schoolId}
-              onChange={(value) => setFilters({ ...filters, schoolId: value })}
+              onChange={value => setFilters({ ...filters, schoolId: value })}
               style={{ width: 200 }}
               allowClear
               showSearch
               optionFilterProp="label"
-              options={schools?.map((s) => ({ label: s.name, value: s.id }))}
+              options={schools?.map(s => ({ label: s.name, value: s.id }))}
             />
           </div>
         </div>
@@ -167,7 +180,7 @@ const SalesReportPage = () => {
                   value={(report?.totalRevenue || 0) / 100}
                   prefix={<DollarOutlined />}
                   precision={2}
-                  formatter={(value) => `₹${Number(value).toLocaleString()}`}
+                  formatter={value => `₹${Number(value).toLocaleString()}`}
                 />
               </Card>
             </Col>
@@ -187,7 +200,7 @@ const SalesReportPage = () => {
                   value={(report?.averageOrderValue || 0) / 100}
                   prefix={<PercentageOutlined />}
                   precision={2}
-                  formatter={(value) => `₹${Number(value).toLocaleString()}`}
+                  formatter={value => `₹${Number(value).toLocaleString()}`}
                 />
               </Card>
             </Col>
@@ -232,7 +245,7 @@ const SalesReportPage = () => {
                 <div style={{ height: 300 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
-                      data={(report?.schoolBreakdown || []).map((item) => ({
+                      data={(report?.schoolBreakdown || []).map(item => ({
                         ...item,
                         revenue: item.revenue / 100,
                       }))}

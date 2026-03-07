@@ -1,24 +1,11 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  Button,
-  Card,
-  Typography,
-  Descriptions,
-  Tag,
-  Table,
-  Spin,
-  Tabs,
-  Switch,
-  message,
-  Avatar,
-} from 'antd';
+import { Button, Card, Typography, Tag, Table, Spin, Tabs, Switch, message, Avatar } from 'antd';
 import {
   ArrowLeftOutlined,
   UserOutlined,
   MailOutlined,
   PhoneOutlined,
   CalendarOutlined,
-  BookOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -185,9 +172,7 @@ const UserDetailPage = () => {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (status: OrderStatus) => (
-        <Tag color={orderStatusColors[status]}>{status}</Tag>
-      ),
+      render: (status: OrderStatus) => <Tag color={orderStatusColors[status]}>{status}</Tag>,
     },
     {
       title: 'Date',
@@ -255,13 +240,11 @@ const UserDetailPage = () => {
     <div>
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Button
-          type="text"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/users')}
-        />
+        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/users')} />
         <div>
-          <Title level={2} className="!mb-0">{user.fullName}</Title>
+          <Title level={2} className="!mb-0">
+            {user.fullName}
+          </Title>
           <Text type="secondary">User Profile</Text>
         </div>
       </div>
@@ -270,12 +253,10 @@ const UserDetailPage = () => {
         {/* Profile Card */}
         <Card>
           <div className="text-center mb-6">
-            <Avatar
-              size={80}
-              icon={<UserOutlined />}
-              style={{ backgroundColor: '#16a34a' }}
-            />
-            <Title level={4} className="!mt-4 !mb-1">{user.fullName}</Title>
+            <Avatar size={80} icon={<UserOutlined />} style={{ backgroundColor: '#16a34a' }} />
+            <Title level={4} className="!mt-4 !mb-1">
+              {user.fullName}
+            </Title>
             <Tag color={roleColors[user.role]}>{user.role}</Tag>
           </div>
 
@@ -287,7 +268,9 @@ const UserDetailPage = () => {
                 <div>{user.email}</div>
               </div>
               {user.emailVerified && (
-                <Tag color="green" className="ml-auto text-xs">Verified</Tag>
+                <Tag color="green" className="ml-auto text-xs">
+                  Verified
+                </Tag>
               )}
             </div>
             {user.phoneNumber && (
@@ -313,7 +296,7 @@ const UserDetailPage = () => {
               <Text>Account Active</Text>
               <Switch
                 checked={user.isActive}
-                onChange={(checked) => toggleActiveMutation.mutate(checked)}
+                onChange={checked => toggleActiveMutation.mutate(checked)}
                 loading={toggleActiveMutation.isPending}
               />
             </div>
