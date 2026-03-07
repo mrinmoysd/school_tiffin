@@ -1,16 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Table,
-  Input,
-  Select,
-  Typography,
-  Card,
-  Tag,
-  DatePicker,
-  Space,
-  Button,
-} from 'antd';
+import { Table, Input, Select, Typography, Card, Tag, DatePicker, Button } from 'antd';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { subscriptionService, schoolService } from '@/services';
@@ -82,7 +72,10 @@ const SubscriptionsListPage = () => {
       key: 'duration',
       render: (_, record) => (
         <div className="text-xs">
-          <div>{dayjs(record.startDate).format('MMM DD')} - {dayjs(record.endDate).format('MMM DD, YYYY')}</div>
+          <div>
+            {dayjs(record.startDate).format('MMM DD')} -{' '}
+            {dayjs(record.endDate).format('MMM DD, YYYY')}
+          </div>
         </div>
       ),
     },
@@ -112,9 +105,7 @@ const SubscriptionsListPage = () => {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (status: SubscriptionStatus) => (
-        <Tag color={statusColors[status]}>{status}</Tag>
-      ),
+      render: (status: SubscriptionStatus) => <Tag color={statusColors[status]}>{status}</Tag>,
     },
     {
       title: 'Actions',
@@ -135,7 +126,9 @@ const SubscriptionsListPage = () => {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <Title level={2} className="!mb-1">Subscriptions</Title>
+        <Title level={2} className="!mb-1">
+          Subscriptions
+        </Title>
         <Text type="secondary">View and manage all subscriptions</Text>
       </div>
 
@@ -146,17 +139,17 @@ const SubscriptionsListPage = () => {
             placeholder="Search by subscription #..."
             prefix={<SearchOutlined />}
             value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+            onChange={e => setFilters({ ...filters, search: e.target.value })}
             style={{ width: 250 }}
             allowClear
           />
           <Select
             placeholder="Filter by status"
             value={filters.status}
-            onChange={(value) => setFilters({ ...filters, status: value })}
+            onChange={value => setFilters({ ...filters, status: value })}
             style={{ width: 180 }}
             allowClear
-            options={Object.values(SubscriptionStatus).map((s) => ({
+            options={Object.values(SubscriptionStatus).map(s => ({
               label: s,
               value: s,
             }))}
@@ -164,15 +157,15 @@ const SubscriptionsListPage = () => {
           <Select
             placeholder="Filter by school"
             value={filters.schoolId}
-            onChange={(value) => setFilters({ ...filters, schoolId: value })}
+            onChange={value => setFilters({ ...filters, schoolId: value })}
             style={{ width: 200 }}
             allowClear
             showSearch
             optionFilterProp="label"
-            options={schools?.map((s) => ({ label: s.name, value: s.id }))}
+            options={schools?.map(s => ({ label: s.name, value: s.id }))}
           />
           <RangePicker
-            onChange={(dates) => {
+            onChange={dates => {
               if (dates) {
                 setFilters({
                   ...filters,
@@ -198,9 +191,9 @@ const SubscriptionsListPage = () => {
             total: subscriptions?.length,
             pageSize: 10,
             showSizeChanger: true,
-            showTotal: (total) => `Total ${total} subscriptions`,
+            showTotal: total => `Total ${total} subscriptions`,
           }}
-          onRow={(record) => ({
+          onRow={record => ({
             onClick: () => navigate(`/subscriptions/${record.id}`),
             className: 'cursor-pointer hover:bg-gray-50',
           })}
