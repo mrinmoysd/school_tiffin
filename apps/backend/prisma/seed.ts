@@ -10,6 +10,7 @@ import {
   UserRole,
 } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import process from 'node:process';
 
 const prisma = new PrismaClient();
 
