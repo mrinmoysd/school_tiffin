@@ -502,20 +502,7 @@ export class AdminService {
       'orderId,orderNumber,parentName,parentEmail,subscriptionNumber,status,amount,finalAmount,currency,createdAt,paidAt',
     ];
 
-    type CsvOrder = {
-      id: string;
-      orderNumber: string;
-      status: string;
-      amount: number;
-      finalAmount: number;
-      currency: string;
-      createdAt: Date | string;
-      paidAt?: Date | string | null;
-      parent?: { fullName?: string; email?: string };
-      subscription?: { subscriptionNumber?: string };
-    };
-
-    for (const order of orders as CsvOrder[]) {
+    for (const order of orders) {
       rows.push(
         [
           order.id,
@@ -524,8 +511,8 @@ export class AdminService {
           order.parent?.email || '',
           order.subscription?.subscriptionNumber || '',
           order.status,
-          order.amount,
-          order.finalAmount,
+          Number(order.amount),
+          Number(order.finalAmount),
           order.currency,
           order.createdAt,
           order.paidAt || '',
@@ -862,27 +849,14 @@ export class AdminService {
     const report = await this.getSalesReport(startDate, endDate, schoolId);
     const rows: string[] = ['orderId,orderNumber,studentName,school,amount,paidAt'];
 
-    type SalesOrder = {
-      id: string;
-      orderNumber: string;
-      amount: number;
-      paidAt?: Date | string | null;
-      subscription?: {
-        student?: {
-          fullName?: string;
-          school?: { name?: string };
-        };
-      };
-    };
-
-    for (const order of report.orders as SalesOrder[]) {
+    for (const order of report.orders) {
       rows.push(
         [
           order.id,
           order.orderNumber,
           order.subscription?.student?.fullName || '',
           order.subscription?.student?.school?.name || '',
-          order.amount,
+          Number(order.amount),
           order.paidAt || '',
         ]
           .map(v => `"${String(v ?? '').replace(/"/g, '""')}"`)
