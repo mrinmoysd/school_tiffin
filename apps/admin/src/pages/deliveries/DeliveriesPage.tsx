@@ -1,16 +1,5 @@
 import { useState } from 'react';
-import {
-  Table,
-  Select,
-  Typography,
-  Card,
-  Tag,
-  DatePicker,
-  Button,
-  Space,
-  message,
-  Checkbox,
-} from 'antd';
+import { Table, Select, Typography, Card, Tag, DatePicker, Button, Space, message } from 'antd';
 import { DownloadOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminService, schoolService } from '@/services';
@@ -99,9 +88,7 @@ const DeliveriesPage = () => {
       render: (name: string, record) => (
         <div>
           <Text strong>{name}</Text>
-          {record.grade && (
-            <div className="text-xs text-gray-500">Grade: {record.grade}</div>
-          )}
+          {record.grade && <div className="text-xs text-gray-500">Grade: {record.grade}</div>}
         </div>
       ),
     },
@@ -133,9 +120,7 @@ const DeliveriesPage = () => {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (status: DeliveryStatus) => (
-        <Tag color={statusColors[status]}>{status}</Tag>
-      ),
+      render: (status: DeliveryStatus) => <Tag color={statusColors[status]}>{status}</Tag>,
     },
     {
       title: 'Notes',
@@ -165,15 +150,14 @@ const DeliveriesPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <Title level={2} className="!mb-1">Deliveries</Title>
+          <Title level={2} className="!mb-1">
+            Deliveries
+          </Title>
           <Text type="secondary">Manage daily deliveries</Text>
         </div>
         <Space>
           <Button icon={<DownloadOutlined />} onClick={() => handleExport('csv')}>
             Export CSV
-          </Button>
-          <Button icon={<DownloadOutlined />} onClick={() => handleExport('pdf')}>
-            Export PDF
           </Button>
         </Space>
       </div>
@@ -182,15 +166,19 @@ const DeliveriesPage = () => {
       <Card className="mb-4">
         <div className="flex flex-wrap gap-4 items-center">
           <div>
-            <Text type="secondary" className="mr-2">Date:</Text>
+            <Text type="secondary" className="mr-2">
+              Date:
+            </Text>
             <DatePicker
               value={selectedDate}
-              onChange={(date) => date && setSelectedDate(date)}
+              onChange={date => date && setSelectedDate(date)}
               allowClear={false}
             />
           </div>
           <div>
-            <Text type="secondary" className="mr-2">School:</Text>
+            <Text type="secondary" className="mr-2">
+              School:
+            </Text>
             <Select
               placeholder="All Schools"
               value={selectedSchool}
@@ -199,7 +187,7 @@ const DeliveriesPage = () => {
               allowClear
               showSearch
               optionFilterProp="label"
-              options={schools?.map((s) => ({ label: s.name, value: s.id }))}
+              options={schools?.map(s => ({ label: s.name, value: s.id }))}
             />
           </div>
           <div className="ml-auto flex gap-4">
@@ -248,7 +236,7 @@ const DeliveriesPage = () => {
             total: deliveries?.length,
             pageSize: 20,
             showSizeChanger: true,
-            showTotal: (total) => `Total ${total} deliveries`,
+            showTotal: total => `Total ${total} deliveries`,
           }}
         />
       </Card>

@@ -33,8 +33,10 @@ export class SchoolsService {
   /**
    * Get all schools with caching and filters
    */
-  async findAll(city?: string) {
-    const cacheKey = city ? `${this.CACHE_KEY_ALL}:city:${city}` : this.CACHE_KEY_ALL;
+  async findAll(city?: string, search?: string, isServiceAvailable?: boolean) {
+    const cacheKey = `${this.CACHE_KEY_ALL}:city:${city || ''}:search:${search || ''}:service:${
+      isServiceAvailable === undefined ? 'any' : isServiceAvailable
+    }`;
 
     // Try to get from cache
     const cached = await this.cacheManager.get(cacheKey);
@@ -46,6 +48,14 @@ export class SchoolsService {
     const schools = await this.prisma.school.findMany({
       where: {
         ...(city && { city }),
+        ...(typeof isServiceAvailable === 'boolean' && { isServiceAvailable }),
+        ...(search && {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { code: { contains: search, mode: 'insensitive' } },
+            { city: { contains: search, mode: 'insensitive' } },
+          ],
+        }),
         deletedAt: null,
       },
       select: {

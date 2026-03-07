@@ -8,7 +8,6 @@ import {
   Table,
   Spin,
   Tabs,
-  Timeline,
   Badge,
   Modal,
   message,
@@ -19,13 +18,12 @@ import {
   UserOutlined,
   BankOutlined,
   CoffeeOutlined,
-  DollarOutlined,
   PauseCircleOutlined,
   CloseCircleOutlined,
   ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { subscriptionService, pauseRequestService } from '@/services';
+import { subscriptionService } from '@/services';
 import { SubscriptionStatus, DeliveryStatus, PauseRequestStatus } from '@/types';
 import dayjs from 'dayjs';
 
@@ -53,7 +51,7 @@ const SubscriptionDetailPage = () => {
 
   // Cancel mutation
   const cancelMutation = useMutation({
-    mutationFn: (reason?: string) => subscriptionService.cancel(id!, reason),
+    mutationFn: () => subscriptionService.cancel(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscription', id] });
       message.success('Subscription cancelled successfully');
@@ -131,15 +129,13 @@ const SubscriptionDetailPage = () => {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (status: DeliveryStatus) => (
-        <Tag color={deliveryStatusColors[status]}>{status}</Tag>
-      ),
+      render: (status: DeliveryStatus) => <Tag color={deliveryStatusColors[status]}>{status}</Tag>,
     },
     {
       title: 'Confirmed At',
       dataIndex: 'deliveryConfirmedAt',
       key: 'deliveryConfirmedAt',
-      render: (date: string) => date ? dayjs(date).format('MMM DD, HH:mm') : '-',
+      render: (date: string) => (date ? dayjs(date).format('MMM DD, HH:mm') : '-'),
     },
     {
       title: 'Notes',
@@ -156,7 +152,8 @@ const SubscriptionDetailPage = () => {
       key: 'period',
       render: (_: unknown, record: { startDate: string; endDate: string }) => (
         <span>
-          {dayjs(record.startDate).format('MMM DD')} - {dayjs(record.endDate).format('MMM DD, YYYY')}
+          {dayjs(record.startDate).format('MMM DD')} -{' '}
+          {dayjs(record.endDate).format('MMM DD, YYYY')}
         </span>
       ),
     },
@@ -176,9 +173,7 @@ const SubscriptionDetailPage = () => {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (status: PauseRequestStatus) => (
-        <Tag color={pauseStatusColors[status]}>{status}</Tag>
-      ),
+      render: (status: PauseRequestStatus) => <Tag color={pauseStatusColors[status]}>{status}</Tag>,
     },
     {
       title: 'Requested',
@@ -273,7 +268,9 @@ const SubscriptionDetailPage = () => {
               <UserOutlined className="text-blue-600" />
             </div>
             <div>
-              <Text type="secondary" className="text-xs">Parent</Text>
+              <Text type="secondary" className="text-xs">
+                Parent
+              </Text>
               <div className="font-medium">{subscription.parent?.fullName}</div>
             </div>
           </div>
@@ -284,7 +281,9 @@ const SubscriptionDetailPage = () => {
               <UserOutlined className="text-green-600" />
             </div>
             <div>
-              <Text type="secondary" className="text-xs">Student</Text>
+              <Text type="secondary" className="text-xs">
+                Student
+              </Text>
               <div className="font-medium">{subscription.student?.fullName}</div>
             </div>
           </div>
@@ -295,7 +294,9 @@ const SubscriptionDetailPage = () => {
               <BankOutlined className="text-purple-600" />
             </div>
             <div>
-              <Text type="secondary" className="text-xs">School</Text>
+              <Text type="secondary" className="text-xs">
+                School
+              </Text>
               <div className="font-medium">{subscription.school?.name}</div>
             </div>
           </div>
@@ -306,7 +307,9 @@ const SubscriptionDetailPage = () => {
               <CoffeeOutlined className="text-orange-600" />
             </div>
             <div>
-              <Text type="secondary" className="text-xs">Meal Plan</Text>
+              <Text type="secondary" className="text-xs">
+                Meal Plan
+              </Text>
               <div className="font-medium">{subscription.mealPlan?.name}</div>
             </div>
           </div>

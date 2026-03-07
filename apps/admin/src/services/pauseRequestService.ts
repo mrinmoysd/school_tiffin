@@ -9,32 +9,47 @@ export const pauseRequestService = {
     if (filters?.search) params.append('search', filters.search);
     if (filters?.startDate) params.append('startDate', filters.startDate);
     if (filters?.endDate) params.append('endDate', filters.endDate);
-    
-    const response = await api.get<ApiResponse<PauseRequest[]>>(`/pause-requests?${params.toString()}`);
+
+    const response = await api.get<ApiResponse<PauseRequest[]>>(
+      `/admin/pause-requests?${params.toString()}`,
+    );
     return response.data.data;
   },
 
   // Get pause request by ID
   getById: async (id: string): Promise<PauseRequest> => {
-    const response = await api.get<ApiResponse<PauseRequest>>(`/pause-requests/${id}`);
+    const response = await api.get<ApiResponse<PauseRequest>>(`/admin/pause-requests/${id}`);
     return response.data.data;
   },
 
   // Get pending count
   getPendingCount: async (): Promise<number> => {
-    const response = await api.get<ApiResponse<PauseRequest[]>>(`/pause-requests?status=${PauseRequestStatus.PENDING}`);
+    const response = await api.get<ApiResponse<PauseRequest[]>>(
+      `/admin/pause-requests?status=${PauseRequestStatus.PENDING}`,
+    );
     return response.data.data.length;
   },
 
   // Approve pause request
   approve: async (id: string): Promise<PauseRequest> => {
-    const response = await api.post<ApiResponse<PauseRequest>>(`/pause-requests/${id}/approve`);
+    const response = await api.patch<ApiResponse<PauseRequest>>(
+      `/admin/pause-requests/${id}/status`,
+      {
+        status: PauseRequestStatus.APPROVED,
+      },
+    );
     return response.data.data;
   },
 
   // Reject pause request
   reject: async (id: string, reason?: string): Promise<PauseRequest> => {
-    const response = await api.post<ApiResponse<PauseRequest>>(`/pause-requests/${id}/reject`, { reason });
+    const response = await api.patch<ApiResponse<PauseRequest>>(
+      `/admin/pause-requests/${id}/status`,
+      {
+        status: PauseRequestStatus.REJECTED,
+        reason,
+      },
+    );
     return response.data.data;
   },
 };

@@ -1,16 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import {
-  Table,
-  Button,
-  Typography,
-  Card,
-  Tag,
-  Space,
-  Modal,
-  message,
-  Tooltip,
-  Switch,
-} from 'antd';
+import { Table, Button, Typography, Card, Tag, Space, Modal, message, Tooltip, Switch } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
@@ -39,8 +28,8 @@ const CMSListPage = () => {
 
   // Publish/Unpublish mutation
   const publishMutation = useMutation({
-    mutationFn: ({ id, publish }: { id: string; publish: boolean }) =>
-      publish ? cmsService.publish(id) : cmsService.unpublish(id),
+    mutationFn: ({ slug, publish }: { slug: string; publish: boolean }) =>
+      publish ? cmsService.publish(slug) : cmsService.unpublish(slug),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cmsPages'] });
       message.success('Page status updated');
@@ -70,7 +59,7 @@ const CMSListPage = () => {
       content: `Are you sure you want to delete "${page.title}"?`,
       okText: 'Delete',
       okType: 'danger',
-      onOk: () => deleteMutation.mutate(page.id),
+      onOk: () => deleteMutation.mutate(page.slug),
     });
   };
 
@@ -101,9 +90,7 @@ const CMSListPage = () => {
       render: (isPublished: boolean, record) => (
         <Switch
           checked={isPublished}
-          onChange={(checked) =>
-            publishMutation.mutate({ id: record.id, publish: checked })
-          }
+          onChange={checked => publishMutation.mutate({ slug: record.slug, publish: checked })}
           loading={publishMutation.isPending}
           checkedChildren="Yes"
           unCheckedChildren="No"
@@ -133,7 +120,7 @@ const CMSListPage = () => {
             <Button
               type="text"
               icon={<EditOutlined />}
-              onClick={() => navigate(`/cms/${record.id}/edit`)}
+              onClick={() => navigate(`/cms/${record.slug}/edit`)}
             />
           </Tooltip>
           <Tooltip title="Delete">
@@ -154,14 +141,12 @@ const CMSListPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <Title level={2} className="!mb-1">CMS Pages</Title>
+          <Title level={2} className="!mb-1">
+            CMS Pages
+          </Title>
           <Text type="secondary">Manage content pages</Text>
         </div>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => navigate('/cms/create')}
-        >
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/cms/create')}>
           Add Page
         </Button>
       </div>
@@ -177,7 +162,7 @@ const CMSListPage = () => {
             total: pages?.length,
             pageSize: 10,
             showSizeChanger: true,
-            showTotal: (total) => `Total ${total} pages`,
+            showTotal: total => `Total ${total} pages`,
           }}
         />
       </Card>

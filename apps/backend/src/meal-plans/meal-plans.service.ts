@@ -1,6 +1,7 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Cache } from 'cache-manager';
+import { MealPlanType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMealPlanDto, UpdateMealPlanDto } from './dto';
 
@@ -53,9 +54,16 @@ export class MealPlansService {
 
   /**
    * Get all meal plans with optional filters
+   *
+   * - schoolId: filter by school (optional)
+   * - isActive: filter by active status (optional)
+   * - planType: filter by meal plan type (optional)
+   * - search: case-insensitive search on name (optional)
    */
-  async findAll(schoolId?: string, isActive?: boolean) {
-    const cacheKey = `${this.CACHE_KEY_BY_SCHOOL}${schoolId || 'all'}:${isActive !== undefined ? isActive : 'all'}`;
+  async findAll(schoolId?: string, isActive?: boolean, planType?: MealPlanType, search?: string) {
+    const cacheKey = `${this.CACHE_KEY_BY_SCHOOL}${schoolId || 'all'}:${isActive !== undefined ? isActive : 'all'}:${
+      planType || 'all'
+    }:${search || 'all'}`;
 
     // Try to get from cache
     const cached = await this.cacheManager.get(cacheKey);
@@ -68,6 +76,13 @@ export class MealPlansService {
       where: {
         ...(schoolId && { schoolId }),
         ...(isActive !== undefined && { isActive }),
+        ...(planType && { planType }),
+        ...(search && {
+          name: {
+            contains: search,
+            mode: 'insensitive',
+          },
+        }),
         deletedAt: null,
       },
       include: {
@@ -141,10 +156,7 @@ export class MealPlansService {
             allergenInfo: true,
             imageUrl: true,
           },
-          orderBy: [
-            { dayNumber: 'asc' },
-            { dayOfWeek: 'asc' },
-          ],
+          orderBy: [{ dayNumber: 'asc' }, { dayOfWeek: 'asc' }],
         },
       },
     });

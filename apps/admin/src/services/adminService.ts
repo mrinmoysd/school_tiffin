@@ -1,44 +1,47 @@
 import api from '@/lib/axios';
 import {
-    ApiResponse,
-    DashboardStats,
-    DeliveryFilters,
-    DeliveryItem,
-    DeliveryStatus,
-    RecentActivity,
-    ReportFilters,
-    SalesReport,
-    SubscriptionsReport
+  ApiResponse,
+  DashboardStats,
+  DeliveryFilters,
+  DeliveryItem,
+  DeliveryStatus,
+  RecentActivity,
+  ReportFilters,
+  SalesReport,
+  SubscriptionsReport,
 } from '@/types';
 
 // Backend response type for deliveries
 interface DeliveriesResponse {
   date: string;
   totalDeliveries: number;
-  bySchool: Record<string, Array<{
-    id: string;
-    scheduledDate: string;
-    status: DeliveryStatus;
-    deliveredAt?: string;
-    notes?: string;
-    subscription: {
-      subscriptionNumber: string;
-      student: {
-        fullName: string;
-        grade?: string;
-        section?: string;
-        school: {
+  bySchool: Record<
+    string,
+    Array<{
+      id: string;
+      scheduledDate: string;
+      status: DeliveryStatus;
+      deliveredAt?: string;
+      notes?: string;
+      subscription: {
+        subscriptionNumber: string;
+        student: {
+          fullName: string;
+          grade?: string;
+          section?: string;
+          school: {
+            name: string;
+          };
+        };
+        mealPlan: {
           name: string;
         };
+        parent?: {
+          phoneNumber?: string;
+        };
       };
-      mealPlan: {
-        name: string;
-      };
-      parent?: {
-        phoneNumber?: string;
-      };
-    };
-  }>>;
+    }>
+  >;
 }
 
 // Backend response type for sales report
@@ -74,10 +77,10 @@ interface SubscriptionReportResponse {
 function generateDailyRevenue(
   orders: SalesReportResponse['orders'],
   startDate: string,
-  endDate: string
+  endDate: string,
 ) {
   const dailyMap: Record<string, { revenue: number; subscriptions: number }> = {};
-  
+
   // Initialize all days in range
   const start = new Date(startDate);
   const end = new Date(endDate);
@@ -85,7 +88,7 @@ function generateDailyRevenue(
     const dateKey = d.toISOString().split('T')[0];
     dailyMap[dateKey] = { revenue: 0, subscriptions: 0 };
   }
-  
+
   // Aggregate orders by day
   for (const order of orders) {
     if (order.paidAt) {
@@ -96,7 +99,7 @@ function generateDailyRevenue(
       }
     }
   }
-  
+
   // Convert to array
   return Object.entries(dailyMap)
     .map(([date, data]) => ({
@@ -125,13 +128,15 @@ export const adminService = {
     params.append('date', filters.date);
     if (filters.schoolId) params.append('schoolId', filters.schoolId);
     if (filters.status) params.append('status', filters.status);
-    
-    const response = await api.get<ApiResponse<DeliveriesResponse>>(`/admin/deliveries?${params.toString()}`);
+
+    const response = await api.get<ApiResponse<DeliveriesResponse>>(
+      `/admin/deliveries?${params.toString()}`,
+    );
     const data = response.data.data;
-    
+
     // Transform grouped data to flat array
     const deliveries: DeliveryItem[] = [];
-    
+
     if (data && data.bySchool) {
       for (const schoolName of Object.keys(data.bySchool)) {
         const schoolDeliveries = data.bySchool[schoolName];
@@ -150,7 +155,7 @@ export const adminService = {
         }
       }
     }
-    
+
     return deliveries;
   },
 
@@ -159,7 +164,7 @@ export const adminService = {
   },
 
   updateDeliveryStatus: async (deliveryId: string, status: DeliveryStatus): Promise<void> => {
-    await api.patch(`/admin/deliveries/${deliveryId}`, { status });
+    await api.patch(`/admin/deliveries/${deliveryId}/status?status=${status}`);
   },
 
   // Reports - transforms backend response to frontend format
@@ -168,12 +173,14 @@ export const adminService = {
     params.append('startDate', filters.startDate);
     params.append('endDate', filters.endDate);
     if (filters.schoolId) params.append('schoolId', filters.schoolId);
-    
-    const response = await api.get<ApiResponse<SalesReportResponse>>(`/admin/reports/sales?${params.toString()}`);
+
+    const response = await api.get<ApiResponse<SalesReportResponse>>(
+      `/admin/reports/sales?${params.toString()}`,
+    );
     const data = response.data.data;
-    
+
     // Transform backend response to frontend format
-    const schoolBreakdown = data?.bySchool 
+    const schoolBreakdown = data?.bySchool
       ? Object.entries(data.bySchool).map(([schoolName, stats]) => ({
           schoolId: schoolName, // Using school name as ID since backend doesn't return ID
           schoolName,
@@ -181,12 +188,12 @@ export const adminService = {
           subscriptionCount: stats.orders,
         }))
       : [];
-    
+
     // Generate daily revenue from orders (backend doesn't provide this directly)
     const dailyRevenue = data?.orders
       ? generateDailyRevenue(data.orders, filters.startDate, filters.endDate)
       : [];
-    
+
     return {
       totalRevenue: data?.totalRevenue || 0,
       totalSubscriptions: data?.totalOrders || 0,
@@ -199,10 +206,12 @@ export const adminService = {
   getSubscriptionsReport: async (filters: ReportFilters): Promise<SubscriptionsReport> => {
     const params = new URLSearchParams();
     if (filters.schoolId) params.append('schoolId', filters.schoolId);
-    
+
     // Make the API call (backend returns limited data for now)
-    await api.get<ApiResponse<SubscriptionReportResponse>>(`/admin/reports/subscriptions?${params.toString()}`);
-    
+    await api.get<ApiResponse<SubscriptionReportResponse>>(
+      `/admin/reports/subscriptions?${params.toString()}`,
+    );
+
     // Transform backend response to frontend format
     // Note: Backend doesn't provide detailed breakdown yet
     return {
@@ -216,7 +225,7 @@ export const adminService = {
     params.append('date', filters.date);
     if (filters.schoolId) params.append('schoolId', filters.schoolId);
     params.append('format', format);
-    
+
     const response = await api.get(`/admin/deliveries/export?${params.toString()}`, {
       responseType: 'blob',
     });
@@ -228,7 +237,7 @@ export const adminService = {
     params.append('startDate', filters.startDate);
     params.append('endDate', filters.endDate);
     if (filters.schoolId) params.append('schoolId', filters.schoolId);
-    
+
     const response = await api.get(`/admin/reports/sales/export?${params.toString()}`, {
       responseType: 'blob',
     });

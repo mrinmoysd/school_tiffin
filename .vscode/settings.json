@@ -5,8 +5,6 @@
     "source.fixAll.eslint": "explicit",
     "source.organizeImports": "explicit"
   },
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true,
   "files.associations": {
     "*.css": "tailwindcss"
   },
@@ -26,7 +24,7 @@
     "**/build": true
   },
   "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "vscode.typescript-language-features"
   },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"

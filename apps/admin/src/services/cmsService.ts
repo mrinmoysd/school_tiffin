@@ -8,15 +8,15 @@ export const cmsService = {
     return response.data.data;
   },
 
-  // Get page by ID
-  getById: async (id: string): Promise<CMSPage> => {
-    const response = await api.get<ApiResponse<CMSPage>>(`/cms/${id}`);
+  // Get page by slug
+  getById: async (slug: string): Promise<CMSPage> => {
+    const response = await api.get<ApiResponse<CMSPage>>(`/cms/${slug}`);
     return response.data.data;
   },
 
   // Get page by slug
   getBySlug: async (slug: string): Promise<CMSPage> => {
-    const response = await api.get<ApiResponse<CMSPage>>(`/cms/slug/${slug}`);
+    const response = await api.get<ApiResponse<CMSPage>>(`/cms/${slug}`);
     return response.data.data;
   },
 
@@ -27,25 +27,25 @@ export const cmsService = {
   },
 
   // Update page
-  update: async (id: string, data: UpdateCMSPageDto): Promise<CMSPage> => {
-    const response = await api.patch<ApiResponse<CMSPage>>(`/cms/${id}`, data);
+  update: async (slug: string, data: UpdateCMSPageDto): Promise<CMSPage> => {
+    const response = await api.patch<ApiResponse<CMSPage>>(`/cms/${slug}`, data);
     return response.data.data;
   },
 
   // Delete page
-  delete: async (id: string): Promise<void> => {
-    await api.delete(`/cms/${id}`);
+  delete: async (slug: string): Promise<void> => {
+    await api.delete(`/cms/${slug}`);
   },
 
   // Publish page
-  publish: async (id: string): Promise<CMSPage> => {
-    const response = await api.post<ApiResponse<CMSPage>>(`/cms/${id}/publish`);
+  publish: async (slug: string): Promise<CMSPage> => {
+    const response = await api.patch<ApiResponse<CMSPage>>(`/cms/${slug}/publish`);
     return response.data.data;
   },
 
   // Unpublish page
-  unpublish: async (id: string): Promise<CMSPage> => {
-    const response = await api.post<ApiResponse<CMSPage>>(`/cms/${id}/unpublish`);
+  unpublish: async (slug: string): Promise<CMSPage> => {
+    const response = await api.patch<ApiResponse<CMSPage>>(`/cms/${slug}/publish`);
     return response.data.data;
   },
 };

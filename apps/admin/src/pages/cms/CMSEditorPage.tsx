@@ -1,18 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  Form,
-  Input,
-  Button,
-  Card,
-  Typography,
-  message,
-  Switch,
-  Spin,
-  Tabs,
-  Row,
-  Col,
-} from 'antd';
+import { Form, Input, Button, Card, Typography, message, Switch, Spin, Tabs, Row, Col } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cmsService } from '@/services';
@@ -23,16 +11,16 @@ const { TextArea } = Input;
 
 const CMSEditorPage = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
   const [previewContent, setPreviewContent] = useState('');
-  const isEditing = !!id;
+  const isEditing = !!slug;
 
   // Fetch page if editing
   const { data: page, isLoading } = useQuery({
-    queryKey: ['cmsPage', id],
-    queryFn: () => cmsService.getById(id!),
+    queryKey: ['cmsPage', slug],
+    queryFn: () => cmsService.getById(slug!),
     enabled: isEditing,
   });
 
@@ -59,10 +47,10 @@ const CMSEditorPage = () => {
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: (data: UpdateCMSPageDto) => cmsService.update(id!, data),
+    mutationFn: (data: UpdateCMSPageDto) => cmsService.update(slug!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cmsPages'] });
-      queryClient.invalidateQueries({ queryKey: ['cmsPage', id] });
+      queryClient.invalidateQueries({ queryKey: ['cmsPage', slug] });
       message.success('Page updated successfully');
       navigate('/cms');
     },
@@ -132,10 +120,7 @@ const CMSEditorPage = () => {
       ),
       children: (
         <Card className="min-h-96">
-          <div
-            className="prose max-w-none"
-            dangerouslySetInnerHTML={{ __html: previewContent }}
-          />
+          <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: previewContent }} />
         </Card>
       ),
     },
@@ -145,18 +130,12 @@ const CMSEditorPage = () => {
     <div>
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Button
-          type="text"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/cms')}
-        />
+        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/cms')} />
         <div>
           <Title level={2} className="!mb-1">
             {isEditing ? 'Edit Page' : 'Create New Page'}
           </Title>
-          {isEditing && page && (
-            <Text type="secondary">Version {page.version}</Text>
-          )}
+          {isEditing && page && <Text type="secondary">Version {page.version}</Text>}
         </div>
       </div>
 
@@ -176,14 +155,14 @@ const CMSEditorPage = () => {
                 label="Slug"
                 rules={[
                   { required: true, message: 'Please enter slug' },
-                  { pattern: /^[a-z0-9-]+$/, message: 'Only lowercase letters, numbers, and hyphens' },
+                  {
+                    pattern: /^[a-z0-9-]+$/,
+                    message: 'Only lowercase letters, numbers, and hyphens',
+                  },
                 ]}
                 extra="URL-friendly identifier (e.g., about-us, terms-of-service)"
               >
-                <Input
-                  placeholder="e.g., about-us"
-                  disabled={isEditing}
-                />
+                <Input placeholder="e.g., about-us" disabled={isEditing} />
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
@@ -200,20 +179,14 @@ const CMSEditorPage = () => {
           <Tabs items={tabItems} />
 
           {isEditing && (
-            <Form.Item
-              name="isPublished"
-              label="Published"
-              valuePropName="checked"
-            >
+            <Form.Item name="isPublished" label="Published" valuePropName="checked">
               <Switch checkedChildren="Yes" unCheckedChildren="No" />
             </Form.Item>
           )}
 
           {/* Actions */}
           <div className="flex justify-end gap-3 mt-6 pt-6 border-t">
-            <Button onClick={() => navigate('/cms')}>
-              Cancel
-            </Button>
+            <Button onClick={() => navigate('/cms')}>Cancel</Button>
             <Button
               type="primary"
               htmlType="submit"

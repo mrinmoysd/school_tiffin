@@ -1,13 +1,13 @@
 import {
-    BadRequestException,
-    ConflictException,
-    Injectable,
-    NotFoundException,
-    UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { JwtPayload } from '../common/decorators/current-user.decorator';
 import { OtpService } from '../otp/otp.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -123,7 +123,8 @@ export class AuthService {
       data: { lastLoginAt: new Date() },
     });
 
-    // Remove password from response
+    // Remove password from response before returning user object
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, ...userWithoutPassword } = user;
 
     // Generate tokens
@@ -304,7 +305,7 @@ export class AuthService {
    */
   async sendOtp(dto: SendOtpDto): Promise<{ message: string; expiresIn: number }> {
     const result = await this.otpService.generateOtp(dto.phone);
-    
+
     return {
       message: 'OTP sent successfully',
       expiresIn: result.expiresIn,
@@ -356,7 +357,7 @@ export class AuthService {
       // Mark phone as verified
       await this.prisma.user.update({
         where: { id: user.id },
-        data: { 
+        data: {
           phoneVerified: true,
           lastLoginAt: new Date(),
         },
@@ -400,7 +401,11 @@ export class AuthService {
   /**
    * Private: Generate access token
    */
-  private async generateAccessToken(user: { id: string; email: string; role: string }): Promise<string> {
+  private async generateAccessToken(user: {
+    id: string;
+    email: string;
+    role: string;
+  }): Promise<string> {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
@@ -416,7 +421,11 @@ export class AuthService {
   /**
    * Private: Generate refresh token and store in database
    */
-  private async generateRefreshToken(user: { id: string; email: string; role: string }): Promise<string> {
+  private async generateRefreshToken(user: {
+    id: string;
+    email: string;
+    role: string;
+  }): Promise<string> {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,

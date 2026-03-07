@@ -1,16 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import {
-  Form,
-  Input,
-  Button,
-  Card,
-  Typography,
-  message,
-  Row,
-  Col,
-  Checkbox,
-  Space,
-} from 'antd';
+import { Form, Input, Button, Card, Typography, message, Row, Col, Checkbox, Space } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { schoolService } from '@/services';
@@ -42,6 +31,7 @@ const SchoolCreatePage = () => {
     const { operatingDaysArray, ...rest } = values;
     const data: CreateSchoolDto = {
       ...rest,
+      // Backend expects comma-separated values
       operatingDays: operatingDaysArray.join(','),
     };
     createMutation.mutate(data);
@@ -51,13 +41,11 @@ const SchoolCreatePage = () => {
     <div>
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Button
-          type="text"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/schools')}
-        />
+        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/schools')} />
         <div>
-          <Title level={2} className="!mb-1">Add New School</Title>
+          <Title level={2} className="!mb-1">
+            Add New School
+          </Title>
           <Text type="secondary">Create a new school for tiffin service</Text>
         </div>
       </div>
@@ -124,9 +112,7 @@ const SchoolCreatePage = () => {
               <Form.Item
                 name="pincode"
                 label="Pincode"
-                rules={[
-                  { pattern: /^\d{6}$/, message: 'Please enter valid 6-digit pincode' },
-                ]}
+                rules={[{ pattern: /^\d{6}$/, message: 'Please enter valid 6-digit pincode' }]}
               >
                 <Input placeholder="e.g., 110001" maxLength={6} />
               </Form.Item>
@@ -138,9 +124,7 @@ const SchoolCreatePage = () => {
               <Form.Item
                 name="contactEmail"
                 label="Contact Email"
-                rules={[
-                  { type: 'email', message: 'Please enter valid email' },
-                ]}
+                rules={[{ type: 'email', message: 'Please enter valid email' }]}
               >
                 <Input placeholder="e.g., admin@school.edu" />
               </Form.Item>
@@ -149,9 +133,7 @@ const SchoolCreatePage = () => {
               <Form.Item
                 name="contactPhone"
                 label="Contact Phone"
-                rules={[
-                  { pattern: /^\d{10}$/, message: 'Please enter valid 10-digit phone' },
-                ]}
+                rules={[{ pattern: /^\d{10}$/, message: 'Please enter valid 10-digit phone' }]}
               >
                 <Input placeholder="e.g., 9876543210" maxLength={10} />
               </Form.Item>
@@ -161,14 +143,12 @@ const SchoolCreatePage = () => {
           <Form.Item
             name="operatingDaysArray"
             label="Operating Days"
-            rules={[
-              { required: true, message: 'Please select at least one day' },
-            ]}
+            rules={[{ required: true, message: 'Please select at least one day' }]}
             extra="Days when tiffin service is available"
           >
             <Checkbox.Group>
               <Space wrap>
-                {DAYS_OF_WEEK.map((day) => (
+                {DAYS_OF_WEEK.map(day => (
                   <Checkbox key={day} value={day}>
                     {day}
                   </Checkbox>
@@ -190,9 +170,7 @@ const SchoolCreatePage = () => {
 
           {/* Actions */}
           <div className="flex justify-end gap-3 mt-6 pt-6 border-t">
-            <Button onClick={() => navigate('/schools')}>
-              Cancel
-            </Button>
+            <Button onClick={() => navigate('/schools')}>Cancel</Button>
             <Button
               type="primary"
               htmlType="submit"
