@@ -8,6 +8,7 @@ import { LoginDto, RefreshTokenDto, RegisterDto, SendOtpDto, VerifyOtpDto } from
 @ApiTags('Authentication')
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
+  // eslint-disable-next-line prettier/prettier
   constructor(private readonly authService: AuthService) {}
 
   /**
@@ -486,7 +487,7 @@ export class AuthController {
       },
     },
   })
-  getCurrentUser(@CurrentUser() user: any) {
+  getCurrentUser(@CurrentUser() user: unknown) {
     return { user };
   }
 
