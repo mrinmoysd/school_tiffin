@@ -1,20 +1,27 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { Provider } from 'react-redux';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AppNavigator } from './src/navigation';
+import { bootstrapAuth } from './src/store/auth';
+import { useAppDispatch } from './src/store/hooks';
+import { store } from './src/store';
+
+const BootstrapAuthState = () => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    void dispatch(bootstrapAuth());
+  }, [dispatch]);
+
+  return <AppNavigator />;
+};
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app! hello guys yoyo</Text>
-      <StatusBar style="auto" />
-    </View>
+    <Provider store={store}>
+      <SafeAreaProvider>
+        <BootstrapAuthState />
+      </SafeAreaProvider>
+    </Provider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

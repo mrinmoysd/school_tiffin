@@ -3,6 +3,7 @@
     "name": "School Tiffin Mobile",
     "slug": "school-tiffin-mobile",
     "version": "1.0.0",
+    "scheme": "schooltiffin",
     "newArchEnabled": false,
     "orientation": "portrait",
     "icon": "./assets/icon.png",

@@ -3,30 +3,32 @@
 ## Phase 3.1: Authentication Screens
 
 ### Task 3.1.1: Login Screen
+
 **Estimated Time**: 4 hours
 **Priority**: Critical
 **Dependencies**: Backend 2.1.2, Phase 1.3 complete
 
-- [ ] Create LoginScreen component
-- [ ] Implement form with React Hook Form
-  - Email input field
-  - Password input field
-  - "Remember me" checkbox
-  - "Forgot password" link
-  - Login button
-  - "Sign up" link
-- [ ] Connect to auth Redux slice
-- [ ] Dispatch login action
-- [ ] Handle loading state
-- [ ] Handle error messages
-- [ ] Store tokens securely (react-native-keychain)
-- [ ] Navigate to main app on success
-- [ ] Add form validation
-  - Email format
-  - Required fields
-- [ ] Test on iOS and Android
+- [x] Create LoginScreen component
+- [x] Implement form with React Hook Form
+  - [x] Email input field
+  - [x] Password input field
+  - [x] "Remember me" checkbox
+  - [x] "Forgot password" link
+  - [x] Login button
+  - [x] "Sign up" link
+- [x] Connect to auth Redux slice
+- [x] Dispatch login action
+- [x] Handle loading state
+- [x] Handle error messages
+- [x] Store tokens securely (react-native-keychain)
+- [x] Navigate to main app on success
+- [x] Add form validation
+  - [x] Email format
+  - [x] Required fields
+- [x] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Can login with email/password
 - Tokens stored securely
 - Error messages displayed
@@ -36,30 +38,32 @@
 ---
 
 ### Task 3.1.2: Registration Screen
+
 **Estimated Time**: 4 hours
 **Priority**: Critical
 **Dependencies**: Backend 2.1.2
 
-- [ ] Create RegisterScreen component
-- [ ] Implement form with React Hook Form
-  - Full name field
-  - Email field
-  - Phone field (optional)
-  - Password field
-  - Confirm password field
-  - Terms & Conditions checkbox
-  - Register button
-- [ ] Add validation
-  - Email format
-  - Password strength (min 8 chars, uppercase, number)
-  - Passwords match
-  - Terms accepted
-- [ ] Connect to auth service
-- [ ] Handle registration success/error
-- [ ] Navigate to login or home on success
-- [ ] Test on iOS and Android
+- [x] Create RegisterScreen component
+- [x] Implement form with React Hook Form
+  - [x] Full name field
+  - [x] Email field
+  - [x] Phone field (optional)
+  - [x] Password field
+  - [x] Confirm password field
+  - [x] Terms & Conditions checkbox
+  - [x] Register button
+- [x] Add validation
+  - [x] Email format
+  - [x] Password strength (min 8 chars, uppercase, number)
+  - [x] Passwords match
+  - [x] Terms accepted
+- [x] Connect to auth service
+- [x] Handle registration success/error
+- [x] Navigate to login or home on success
+- [x] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Can register new account
 - Validation working
 - Error handling
@@ -68,30 +72,32 @@
 ---
 
 ### Task 3.1.3: OTP Login Flow
+
 **Estimated Time**: 5 hours
 **Priority**: High
 **Dependencies**: Backend 2.1.3
 
-- [ ] Create PhoneLoginScreen
-  - Phone number input (with country code +91)
-  - Send OTP button
-  - Switch to email login link
-- [ ] Create OTPVerificationScreen
-  - 6-digit OTP input (auto-focus)
-  - Verify button
-  - Resend OTP button (with timer)
-  - Edit phone number link
-- [ ] Implement OTP countdown timer (5 minutes)
-- [ ] Connect to auth service
-  - Send OTP API call
-  - Verify OTP API call
-- [ ] Handle rate limiting errors
-- [ ] Store tokens on success
-- [ ] Navigate to main app
-- [ ] Add loading states
-- [ ] Test on iOS and Android
+- [x] Create PhoneLoginScreen
+  - [x] Phone number input (with country code +91)
+  - [x] Send OTP button
+  - [x] Switch to email login link
+- [x] Create OTPVerificationScreen
+  - [x] 6-digit OTP input (auto-focus)
+  - [x] Verify button
+  - [x] Resend OTP button (with timer)
+  - [x] Edit phone number link
+- [x] Implement OTP countdown timer (5 minutes)
+- [x] Connect to auth service
+  - [x] Send OTP API call
+  - [x] Verify OTP API call
+- [x] Handle rate limiting errors
+- [x] Store tokens on success
+- [x] Navigate to main app
+- [x] Add loading states
+- [x] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Can request OTP
 - Can verify OTP
 - Timer working
@@ -101,23 +107,25 @@
 ---
 
 ### Task 3.1.4: Forgot Password Flow
+
 **Estimated Time**: 3 hours
 **Priority**: Medium
 **Dependencies**: Backend 2.1.5
 
-- [ ] Create ForgotPasswordScreen
-  - Email input
-  - Submit button
-- [ ] Create ResetPasswordScreen (deep link)
-  - New password field
-  - Confirm password field
-  - Submit button
-- [ ] Connect to auth service
-- [ ] Handle success/error messages
-- [ ] Navigate to login on success
-- [ ] Test on iOS and Android
+- [x] Create ForgotPasswordScreen
+  - [x] Email input
+  - [x] Submit button
+- [x] Create ResetPasswordScreen (deep link)
+  - [x] New password field
+  - [x] Confirm password field
+  - [x] Submit button
+- [x] Connect to auth service
+- [x] Handle success/error messages
+- [x] Navigate to login on success
+- [x] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Can request password reset
 - Email sent successfully
 - Reset link works (test with email)
@@ -127,6 +135,7 @@
 ## Phase 3.2: Home & School Browsing
 
 ### Task 3.2.1: Home Screen
+
 **Estimated Time**: 5 hours
 **Priority**: High
 **Dependencies**: Backend 2.3.1
@@ -146,6 +155,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Shows active subscriptions
 - Quick actions working
 - Pull-to-refresh working
@@ -154,6 +164,7 @@
 ---
 
 ### Task 3.2.2: School List Screen
+
 **Estimated Time**: 4 hours
 **Priority**: High
 **Dependencies**: Backend 2.3.1
@@ -175,6 +186,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Shows list of schools
 - Search working
 - Filters working
@@ -184,6 +196,7 @@
 ---
 
 ### Task 3.2.3: School Detail Screen
+
 **Estimated Time**: 4 hours
 **Priority**: High
 **Dependencies**: Backend 2.3.1, 2.3.2
@@ -205,6 +218,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Shows school details
 - Shows meal plans
 - Navigation working
@@ -213,6 +227,7 @@
 ---
 
 ### Task 3.2.4: Meal Plan Detail Screen
+
 **Estimated Time**: 4 hours
 **Priority**: High
 **Dependencies**: Backend 2.3.2, 2.3.3
@@ -235,6 +250,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Shows meal plan details
 - Shows complete menu
 - Images displayed
@@ -245,6 +261,7 @@
 ## Phase 3.3: Subscription Flow
 
 ### Task 3.3.1: Select Student Screen
+
 **Estimated Time**: 3 hours
 **Priority**: High
 **Dependencies**: Backend 2.2.3
@@ -260,6 +277,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Shows student list
 - Can select student
 - Can add new student
@@ -268,6 +286,7 @@
 ---
 
 ### Task 3.3.2: Add/Edit Student Screen
+
 **Estimated Time**: 4 hours
 **Priority**: High
 **Dependencies**: Backend 2.2.3
@@ -289,6 +308,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Can add new student
 - Can edit existing student
 - Validation working
@@ -297,6 +317,7 @@
 ---
 
 ### Task 3.3.3: Subscription Review Screen
+
 **Estimated Time**: 5 hours
 **Priority**: Critical
 **Dependencies**: Backend 2.4.2
@@ -320,6 +341,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Shows subscription summary
 - Shows delivery schedule
 - Can change start date
@@ -329,6 +351,7 @@
 ---
 
 ### Task 3.3.4: Payment Integration
+
 **Estimated Time**: 6 hours
 **Priority**: Critical
 **Dependencies**: Backend 2.6.2
@@ -351,10 +374,12 @@
 - [ ] Test on iOS and Android
 
 **Test Cards:**
+
 - Success: 4111 1111 1111 1111
 - Failure: 4111 1111 1111 1234
 
 **Acceptance Criteria:**
+
 - Razorpay UI opens
 - Can complete test payment
 - Payment verified successfully
@@ -367,6 +392,7 @@
 ## Phase 3.4: Subscription Management
 
 ### Task 3.4.1: My Subscriptions Screen
+
 **Estimated Time**: 4 hours
 **Priority**: High
 **Dependencies**: Backend 2.4.3
@@ -387,6 +413,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Shows active and completed subscriptions
 - Tabs working
 - Pull-to-refresh working
@@ -395,6 +422,7 @@
 ---
 
 ### Task 3.4.2: Subscription Detail Screen
+
 **Estimated Time**: 4 hours
 **Priority**: High
 **Dependencies**: Backend 2.4.3
@@ -416,6 +444,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Shows complete subscription info
 - Action buttons working
 - Navigation working
@@ -423,6 +452,7 @@
 ---
 
 ### Task 3.4.3: Delivery Schedule Screen
+
 **Estimated Time**: 4 hours
 **Priority**: High
 **Dependencies**: Backend 2.4.3
@@ -442,6 +472,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Calendar shows delivery dates
 - Color coding working
 - Can view day details
@@ -452,6 +483,7 @@
 ## Phase 3.5: Pause Subscription
 
 ### Task 3.5.1: Pause Request Screen
+
 **Estimated Time**: 5 hours
 **Priority**: High
 **Dependencies**: Backend 2.5.1
@@ -474,6 +506,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Can select date range
 - Shows affected days calculation
 - Can submit pause request
@@ -483,6 +516,7 @@
 ---
 
 ### Task 3.5.2: Pause Requests List
+
 **Estimated Time**: 3 hours
 **Priority**: Medium
 **Dependencies**: Backend 2.5.1
@@ -501,6 +535,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Shows pause requests
 - Filter working
 - Can cancel pending requests
@@ -510,6 +545,7 @@
 ## Phase 3.6: Orders & History
 
 ### Task 3.6.1: Orders Screen
+
 **Estimated Time**: 4 hours
 **Priority**: Medium
 **Dependencies**: Backend 2.6.3
@@ -529,6 +565,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Shows orders list
 - Filter working
 - Pagination working
@@ -537,6 +574,7 @@
 ---
 
 ### Task 3.6.2: Order Detail Screen
+
 **Estimated Time**: 3 hours
 **Priority**: Low
 **Dependencies**: Backend 2.6.3
@@ -555,6 +593,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Shows complete order details
 - Information accurate
 
@@ -563,6 +602,7 @@
 ## Phase 3.7: Profile & Settings
 
 ### Task 3.7.1: Profile Screen
+
 **Estimated Time**: 4 hours
 **Priority**: Medium
 **Dependencies**: Backend 2.2.2
@@ -585,6 +625,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Shows user profile
 - Logout working
 - Navigation working
@@ -592,6 +633,7 @@
 ---
 
 ### Task 3.7.2: Edit Profile Screen
+
 **Estimated Time**: 3 hours
 **Priority**: Low
 **Dependencies**: Backend 2.2.2
@@ -609,6 +651,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Can update profile
 - Validation working
 - Changes reflected in app
@@ -616,6 +659,7 @@
 ---
 
 ### Task 3.7.3: Change Password Screen
+
 **Estimated Time**: 3 hours
 **Priority**: Low
 **Dependencies**: Backend 2.1.5
@@ -636,6 +680,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Can change password
 - Validation working
 - Success message shown
@@ -643,6 +688,7 @@
 ---
 
 ### Task 3.7.4: Students Management Screen
+
 **Estimated Time**: 4 hours
 **Priority**: Medium
 **Dependencies**: Backend 2.2.3, Task 3.3.2
@@ -660,6 +706,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Shows students list
 - Can add/edit/delete students
 - Confirmation for delete
@@ -670,6 +717,7 @@
 ## Phase 3.8: Notifications
 
 ### Task 3.8.1: Push Notifications Setup
+
 **Estimated Time**: 4 hours
 **Priority**: High
 **Dependencies**: Backend 2.7.2, Phase 1.3.2
@@ -687,6 +735,7 @@
 - [ ] Test on iOS and Android devices
 
 **Acceptance Criteria:**
+
 - Notifications received on device
 - Can handle foreground and background
 - Tap navigation working
@@ -695,6 +744,7 @@
 ---
 
 ### Task 3.8.2: Notifications Screen
+
 **Estimated Time**: 3 hours
 **Priority**: Medium
 **Dependencies**: Backend 2.7.2
@@ -713,6 +763,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Shows notifications list
 - Can mark as read
 - Pull-to-refresh working
@@ -723,6 +774,7 @@
 ## Phase 3.9: UI/UX Polish
 
 ### Task 3.9.1: Shared Components
+
 **Estimated Time**: 6 hours
 **Priority**: Medium
 **Dependencies**: None
@@ -744,6 +796,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Components reusable across screens
 - Consistent styling
 - Props well-defined
@@ -751,6 +804,7 @@
 ---
 
 ### Task 3.9.2: Theme & Styling
+
 **Estimated Time**: 4 hours
 **Priority**: Medium
 **Dependencies**: 3.9.1
@@ -771,6 +825,7 @@
 - [ ] Test light mode (dark mode future)
 
 **Acceptance Criteria:**
+
 - Consistent colors across app
 - Consistent typography
 - Theme easily changeable
@@ -778,6 +833,7 @@
 ---
 
 ### Task 3.9.3: Loading & Error States
+
 **Estimated Time**: 3 hours
 **Priority**: Medium
 **Dependencies**: All Phase 3 screens
@@ -789,6 +845,7 @@
 - [ ] Test all states on each screen
 
 **Acceptance Criteria:**
+
 - Loading states visible
 - Error messages clear
 - Empty states helpful
@@ -797,6 +854,7 @@
 ---
 
 ### Task 3.9.4: Form Validation & UX
+
 **Estimated Time**: 3 hours
 **Priority**: Medium
 **Dependencies**: All form screens
@@ -809,6 +867,7 @@
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
+
 - Validation errors shown inline
 - Forms user-friendly
 - Keyboard doesn't hide inputs
@@ -818,6 +877,7 @@
 ## Phase 3.10: Testing & Optimization
 
 ### Task 3.10.1: Navigation Testing
+
 **Estimated Time**: 2 hours
 **Priority**: High
 **Dependencies**: All screens complete
@@ -832,6 +892,7 @@
 - [ ] Fix any navigation issues
 
 **Acceptance Criteria:**
+
 - All navigation working smoothly
 - No navigation bugs
 - Back button logical
@@ -839,6 +900,7 @@
 ---
 
 ### Task 3.10.2: API Integration Testing
+
 **Estimated Time**: 3 hours
 **Priority**: High
 **Dependencies**: All API integrations
@@ -850,6 +912,7 @@
 - [ ] Fix any API integration issues
 
 **Acceptance Criteria:**
+
 - All API calls working
 - Error handling robust
 - Token refresh seamless
@@ -857,6 +920,7 @@
 ---
 
 ### Task 3.10.3: Performance Optimization
+
 **Estimated Time**: 4 hours
 **Priority**: Medium
 **Dependencies**: All screens complete
@@ -869,6 +933,7 @@
 - [ ] Fix performance bottlenecks
 
 **Acceptance Criteria:**
+
 - App feels fast and responsive
 - Lists scroll smoothly
 - No noticeable lag
@@ -876,6 +941,7 @@
 ---
 
 ### Task 3.10.4: Accessibility
+
 **Estimated Time**: 3 hours
 **Priority**: Low
 **Dependencies**: All screens complete
@@ -887,6 +953,7 @@
 - [ ] Test keyboard navigation (if applicable)
 
 **Acceptance Criteria:**
+
 - App usable with screen reader
 - Color contrast sufficient
 - Accessibility labels present
@@ -894,6 +961,7 @@
 ---
 
 ### Task 3.10.5: Device Testing
+
 **Estimated Time**: 4 hours
 **Priority**: High
 **Dependencies**: All screens complete
@@ -905,6 +973,7 @@
 - [ ] Test landscape orientation (if supported)
 
 **Acceptance Criteria:**
+
 - App works on various devices
 - UI responsive on different screen sizes
 - No device-specific crashes
@@ -914,6 +983,7 @@
 ## Phase 3.11: Build & Distribution
 
 ### Task 3.11.1: iOS App Build
+
 **Estimated Time**: 4 hours
 **Priority**: High
 **Dependencies**: Phase 3 complete
@@ -932,6 +1002,7 @@
   - Privacy policy link
 
 **Acceptance Criteria:**
+
 - Release build successful
 - App works correctly in release mode
 - Ready for TestFlight
@@ -939,6 +1010,7 @@
 ---
 
 ### Task 3.11.2: Android App Build
+
 **Estimated Time**: 4 hours
 **Priority**: High
 **Dependencies**: Phase 3 complete
@@ -956,6 +1028,7 @@
   - Privacy policy link
 
 **Acceptance Criteria:**
+
 - Release APK/AAB built successfully
 - App works correctly in release mode
 - Ready for Play Store
@@ -963,6 +1036,7 @@
 ---
 
 ### Task 3.11.3: Beta Testing
+
 **Estimated Time**: Ongoing (1 week)
 **Priority**: High
 **Dependencies**: 3.11.1, 3.11.2
@@ -975,6 +1049,7 @@
 - [ ] Prepare for production release
 
 **Acceptance Criteria:**
+
 - Beta versions available to testers
 - Feedback collected and addressed
 - Critical bugs fixed
@@ -989,6 +1064,7 @@
 Auth (3.1) → Home/Schools (3.2) → Subscription Flow (3.3) → Payment (3.3.4) → Subscription Management (3.4)
 
 **Deliverables:**
+
 - ✅ Complete mobile app for iOS and Android
 - ✅ All user-facing features implemented
 - ✅ Payment integration working
