@@ -255,20 +255,20 @@ const MealPlansListPage = () => {
 
       {/* Filters */}
       <Card className="mb-4">
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4">
           <Input
             placeholder="Search by name..."
             prefix={<SearchOutlined />}
             value={filters.search}
             onChange={e => setFilters({ ...filters, search: e.target.value })}
-            style={{ maxWidth: 300 }}
+            className="w-full sm:w-72"
             allowClear
           />
           <Select
             placeholder="Filter by school"
             value={filters.schoolId}
             onChange={value => setFilters({ ...filters, schoolId: value })}
-            style={{ width: 200 }}
+            className="w-full sm:w-52"
             allowClear
             showSearch
             optionFilterProp="label"
@@ -278,7 +278,7 @@ const MealPlansListPage = () => {
             placeholder="Filter by type"
             value={filters.planType}
             onChange={value => setFilters({ ...filters, planType: value })}
-            style={{ width: 150 }}
+            className="w-full sm:w-40"
             allowClear
             options={Object.values(MealPlanType).map(type => ({
               label: type,
@@ -289,7 +289,7 @@ const MealPlansListPage = () => {
             placeholder="Status"
             value={filters.isActive}
             onChange={value => setFilters({ ...filters, isActive: value })}
-            style={{ width: 120 }}
+            className="w-full sm:w-32"
             allowClear
             options={[
               { label: 'Active', value: true },
@@ -301,20 +301,22 @@ const MealPlansListPage = () => {
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={mealPlans}
-          rowKey="id"
-          loading={isLoading}
-          tableLayout="fixed"
-          scroll={{ x: 'max-content' }}
-          pagination={{
-            total: mealPlans?.length,
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: total => `Total ${total} meal plans`,
-          }}
-        />
+        <div className="table-scrollbar">
+          <Table
+            columns={columns}
+            dataSource={mealPlans}
+            rowKey="id"
+            loading={isLoading}
+            tableLayout="fixed"
+            scroll={{ x: 960 }}
+            pagination={{
+              total: mealPlans?.length,
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: total => `Total ${total} meal plans`,
+            }}
+          />
+        </div>
       </Card>
     </div>
   );
