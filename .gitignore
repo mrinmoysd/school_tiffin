@@ -56,6 +56,9 @@ prisma/migrations/**/migration.sql
 android/app/build/
 ios/Pods/
 ios/build/
+apps/mobile/
+apps/mobile/android/
+apps/mobile/ios/
 
 # Misc
 .turbo/
