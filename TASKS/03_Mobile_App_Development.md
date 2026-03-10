@@ -232,21 +232,21 @@
 **Priority**: High
 **Dependencies**: Backend 2.3.2, 2.3.3
 
-- [ ] Create MealPlanDetailScreen
-- [ ] Display meal plan information
+- [x] Create MealPlanDetailScreen
+- [x] Display meal plan information
   - Name, description, type
   - Duration, price per day, total price
   - Image
-- [ ] Display menu items
+- [x] Display menu items
   - Day-wise or weekly view
   - Items list
   - Nutritional info
   - Allergen info
-- [ ] Add image carousel for menu items
-- [ ] Add "Subscribe Now" button
-- [ ] Connect to APIs
-- [ ] Handle loading states
-- [ ] Navigate to subscription flow
+- [x] Add image carousel for menu items
+- [x] Add "Subscribe Now" button
+- [x] Connect to APIs
+- [x] Handle loading states
+- [x] Navigate to subscription flow
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**

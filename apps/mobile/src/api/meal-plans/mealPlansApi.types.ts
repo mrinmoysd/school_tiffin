@@ -24,5 +24,10 @@ export interface MealPlanMenuItem {
 }
 
 export interface MealPlanDetails extends MealPlanSummary {
+  school?: {
+    id: string;
+    name: string;
+    city?: string | null;
+  };
   menuItems: MealPlanMenuItem[];
 }
