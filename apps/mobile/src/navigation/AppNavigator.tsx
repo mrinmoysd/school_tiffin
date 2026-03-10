@@ -8,6 +8,7 @@ import {
   HomeScreen,
   OrdersScreen,
   PauseRequestScreen,
+  SchoolDetailScreen,
   SchoolListScreen,
   SubscriptionDetailScreen,
 } from '../screens/app';
@@ -41,6 +42,11 @@ export const AppNavigator = () => {
           <>
             <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
             <Stack.Screen name="SchoolList" component={SchoolListScreen} />
+            <Stack.Screen
+              name="SchoolDetail"
+              component={SchoolDetailScreen}
+              options={{ title: 'School Details' }}
+            />
             <Stack.Screen name="Orders" component={OrdersScreen} />
             <Stack.Screen
               name="SubscriptionDetail"

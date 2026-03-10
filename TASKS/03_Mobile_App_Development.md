@@ -169,20 +169,20 @@
 **Priority**: High
 **Dependencies**: Backend 2.3.1
 
-- [ ] Create SchoolListScreen
-- [ ] Implement school cards list
+- [x] Create SchoolListScreen
+- [x] Implement school cards list
   - School name
   - Location
   - "Service available" badge
   - Thumbnail image (if available)
-- [ ] Add search bar (filter by name)
-- [ ] Add city filter dropdown
-- [ ] Add "Service available only" toggle
-- [ ] Implement pagination/infinite scroll
-- [ ] Connect to schools API
-- [ ] Handle loading states
-- [ ] Handle empty states
-- [ ] Navigate to school details on tap
+- [x] Add search bar (filter by name)
+- [x] Add city filter dropdown
+- [x] Add "Service available only" toggle
+- [x] Implement pagination/infinite scroll
+- [x] Connect to schools API
+- [x] Handle loading states
+- [x] Handle empty states
+- [x] Navigate to school details on tap
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
