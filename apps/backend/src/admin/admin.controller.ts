@@ -195,11 +195,6 @@ export class AdminController {
     return this.adminService.getOrders(status, search, startDate, endDate);
   }
 
-  @Get('orders/:id')
-  async getOrderById(@Param('id', ParseUUIDPipe) id: string) {
-    return this.adminService.getOrderById(id);
-  }
-
   @Get('orders/export')
   async exportOrders(
     @Query('status') status: OrderStatus | undefined,
@@ -212,6 +207,11 @@ export class AdminController {
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename="orders-export.csv"');
     return res.status(200).send(csv);
+  }
+
+  @Get('orders/:id')
+  async getOrderById(@Param('id', ParseUUIDPipe) id: string) {
+    return this.adminService.getOrderById(id);
   }
 
   @Get('subscriptions')

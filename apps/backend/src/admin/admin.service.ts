@@ -200,16 +200,24 @@ export class AdminService {
    * Update delivery status
    */
   async updateDeliveryStatus(deliveryId: string, status: DeliveryStatus) {
+    const delivery = await this.prisma.subscriptionDay.findUnique({
+      where: { id: deliveryId },
+    });
+
+    if (!delivery) {
+      throw new NotFoundException('Delivery not found');
+    }
+
     const updated = await this.prisma.subscriptionDay.update({
       where: { id: deliveryId },
       data: {
         status,
-        ...(status === 'DELIVERED' && { deliveredAt: new Date() }),
+        ...(status === 'DELIVERED' && { deliveryConfirmedAt: new Date() }),
       },
     });
 
     // Update subscription remaining days if delivered
-    if (status === 'DELIVERED') {
+    if (status === 'DELIVERED' && delivery.status !== DeliveryStatus.DELIVERED) {
       const subscription = await this.prisma.subscription.findUnique({
         where: { id: updated.subscriptionId },
       });

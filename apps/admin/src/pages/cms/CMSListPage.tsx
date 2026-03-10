@@ -113,7 +113,9 @@ const CMSListPage = () => {
             <Button
               type="text"
               icon={<EyeOutlined />}
-              onClick={() => window.open(`/page/${record.slug}`, '_blank')}
+              onClick={() =>
+                window.open(`/cms/${record.slug}/preview`, '_blank', 'noopener,noreferrer')
+              }
             />
           </Tooltip>
           <Tooltip title="Edit">

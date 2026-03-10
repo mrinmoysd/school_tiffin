@@ -79,10 +79,15 @@ export class MenuItemsService {
       select: {
         id: true,
         name: true,
+        dayOfWeek: true,
+        dayNumber: true,
+        items: true,
         description: true,
+        calories: true,
         imageUrl: true,
         allergenInfo: true,
         createdAt: true,
+        updatedAt: true,
       },
       orderBy: {
         name: 'asc',

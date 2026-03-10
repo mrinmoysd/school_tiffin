@@ -361,6 +361,7 @@ export interface CreateCMSPageDto {
   slug: string;
   title: string;
   content: string;
+  isPublished?: boolean;
 }
 
 export interface UpdateCMSPageDto extends Partial<CreateCMSPageDto> {

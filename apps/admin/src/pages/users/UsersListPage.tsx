@@ -26,10 +26,10 @@ const UsersListPage = () => {
 
   // Toggle active mutation
   const toggleActiveMutation = useMutation({
-    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
-      userService.toggleActive(id, isActive),
-    onSuccess: () => {
+    mutationFn: ({ id }: { id: string }) => userService.toggleActive(id),
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['user', variables.id] });
       message.success('User status updated');
     },
     onError: (error: Error) => {
@@ -87,7 +87,7 @@ const UsersListPage = () => {
       render: (isActive: boolean, record) => (
         <Switch
           checked={isActive}
-          onChange={checked => toggleActiveMutation.mutate({ id: record.id, isActive: checked })}
+          onChange={() => toggleActiveMutation.mutate({ id: record.id })}
           loading={toggleActiveMutation.isPending}
         />
       ),

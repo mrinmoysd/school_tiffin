@@ -50,9 +50,10 @@ const UserDetailPage = () => {
 
   // Toggle active mutation
   const toggleActiveMutation = useMutation({
-    mutationFn: (isActive: boolean) => userService.toggleActive(id!, isActive),
+    mutationFn: () => userService.toggleActive(id!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user', id] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       message.success('User status updated');
     },
     onError: (error: Error) => {
@@ -296,7 +297,7 @@ const UserDetailPage = () => {
               <Text>Account Active</Text>
               <Switch
                 checked={user.isActive}
-                onChange={checked => toggleActiveMutation.mutate(checked)}
+                onChange={() => toggleActiveMutation.mutate()}
                 loading={toggleActiveMutation.isPending}
               />
             </div>
