@@ -12,3 +12,15 @@ export interface Student {
   school: StudentSchool | null;
   createdAt: string;
 }
+
+export interface CreateStudentPayload {
+  fullName: string;
+  grade: string;
+  schoolId: string;
+}
+
+export interface UpdateStudentPayload {
+  fullName?: string;
+  grade?: string;
+  schoolId?: string;
+}

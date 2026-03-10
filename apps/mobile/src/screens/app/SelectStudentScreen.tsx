@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { studentsApi, type Student } from '../../api/students';
@@ -55,6 +56,12 @@ export const SelectStudentScreen = ({ navigation, route }: Props) => {
 
     void run();
   }, [loadStudents]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadStudents();
+    }, [loadStudents]),
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -136,6 +143,18 @@ export const SelectStudentScreen = ({ navigation, route }: Props) => {
                     <Text style={styles.studentMeta}>
                       School: {student.school?.name ?? 'Not assigned'}
                     </Text>
+
+                    <Pressable
+                      onPress={() =>
+                        navigation.navigate('AddStudent', {
+                          mealPlanId: route.params.mealPlanId,
+                          schoolId: route.params.schoolId,
+                          studentId: student.id,
+                        })
+                      }
+                    >
+                      <Text style={styles.editLink}>Edit</Text>
+                    </Pressable>
                   </View>
                 </View>
               </Pressable>
@@ -291,5 +310,12 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     marginTop: 10,
+  },
+  editLink: {
+    marginTop: 6,
+    color: '#0369A1',
+    fontSize: 13,
+    fontWeight: '600',
+    alignSelf: 'flex-start',
   },
 });

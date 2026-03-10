@@ -291,20 +291,20 @@
 **Priority**: High
 **Dependencies**: Backend 2.2.3
 
-- [ ] Create AddStudentScreen
-- [ ] Implement form
+- [x] Create AddStudentScreen
+- [x] Implement form
   - Full name field
   - Date of birth picker
   - Grade dropdown
   - School selection dropdown
   - Allergies field (optional)
   - Dietary preferences field (optional)
-- [ ] Add validation
+- [x] Add validation
   - Required fields
   - Valid date
-- [ ] Connect to students API
-- [ ] Handle create/update
-- [ ] Navigate back on success
+- [x] Connect to students API
+- [x] Handle create/update
+- [x] Navigate back on success
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
