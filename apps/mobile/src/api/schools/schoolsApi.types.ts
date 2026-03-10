@@ -3,9 +3,12 @@ export interface School {
   name: string;
   address: string;
   city: string | null;
+  state?: string | null;
+  pincode?: string | null;
   contactPhone: string | null;
   contactEmail: string | null;
   operatingDays: string[] | string;
+  deliveryInstructions?: string | null;
   isServiceAvailable: boolean;
   imageUrl?: string | null;
   createdAt: string;

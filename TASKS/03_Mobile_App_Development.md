@@ -201,20 +201,20 @@
 **Priority**: High
 **Dependencies**: Backend 2.3.1, 2.3.2
 
-- [ ] Create SchoolDetailScreen
-- [ ] Display school information
+- [x] Create SchoolDetailScreen
+- [x] Display school information
   - Name, address, contact
   - Operating days
   - Delivery instructions
-- [ ] Display meal plans list
+- [x] Display meal plans list
   - Plan name, type, price
   - Duration
   - Thumbnail image
-- [ ] Add "View Menu" button for each plan
-- [ ] Add "Subscribe" button
-- [ ] Connect to APIs
-- [ ] Handle loading/error states
-- [ ] Navigate to meal plan details
+- [x] Add "View Menu" button for each plan
+- [x] Add "Subscribe" button
+- [x] Connect to APIs
+- [x] Handle loading/error states
+- [x] Navigate to meal plan details
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**

@@ -6,8 +6,10 @@ import { linking } from './linking';
 import { RootStackParamList } from './types';
 import {
   HomeScreen,
+  MealPlanDetailScreen,
   OrdersScreen,
   PauseRequestScreen,
+  SelectStudentScreen,
   SchoolDetailScreen,
   SchoolListScreen,
   SubscriptionDetailScreen,
@@ -46,6 +48,16 @@ export const AppNavigator = () => {
               name="SchoolDetail"
               component={SchoolDetailScreen}
               options={{ title: 'School Details' }}
+            />
+            <Stack.Screen
+              name="MealPlanDetail"
+              component={MealPlanDetailScreen}
+              options={{ title: 'Meal Plan Details' }}
+            />
+            <Stack.Screen
+              name="SelectStudent"
+              component={SelectStudentScreen}
+              options={{ title: 'Select Student' }}
             />
             <Stack.Screen name="Orders" component={OrdersScreen} />
             <Stack.Screen

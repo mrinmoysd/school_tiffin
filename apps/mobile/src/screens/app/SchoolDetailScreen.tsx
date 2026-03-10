@@ -1,29 +1,54 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
-import { schoolsApi, type SchoolDetails } from '../../api/schools';
 import { ApiClientError } from '../../api/client/apiClient';
+import { schoolsApi, type SchoolDetails } from '../../api/schools';
+import { mealPlansApi, type MealPlanSummary } from '../../api/meal-plans';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SchoolDetail'>;
 
-export const SchoolDetailScreen = ({ route }: Props) => {
+const formatOperatingDays = (operatingDays: string[] | string) => {
+  if (Array.isArray(operatingDays)) {
+    return operatingDays.join(', ');
+  }
+
+  return operatingDays.replace(/,/g, ', ');
+};
+
+const formatAmount = (value: number | string, currency: string) => `${currency} ${value}`;
+
+export const SchoolDetailScreen = ({ route, navigation }: Props) => {
   const [school, setSchool] = useState<SchoolDetails | null>(null);
+  const [mealPlans, setMealPlans] = useState<MealPlanSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadSchoolDetails = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await schoolsApi.getSchoolDetails(route.params.schoolId);
-      setSchool(response);
+      const [schoolResponse, mealPlansResponse] = await Promise.all([
+        schoolsApi.getSchoolDetails(route.params.schoolId),
+        mealPlansApi.getMealPlansBySchool(route.params.schoolId),
+      ]);
+
+      setSchool(schoolResponse);
+      setMealPlans(mealPlansResponse);
     } catch (requestError) {
       if (requestError instanceof ApiClientError) {
         setError(requestError.message);
       } else {
-        setError('Unable to load school details.');
+        setError('Unable to load school details right now.');
       }
     } finally {
       setLoading(false);
@@ -31,8 +56,8 @@ export const SchoolDetailScreen = ({ route }: Props) => {
   }, [route.params.schoolId]);
 
   useEffect(() => {
-    void loadSchoolDetails();
-  }, [loadSchoolDetails]);
+    void loadData();
+  }, [loadData]);
 
   if (loading) {
     return (
@@ -46,6 +71,9 @@ export const SchoolDetailScreen = ({ route }: Props) => {
     return (
       <View style={styles.centered}>
         <Text style={styles.errorText}>{error}</Text>
+        <Pressable onPress={() => void loadData()}>
+          <Text style={styles.retryText}>Retry</Text>
+        </Pressable>
       </View>
     );
   }
@@ -59,25 +87,81 @@ export const SchoolDetailScreen = ({ route }: Props) => {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{school.name}</Text>
-      <Text style={styles.subtitle}>{school.address}</Text>
-      <Text style={styles.metaText}>City: {school.city ?? 'N/A'}</Text>
-      <Text style={styles.metaText}>
-        Service: {school.isServiceAvailable ? 'Available' : 'Unavailable'}
-      </Text>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.schoolCard}>
+        <Text style={styles.title}>{school.name}</Text>
+        <Text style={styles.metaText}>{school.address}</Text>
+        <Text style={styles.metaText}>
+          {school.city ?? 'N/A'}
+          {school.state ? `, ${school.state}` : ''}
+          {school.pincode ? ` - ${school.pincode}` : ''}
+        </Text>
+        <Text style={styles.metaText}>Contact: {school.contactPhone ?? 'N/A'}</Text>
+        <Text style={styles.metaText}>Email: {school.contactEmail ?? 'N/A'}</Text>
+        <Text style={styles.metaText}>
+          Operating Days: {formatOperatingDays(school.operatingDays)}
+        </Text>
+        <Text style={styles.metaText}>
+          Delivery Instructions: {school.deliveryInstructions?.trim() || 'Not provided'}
+        </Text>
+      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Meal Plans</Text>
-        {school.mealPlans.length === 0 ? (
-          <Text style={styles.helperText}>No active meal plans currently available.</Text>
+        {mealPlans.length === 0 ? (
+          <View style={styles.emptyCard}>
+            <Text style={styles.helperText}>No active meal plans available for this school.</Text>
+          </View>
         ) : (
-          school.mealPlans.map(plan => (
+          mealPlans.map(plan => (
             <View style={styles.planCard} key={plan.id}>
-              <Text style={styles.planName}>{plan.name}</Text>
-              <Text style={styles.planMeta}>
-                {plan.currency} {plan.pricePerDay}/day
-              </Text>
+              {plan.imageUrl ? (
+                <Image
+                  source={{ uri: plan.imageUrl }}
+                  style={styles.planImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={styles.planImageFallback}>
+                  <Text style={styles.planImageFallbackText}>
+                    {plan.name.slice(0, 1).toUpperCase()}
+                  </Text>
+                </View>
+              )}
+
+              <View style={styles.planBody}>
+                <Text style={styles.planName}>{plan.name}</Text>
+                <Text style={styles.planMeta}>Type: {plan.planType}</Text>
+                <Text style={styles.planMeta}>Duration: {plan.durationDays} days</Text>
+                <Text style={styles.planMeta}>
+                  Price/day: {formatAmount(plan.pricePerDay, plan.currency)}
+                </Text>
+
+                <View style={styles.actionRow}>
+                  <Pressable
+                    style={[styles.actionButton, styles.menuButton]}
+                    onPress={() => navigation.navigate('MealPlanDetail', { mealPlanId: plan.id })}
+                  >
+                    <Text style={styles.menuButtonLabel}>View Menu</Text>
+                  </Pressable>
+
+                  <Pressable
+                    style={[styles.actionButton, styles.subscribeButton]}
+                    onPress={() =>
+                      navigation.navigate('SelectStudent', {
+                        mealPlanId: plan.id,
+                        schoolId: school.id,
+                      })
+                    }
+                  >
+                    <Text style={styles.subscribeButtonLabel}>Subscribe</Text>
+                  </Pressable>
+                </View>
+              </View>
             </View>
           ))
         )}
@@ -102,29 +186,39 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     paddingHorizontal: 24,
   },
+  schoolCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    padding: 14,
+  },
   title: {
+    color: '#0F172A',
     fontSize: 22,
     fontWeight: '700',
-    color: '#0F172A',
-  },
-  subtitle: {
-    marginTop: 8,
-    fontSize: 14,
-    color: '#334155',
+    marginBottom: 8,
   },
   metaText: {
-    marginTop: 8,
-    fontSize: 14,
     color: '#475569',
+    fontSize: 13,
+    marginBottom: 4,
   },
   section: {
-    marginTop: 20,
+    marginTop: 18,
   },
   sectionTitle: {
-    fontSize: 17,
-    fontWeight: '700',
     color: '#0F172A',
+    fontSize: 18,
+    fontWeight: '700',
     marginBottom: 10,
+  },
+  emptyCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    padding: 14,
   },
   helperText: {
     color: '#64748B',
@@ -134,6 +228,12 @@ const styles = StyleSheet.create({
     color: '#DC2626',
     fontSize: 14,
     textAlign: 'center',
+    marginBottom: 10,
+  },
+  retryText: {
+    color: '#0369A1',
+    fontSize: 14,
+    fontWeight: '600',
   },
   planCard: {
     borderRadius: 12,
@@ -142,15 +242,67 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     padding: 12,
     marginBottom: 10,
+    flexDirection: 'row',
+  },
+  planImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 10,
+  },
+  planImageFallback: {
+    width: 64,
+    height: 64,
+    borderRadius: 10,
+    backgroundColor: '#E0F2FE',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  planImageFallbackText: {
+    color: '#0369A1',
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  planBody: {
+    marginLeft: 10,
+    flex: 1,
   },
   planName: {
-    fontSize: 15,
-    fontWeight: '600',
     color: '#0F172A',
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 2,
   },
   planMeta: {
-    marginTop: 4,
-    fontSize: 13,
     color: '#475569',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  actionRow: {
+    marginTop: 10,
+    flexDirection: 'row',
+  },
+  actionButton: {
+    height: 36,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+  },
+  menuButton: {
+    backgroundColor: '#DBEAFE',
+    marginRight: 8,
+  },
+  menuButtonLabel: {
+    color: '#1D4ED8',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  subscribeButton: {
+    backgroundColor: '#DCFCE7',
+  },
+  subscribeButtonLabel: {
+    color: '#166534',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
