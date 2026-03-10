@@ -59,40 +59,53 @@ const OrderDetailPage = () => {
   // Transaction columns
   const transactionColumns = [
     {
-      title: 'Transaction ID',
+      title: <span className="whitespace-nowrap">Transaction ID</span>,
       dataIndex: 'transactionId',
       key: 'transactionId',
-      render: (text: string) => <Text code>{text}</Text>,
+      width: 160,
+      ellipsis: true,
+      render: (text: string) => (
+        <Text code className="whitespace-nowrap">
+          {text}
+        </Text>
+      ),
     },
     {
-      title: 'Gateway',
+      title: <span className="whitespace-nowrap">Gateway</span>,
       dataIndex: 'paymentGateway',
       key: 'paymentGateway',
+      width: 120,
+      ellipsis: true,
     },
     {
-      title: 'Gateway Txn ID',
+      title: <span className="whitespace-nowrap">Gateway Txn ID</span>,
       dataIndex: 'gatewayTransactionId',
       key: 'gatewayTransactionId',
+      width: 160,
+      ellipsis: true,
       render: (text: string) => text || '-',
     },
     {
-      title: 'Amount',
+      title: <span className="whitespace-nowrap">Amount</span>,
       dataIndex: 'amount',
       key: 'amount',
+      width: 110,
       render: (amount: number) => `₹${(amount / 100).toLocaleString()}`,
     },
     {
-      title: 'Status',
+      title: <span className="whitespace-nowrap">Status</span>,
       dataIndex: 'status',
       key: 'status',
+      width: 120,
       render: (status: TransactionStatus) => (
         <Tag color={transactionStatusColors[status]}>{status}</Tag>
       ),
     },
     {
-      title: 'Date',
+      title: <span className="whitespace-nowrap">Date</span>,
       dataIndex: 'createdAt',
       key: 'createdAt',
+      width: 150,
       render: (date: string) => dayjs(date).format('MMM DD, YYYY HH:mm'),
     },
   ];
@@ -100,7 +113,7 @@ const OrderDetailPage = () => {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/orders')} />
         <div>
           <div className="flex items-center gap-3">
@@ -117,11 +130,11 @@ const OrderDetailPage = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Order Details */}
-        <div className="lg:col-span-2">
+        <div className="xl:col-span-2">
           <Card title="Order Details" className="mb-6">
-            <Descriptions column={{ xs: 1, sm: 2 }}>
+            <Descriptions column={{ xs: 1, sm: 2, md: 3 }}>
               <Descriptions.Item label="Order Number">{order.orderNumber}</Descriptions.Item>
               <Descriptions.Item label="Status">
                 <Tag color={statusColors[order.status]}>{order.status}</Tag>
@@ -130,17 +143,19 @@ const OrderDetailPage = () => {
               <Descriptions.Item label="Subscription">
                 <Button
                   type="link"
-                  className="p-0"
+                  className="p-0 max-w-full"
                   onClick={() => navigate(`/subscriptions/${order.subscriptionId}`)}
                 >
-                  {order.subscription?.subscriptionNumber}
+                  <span className="block truncate">{order.subscription?.subscriptionNumber}</span>
                 </Button>
               </Descriptions.Item>
               <Descriptions.Item label="Payment Method">
                 {order.paymentMethod || '-'}
               </Descriptions.Item>
               <Descriptions.Item label="Gateway Order ID">
-                <Text code>{order.paymentGatewayOrderId || '-'}</Text>
+                <Text code className="block break-all">
+                  {order.paymentGatewayOrderId || '-'}
+                </Text>
               </Descriptions.Item>
               {order.paidAt && (
                 <Descriptions.Item label="Paid At">
@@ -157,19 +172,23 @@ const OrderDetailPage = () => {
 
           {/* Transactions */}
           <Card title="Payment Transactions">
-            <Table
-              columns={transactionColumns}
-              dataSource={order.transactions}
-              rowKey="id"
-              pagination={false}
-              size="small"
-              locale={{ emptyText: 'No transactions' }}
-            />
+            <div className="table-scrollbar">
+              <Table
+                columns={transactionColumns}
+                dataSource={order.transactions}
+                rowKey="id"
+                pagination={false}
+                size="small"
+                tableLayout="fixed"
+                scroll={{ x: 760 }}
+                locale={{ emptyText: 'No transactions' }}
+              />
+            </div>
           </Card>
         </div>
 
         {/* Amount Summary & Timeline */}
-        <div>
+        <div className="space-y-6">
           <Card title="Amount Summary" className="mb-6">
             <div className="space-y-3">
               <div className="flex justify-between">

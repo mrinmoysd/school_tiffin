@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Table,
@@ -16,6 +16,7 @@ import {
   Tag,
   Spin,
   Descriptions,
+  Tooltip as AntTooltip,
 } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -42,6 +43,37 @@ const MenuManagementPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [form] = Form.useForm();
+
+  const EllipsisCell = ({ text, className }: { text?: string; className?: string }) => {
+    const spanRef = useRef<{ scrollWidth: number; clientWidth: number } | null>(null);
+    const [isOverflow, setIsOverflow] = useState(false);
+
+    const checkOverflow = () => {
+      const el = spanRef.current;
+      if (!el) return;
+      setIsOverflow(el.scrollWidth > el.clientWidth);
+    };
+
+    return (
+      <AntTooltip
+        title={text}
+        open={isOverflow ? undefined : false}
+        mouseEnterDelay={0.05}
+        mouseLeaveDelay={0.1}
+        overlayClassName="st-ellipsis-tooltip"
+      >
+        <span
+          ref={node => {
+            spanRef.current = node;
+          }}
+          onMouseEnter={checkOverflow}
+          className={`block truncate ${className || ''}`}
+        >
+          {text || '-'}
+        </span>
+      </AntTooltip>
+    );
+  };
 
   // Fetch meal plan
   const { data: mealPlan, isLoading: mealPlanLoading } = useQuery({
@@ -150,14 +182,14 @@ const MenuManagementPage = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
-      render: (name: string) => <Text strong>{name}</Text>,
+      render: (name: string) => <EllipsisCell text={name} className="font-semibold" />,
     },
     {
       title: 'Items',
       dataIndex: 'items',
       key: 'items',
       ellipsis: true,
-      render: (items: string) => <Text className="text-gray-600">{items}</Text>,
+      render: (items: string) => <EllipsisCell text={items} className="text-gray-600" />,
     },
     {
       title: 'Calories',
@@ -171,7 +203,7 @@ const MenuManagementPage = () => {
       dataIndex: 'allergenInfo',
       key: 'allergenInfo',
       ellipsis: true,
-      render: (info: string) => info || '-',
+      render: (info: string) => <EllipsisCell text={info} />,
     },
     {
       title: 'Actions',

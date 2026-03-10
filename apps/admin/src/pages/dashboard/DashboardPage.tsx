@@ -157,27 +157,38 @@ const DashboardPage = () => {
   // Recent orders columns
   const orderColumns: ColumnsType<RecentOrderRow> = [
     {
-      title: 'Order',
+      title: <span className="whitespace-nowrap">Order</span>,
       dataIndex: 'orderNumber',
       key: 'orderNumber',
-      render: (text: string) => <Text strong>{text}</Text>,
+      width: 140,
+      ellipsis: true,
+      render: (text: string) => (
+        <Text strong className="whitespace-nowrap">
+          {text}
+        </Text>
+      ),
     },
     {
-      title: 'Amount',
+      title: <span className="whitespace-nowrap">Amount</span>,
       dataIndex: 'finalAmount',
       key: 'finalAmount',
+      width: 110,
       render: (amount: number) => `₹${(amount / 100).toLocaleString()}`,
     },
     {
-      title: 'Status',
+      title: <span className="whitespace-nowrap">Status</span>,
       dataIndex: 'status',
       key: 'status',
-      render: (status: OrderStatus) => getOrderStatusTag(status),
+      width: 110,
+      render: (status: OrderStatus) => (
+        <span className="whitespace-nowrap">{getOrderStatusTag(status)}</span>
+      ),
     },
     {
-      title: 'Date',
+      title: <span className="whitespace-nowrap">Date</span>,
       dataIndex: 'createdAt',
       key: 'createdAt',
+      width: 120,
       render: (date: string) => dayjs(date).format('MMM DD, HH:mm'),
     },
   ];
@@ -205,7 +216,7 @@ const DashboardPage = () => {
 
       {/* Stats Cards */}
       <Row gutter={[16, 16]} className="mb-6">
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={12} xl={6}>
           <StatsCard
             title="Active Subscriptions"
             value={stats?.activeSubscriptions || 0}
@@ -214,7 +225,7 @@ const DashboardPage = () => {
             loading={statsLoading}
           />
         </Col>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={12} xl={6}>
           <StatsCard
             title="Today's Deliveries"
             value={stats?.todayDeliveries || 0}
@@ -223,7 +234,7 @@ const DashboardPage = () => {
             loading={statsLoading}
           />
         </Col>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={12} xl={6}>
           <StatsCard
             title="Monthly Revenue"
             value={stats ? `₹${((stats.monthlyRevenue || 0) / 100).toLocaleString()}` : '₹0'}
@@ -232,7 +243,7 @@ const DashboardPage = () => {
             loading={statsLoading}
           />
         </Col>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={24} sm={12} lg={12} xl={6}>
           <StatsCard
             title="Pending Pause Requests"
             value={stats?.pendingPauseRequests || 0}
@@ -245,8 +256,8 @@ const DashboardPage = () => {
 
       {/* Secondary Stats */}
       <Row gutter={[16, 16]} className="mb-6">
-        <Col xs={24} sm={8}>
-          <Card>
+        <Col xs={24} sm={12} lg={8}>
+          <Card className="h-full">
             <Statistic
               title="Active Schools"
               value={stats?.activeSchools || 0}
@@ -255,8 +266,8 @@ const DashboardPage = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={8}>
-          <Card>
+        <Col xs={24} sm={12} lg={8}>
+          <Card className="h-full">
             <Statistic
               title="Total Parents"
               value={stats?.totalParents || 0}
@@ -265,8 +276,8 @@ const DashboardPage = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={8}>
-          <Card>
+        <Col xs={24} sm={12} lg={8}>
+          <Card className="h-full">
             <Statistic
               title="Completed Deliveries Today"
               value={stats?.completedDeliveriesToday || 0}
@@ -279,7 +290,7 @@ const DashboardPage = () => {
 
       {/* Recent Activity */}
       <Row gutter={[16, 16]}>
-        <Col xs={24} lg={12}>
+        <Col xs={24} lg={14} xl={15}>
           <Card
             title={
               <Space>
@@ -309,7 +320,7 @@ const DashboardPage = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} lg={12}>
+        <Col xs={24} lg={10} xl={9}>
           <Card
             title={
               <Space>
@@ -330,6 +341,8 @@ const DashboardPage = () => {
               pagination={false}
               loading={activityLoading}
               size="small"
+              tableLayout="fixed"
+              scroll={{ x: 'max-content' }}
               onRow={record => ({
                 onClick: () => navigate(`/orders/${record.id}`),
                 className: 'cursor-pointer hover:bg-gray-50',

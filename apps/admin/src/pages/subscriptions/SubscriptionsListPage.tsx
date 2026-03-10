@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Input, Select, Typography, Card, Tag, DatePicker, Button } from 'antd';
+import { Table, Input, Select, Typography, Card, Tag, DatePicker, Button, Tooltip } from 'antd';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { subscriptionService, schoolService } from '@/services';
@@ -37,6 +37,43 @@ const SubscriptionsListPage = () => {
     [SubscriptionStatus.CANCELLED]: 'red',
   };
 
+  const ellipsisTooltip = {
+    mouseEnterDelay: 0.05,
+    mouseLeaveDelay: 0.1,
+    overlayClassName: 'st-ellipsis-tooltip',
+  };
+
+  const EllipsisCell = ({ text, strong }: { text?: string; strong?: boolean }) => {
+    const spanRef = useRef<{ scrollWidth: number; clientWidth: number } | null>(null);
+    const [isOverflow, setIsOverflow] = useState(false);
+
+    const checkOverflow = () => {
+      const el = spanRef.current;
+      if (!el) return;
+      setIsOverflow(el.scrollWidth > el.clientWidth);
+    };
+
+    return (
+      <Tooltip
+        title={text}
+        open={isOverflow ? undefined : false}
+        mouseEnterDelay={ellipsisTooltip.mouseEnterDelay}
+        mouseLeaveDelay={ellipsisTooltip.mouseLeaveDelay}
+        overlayClassName={ellipsisTooltip.overlayClassName}
+      >
+        <span
+          ref={node => {
+            spanRef.current = node;
+          }}
+          onMouseEnter={checkOverflow}
+          className={`block truncate ${strong ? 'font-semibold' : ''}`}
+        >
+          {text || '-'}
+        </span>
+      </Tooltip>
+    );
+  };
+
   // Table columns
   const columns: ColumnsType<Subscription> = [
     {
@@ -45,11 +82,7 @@ const SubscriptionsListPage = () => {
       key: 'subscriptionNumber',
       width: 150,
       ellipsis: true,
-      render: (text: string) => (
-        <Text strong className="whitespace-nowrap">
-          {text}
-        </Text>
-      ),
+      render: (text: string) => <EllipsisCell text={text} strong />,
     },
     {
       title: <span className="whitespace-nowrap">Parent</span>,
@@ -57,6 +90,7 @@ const SubscriptionsListPage = () => {
       key: 'parent',
       width: 150,
       ellipsis: true,
+      render: (text: string) => <EllipsisCell text={text} />,
     },
     {
       title: <span className="whitespace-nowrap">Student</span>,
@@ -64,6 +98,7 @@ const SubscriptionsListPage = () => {
       key: 'student',
       width: 150,
       ellipsis: true,
+      render: (text: string) => <EllipsisCell text={text} />,
     },
     {
       title: <span className="whitespace-nowrap">School</span>,
@@ -71,6 +106,7 @@ const SubscriptionsListPage = () => {
       key: 'school',
       width: 160,
       ellipsis: true,
+      render: (text: string) => <EllipsisCell text={text} />,
     },
     {
       title: <span className="whitespace-nowrap">Meal Plan</span>,
@@ -78,6 +114,7 @@ const SubscriptionsListPage = () => {
       key: 'mealPlan',
       width: 140,
       ellipsis: true,
+      render: (text: string) => <EllipsisCell text={text} />,
     },
     {
       title: <span className="whitespace-nowrap">Duration</span>,
@@ -203,24 +240,26 @@ const SubscriptionsListPage = () => {
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={subscriptions}
-          rowKey="id"
-          loading={isLoading}
-          tableLayout="fixed"
-          scroll={{ x: 'max-content' }}
-          pagination={{
-            total: subscriptions?.length,
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: total => `Total ${total} subscriptions`,
-          }}
-          onRow={record => ({
-            onClick: () => navigate(`/subscriptions/${record.id}`),
-            className: 'cursor-pointer hover:bg-gray-50',
-          })}
-        />
+        <div className="table-scrollbar">
+          <Table
+            columns={columns}
+            dataSource={subscriptions}
+            rowKey="id"
+            loading={isLoading}
+            tableLayout="fixed"
+            scroll={{ x: 1200 }}
+            pagination={{
+              total: subscriptions?.length,
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: total => `Total ${total} subscriptions`,
+            }}
+            onRow={record => ({
+              onClick: () => navigate(`/subscriptions/${record.id}`),
+              className: 'cursor-pointer hover:bg-gray-50',
+            })}
+          />
+        </div>
       </Card>
     </div>
   );

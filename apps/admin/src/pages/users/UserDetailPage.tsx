@@ -108,13 +108,31 @@ const UserDetailPage = () => {
 
   // Students columns
   const studentColumns = [
-    { title: 'Name', dataIndex: 'fullName', key: 'fullName' },
-    { title: 'Grade', dataIndex: 'grade', key: 'grade' },
-    { title: 'School', dataIndex: ['school', 'name'], key: 'school' },
     {
-      title: 'Active',
+      title: <span className="whitespace-nowrap">Name</span>,
+      dataIndex: 'fullName',
+      key: 'fullName',
+      width: 160,
+      ellipsis: true,
+    },
+    {
+      title: <span className="whitespace-nowrap">Grade</span>,
+      dataIndex: 'grade',
+      key: 'grade',
+      width: 90,
+    },
+    {
+      title: <span className="whitespace-nowrap">School</span>,
+      dataIndex: ['school', 'name'],
+      key: 'school',
+      width: 180,
+      ellipsis: true,
+    },
+    {
+      title: <span className="whitespace-nowrap">Active</span>,
       dataIndex: 'isActive',
       key: 'isActive',
+      width: 90,
       render: (active: boolean) => (
         <Tag color={active ? 'green' : 'red'}>{active ? 'Yes' : 'No'}</Tag>
       ),
@@ -124,29 +142,45 @@ const UserDetailPage = () => {
   // Subscriptions columns
   const subscriptionColumns = [
     {
-      title: 'Subscription #',
+      title: <span className="whitespace-nowrap">Subscription #</span>,
       dataIndex: 'subscriptionNumber',
       key: 'subscriptionNumber',
+      width: 160,
+      ellipsis: true,
       render: (text: string, record: { id: string }) => (
         <Button type="link" className="p-0" onClick={() => navigate(`/subscriptions/${record.id}`)}>
           {text}
         </Button>
       ),
     },
-    { title: 'Student', dataIndex: ['student', 'fullName'], key: 'student' },
-    { title: 'Meal Plan', dataIndex: ['mealPlan', 'name'], key: 'mealPlan' },
     {
-      title: 'Status',
+      title: <span className="whitespace-nowrap">Student</span>,
+      dataIndex: ['student', 'fullName'],
+      key: 'student',
+      width: 150,
+      ellipsis: true,
+    },
+    {
+      title: <span className="whitespace-nowrap">Meal Plan</span>,
+      dataIndex: ['mealPlan', 'name'],
+      key: 'mealPlan',
+      width: 150,
+      ellipsis: true,
+    },
+    {
+      title: <span className="whitespace-nowrap">Status</span>,
       dataIndex: 'status',
       key: 'status',
+      width: 120,
       render: (status: SubscriptionStatus) => (
         <Tag color={subscriptionStatusColors[status]}>{status}</Tag>
       ),
     },
     {
-      title: 'End Date',
+      title: <span className="whitespace-nowrap">End Date</span>,
       dataIndex: 'endDate',
       key: 'endDate',
+      width: 140,
       render: (date: string) => dayjs(date).format('MMM DD, YYYY'),
     },
   ];
@@ -154,9 +188,11 @@ const UserDetailPage = () => {
   // Orders columns
   const orderColumns = [
     {
-      title: 'Order #',
+      title: <span className="whitespace-nowrap">Order #</span>,
       dataIndex: 'orderNumber',
       key: 'orderNumber',
+      width: 150,
+      ellipsis: true,
       render: (text: string, record: { id: string }) => (
         <Button type="link" className="p-0" onClick={() => navigate(`/orders/${record.id}`)}>
           {text}
@@ -164,21 +200,24 @@ const UserDetailPage = () => {
       ),
     },
     {
-      title: 'Amount',
+      title: <span className="whitespace-nowrap">Amount</span>,
       dataIndex: 'finalAmount',
       key: 'finalAmount',
+      width: 120,
       render: (amount: number) => `₹${(amount / 100).toLocaleString()}`,
     },
     {
-      title: 'Status',
+      title: <span className="whitespace-nowrap">Status</span>,
       dataIndex: 'status',
       key: 'status',
+      width: 120,
       render: (status: OrderStatus) => <Tag color={orderStatusColors[status]}>{status}</Tag>,
     },
     {
-      title: 'Date',
+      title: <span className="whitespace-nowrap">Date</span>,
       dataIndex: 'createdAt',
       key: 'createdAt',
+      width: 140,
       render: (date: string) => dayjs(date).format('MMM DD, YYYY'),
     },
   ];
@@ -192,13 +231,17 @@ const UserDetailPage = () => {
         </span>
       ),
       children: (
-        <Table
-          columns={studentColumns}
-          dataSource={students}
-          rowKey="id"
-          pagination={false}
-          size="small"
-        />
+        <div className="table-scrollbar">
+          <Table
+            columns={studentColumns}
+            dataSource={students}
+            rowKey="id"
+            pagination={false}
+            size="small"
+            tableLayout="fixed"
+            scroll={{ x: 520 }}
+          />
+        </div>
       ),
     },
     {
@@ -209,13 +252,17 @@ const UserDetailPage = () => {
         </span>
       ),
       children: (
-        <Table
-          columns={subscriptionColumns}
-          dataSource={subscriptions}
-          rowKey="id"
-          pagination={{ pageSize: 5 }}
-          size="small"
-        />
+        <div className="table-scrollbar">
+          <Table
+            columns={subscriptionColumns}
+            dataSource={subscriptions}
+            rowKey="id"
+            pagination={{ pageSize: 5 }}
+            size="small"
+            tableLayout="fixed"
+            scroll={{ x: 640 }}
+          />
+        </div>
       ),
     },
     {
@@ -226,13 +273,17 @@ const UserDetailPage = () => {
         </span>
       ),
       children: (
-        <Table
-          columns={orderColumns}
-          dataSource={orders}
-          rowKey="id"
-          pagination={{ pageSize: 5 }}
-          size="small"
-        />
+        <div className="table-scrollbar">
+          <Table
+            columns={orderColumns}
+            dataSource={orders}
+            rowKey="id"
+            pagination={{ pageSize: 5 }}
+            size="small"
+            tableLayout="fixed"
+            scroll={{ x: 520 }}
+          />
+        </div>
       ),
     },
   ];
@@ -240,7 +291,7 @@ const UserDetailPage = () => {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/users')} />
         <div>
           <Title level={2} className="!mb-0">
@@ -250,7 +301,7 @@ const UserDetailPage = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Profile Card */}
         <Card>
           <div className="text-center mb-6">
@@ -305,7 +356,7 @@ const UserDetailPage = () => {
         </Card>
 
         {/* Activity */}
-        <div className="lg:col-span-2">
+        <div className="xl:col-span-2">
           <Card>
             <Tabs items={tabItems} />
           </Card>
