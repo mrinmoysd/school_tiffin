@@ -1,4 +1,5 @@
 import { API_BASE_URL } from './apiConfig';
+import { tokenStorage } from '../../business/auth/tokenStorage';
 
 interface ApiSuccessResponse<T> {
   success: boolean;
@@ -48,21 +49,32 @@ export class ApiClientError extends Error {
   }
 }
 
-export const apiRequest = async <T>(endpoint: string, init: RequestInit = {}): Promise<T> => {
+interface ApiRequestInit extends RequestInit {
+  requiresAuth?: boolean;
+}
+
+export const apiRequest = async <T>(endpoint: string, init: ApiRequestInit = {}): Promise<T> => {
+  const { requiresAuth = false, ...requestInit } = init;
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   const url = `${API_BASE_URL}${normalizedEndpoint}`;
+  const tokens = requiresAuth ? await tokenStorage.getTokens() : null;
+
+  if (requiresAuth && !tokens?.accessToken) {
+    throw new ApiClientError('Authentication required. Please login again.', 401);
+  }
 
   const headers: Record<string, string> = {
     Accept: 'application/json',
-    ...(init.body ? { 'Content-Type': 'application/json' } : {}),
-    ...(init.headers as Record<string, string>),
+    ...(requestInit.body ? { 'Content-Type': 'application/json' } : {}),
+    ...(tokens?.accessToken ? { Authorization: `Bearer ${tokens.accessToken}` } : {}),
+    ...(requestInit.headers as Record<string, string>),
   };
 
   let response: Response;
 
   try {
     response = await fetch(url, {
-      ...init,
+      ...requestInit,
       headers,
     });
   } catch {

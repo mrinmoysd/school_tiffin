@@ -140,18 +140,18 @@
 **Priority**: High
 **Dependencies**: Backend 2.3.1
 
-- [ ] Create HomeScreen component
-- [ ] Implement header with user greeting
-- [ ] Add "Select Student" dropdown (if multiple students)
-- [ ] Display active subscriptions section
+- [x] Create HomeScreen component
+- [x] Implement header with user greeting
+- [x] Add "Select Student" dropdown (if multiple students)
+- [x] Display active subscriptions section
   - Subscription card with meal plan name
   - Delivery count (remaining/total)
   - Quick actions (pause, view details)
-- [ ] Add "Browse Schools" button
-- [ ] Add "My Orders" quick link
-- [ ] Implement pull-to-refresh
-- [ ] Connect to subscriptions API
-- [ ] Handle empty states
+- [x] Add "Browse Schools" button
+- [x] Add "My Orders" quick link
+- [x] Implement pull-to-refresh
+- [x] Connect to subscriptions API
+- [x] Handle empty states
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**

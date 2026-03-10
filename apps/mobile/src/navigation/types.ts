@@ -6,4 +6,8 @@ export type RootStackParamList = {
   ForgotPassword: undefined;
   ResetPassword: { token?: string } | undefined;
   Home: undefined;
+  SchoolList: undefined;
+  Orders: undefined;
+  SubscriptionDetail: { subscriptionId: string };
+  PauseRequest: { subscriptionId: string };
 };

@@ -4,7 +4,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { linking } from './linking';
 import { RootStackParamList } from './types';
-import { HomeScreen } from '../screens/app';
+import {
+  HomeScreen,
+  OrdersScreen,
+  PauseRequestScreen,
+  SchoolListScreen,
+  SubscriptionDetailScreen,
+} from '../screens/app';
 import {
   ForgotPasswordScreen,
   LoginScreen,
@@ -32,7 +38,21 @@ export const AppNavigator = () => {
     <NavigationContainer linking={linking}>
       <Stack.Navigator>
         {isAuthenticated ? (
-          <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+          <>
+            <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="SchoolList" component={SchoolListScreen} />
+            <Stack.Screen name="Orders" component={OrdersScreen} />
+            <Stack.Screen
+              name="SubscriptionDetail"
+              component={SubscriptionDetailScreen}
+              options={{ title: 'Subscription Details' }}
+            />
+            <Stack.Screen
+              name="PauseRequest"
+              component={PauseRequestScreen}
+              options={{ title: 'Pause Request' }}
+            />
+          </>
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />

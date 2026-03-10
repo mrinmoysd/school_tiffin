@@ -382,9 +382,18 @@ importers:
       '@types/react':
         specifier: ~19.0.10
         version: 19.0.14
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^6.19.0
+        version: 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.57.1)(typescript@5.8.3)
+      '@typescript-eslint/parser':
+        specifier: ^6.19.0
+        version: 6.21.0(eslint@8.57.1)(typescript@5.8.3)
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
+      eslint:
+        specifier: ^8.56.0
+        version: 8.57.1
       typescript:
         specifier: ~5.8.3
         version: 5.8.3
