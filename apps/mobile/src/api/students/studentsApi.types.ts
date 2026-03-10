@@ -8,7 +8,7 @@ export interface StudentSchool {
 export interface Student {
   id: string;
   fullName: string;
-  grade: number;
+  grade: number | string | null;
   school: StudentSchool | null;
   createdAt: string;
 }

@@ -5,6 +5,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { linking } from './linking';
 import { RootStackParamList } from './types';
 import {
+  AddStudentScreen,
+  DateSelectionScreen,
   HomeScreen,
   MealPlanDetailScreen,
   OrdersScreen,
@@ -58,6 +60,16 @@ export const AppNavigator = () => {
               name="SelectStudent"
               component={SelectStudentScreen}
               options={{ title: 'Select Student' }}
+            />
+            <Stack.Screen
+              name="AddStudent"
+              component={AddStudentScreen}
+              options={{ title: 'Add Student' }}
+            />
+            <Stack.Screen
+              name="DateSelection"
+              component={DateSelectionScreen}
+              options={{ title: 'Date Selection' }}
             />
             <Stack.Screen name="Orders" component={OrdersScreen} />
             <Stack.Screen

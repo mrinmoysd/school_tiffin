@@ -266,14 +266,14 @@
 **Priority**: High
 **Dependencies**: Backend 2.2.3
 
-- [ ] Create SelectStudentScreen (or modal)
-- [ ] Display list of parent's students
+- [x] Create SelectStudentScreen (or modal)
+- [x] Display list of parent's students
   - Student name, grade, school
   - Radio button selection
-- [ ] Add "Add New Student" button
-- [ ] Handle student selection
-- [ ] Navigate to date selection
-- [ ] Connect to students API
+- [x] Add "Add New Student" button
+- [x] Handle student selection
+- [x] Navigate to date selection
+- [x] Connect to students API
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**

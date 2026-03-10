@@ -1,18 +1,177 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
+import { studentsApi, type Student } from '../../api/students';
+import { ApiClientError } from '../../api/client/apiClient';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SelectStudent'>;
 
-export const SelectStudentScreen = ({ route }: Props) => {
+const formatGrade = (grade: Student['grade']) => {
+  if (grade === null || grade === undefined || `${grade}`.trim().length === 0) {
+    return 'N/A';
+  }
+
+  return `${grade}`;
+};
+
+export const SelectStudentScreen = ({ navigation, route }: Props) => {
+  const [students, setStudents] = useState<Student[]>([]);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadStudents = useCallback(async () => {
+    setError(null);
+
+    try {
+      const response = await studentsApi.getStudents();
+      setStudents(response);
+    } catch (requestError) {
+      if (requestError instanceof ApiClientError) {
+        setError(requestError.message);
+      } else {
+        setError('Unable to load students.');
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const run = async () => {
+      setLoading(true);
+      await loadStudents();
+      setLoading(false);
+    };
+
+    void run();
+  }, [loadStudents]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadStudents();
+    setRefreshing(false);
+  }, [loadStudents]);
+
+  const eligibleStudents = useMemo(
+    () =>
+      students.filter(student => {
+        return student.school?.id === route.params.schoolId;
+      }),
+    [students, route.params.schoolId],
+  );
+
+  useEffect(() => {
+    if (eligibleStudents.length === 0) {
+      setSelectedStudentId(null);
+      return;
+    }
+
+    if (!selectedStudentId || !eligibleStudents.some(student => student.id === selectedStudentId)) {
+      setSelectedStudentId(eligibleStudents[0].id);
+    }
+  }, [eligibleStudents, selectedStudentId]);
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#0EA5E9" />
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
       <Text style={styles.title}>Select Student</Text>
-      <Text style={styles.subtitle}>Meal Plan ID: {route.params.mealPlanId}</Text>
-      <Text style={styles.subtitle}>School ID: {route.params.schoolId}</Text>
-      <Text style={styles.helper}>Student selection flow is part of task 3.3.1.</Text>
-    </View>
+      <Text style={styles.subtitle}>Choose who this subscription is for.</Text>
+
+      {error ? (
+        <View style={styles.errorCard}>
+          <Text style={styles.errorText}>{error}</Text>
+          <Pressable onPress={() => void loadStudents()}>
+            <Text style={styles.retryText}>Retry</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      <View style={styles.studentsSection}>
+        {eligibleStudents.length === 0 ? (
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyTitle}>No students found for this school</Text>
+            <Text style={styles.emptySubtitle}>
+              Add a student enrolled in this school to continue.
+            </Text>
+          </View>
+        ) : (
+          eligibleStudents.map(student => {
+            const selected = selectedStudentId === student.id;
+
+            return (
+              <Pressable
+                key={student.id}
+                style={[styles.studentCard, selected && styles.studentCardSelected]}
+                onPress={() => setSelectedStudentId(student.id)}
+              >
+                <View style={styles.studentRow}>
+                  <View style={[styles.radioOuter, selected && styles.radioOuterSelected]}>
+                    {selected ? <View style={styles.radioInner} /> : null}
+                  </View>
+
+                  <View style={styles.studentInfo}>
+                    <Text style={styles.studentName}>{student.fullName}</Text>
+                    <Text style={styles.studentMeta}>Grade: {formatGrade(student.grade)}</Text>
+                    <Text style={styles.studentMeta}>
+                      School: {student.school?.name ?? 'Not assigned'}
+                    </Text>
+                  </View>
+                </View>
+              </Pressable>
+            );
+          })
+        )}
+      </View>
+
+      <AppButton
+        title="Add New Student"
+        variant="secondary"
+        onPress={() =>
+          navigation.navigate('AddStudent', {
+            mealPlanId: route.params.mealPlanId,
+            schoolId: route.params.schoolId,
+          })
+        }
+      />
+
+      <AppButton
+        title="Continue to Date Selection"
+        onPress={() => {
+          if (!selectedStudentId) {
+            return;
+          }
+
+          navigation.navigate('DateSelection', {
+            mealPlanId: route.params.mealPlanId,
+            schoolId: route.params.schoolId,
+            studentId: selectedStudentId,
+          });
+        }}
+        disabled={!selectedStudentId}
+        style={styles.continueButton}
+      />
+    </ScrollView>
   );
 };
 
@@ -20,26 +179,117 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
+  },
+  content: {
+    padding: 16,
+    paddingBottom: 24,
+  },
+  centered: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    backgroundColor: '#F8FAFC',
   },
   title: {
     color: '#0F172A',
     fontSize: 22,
     fontWeight: '700',
-    marginBottom: 8,
   },
   subtitle: {
-    color: '#334155',
-    fontSize: 13,
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  helper: {
-    marginTop: 10,
-    color: '#64748B',
+    marginTop: 6,
+    color: '#475569',
     fontSize: 14,
-    textAlign: 'center',
+    marginBottom: 12,
+  },
+  errorCard: {
+    borderRadius: 12,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    padding: 12,
+    marginBottom: 12,
+  },
+  errorText: {
+    color: '#B91C1C',
+    fontSize: 13,
+    marginBottom: 6,
+  },
+  retryText: {
+    color: '#1D4ED8',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  studentsSection: {
+    marginBottom: 14,
+  },
+  emptyCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    padding: 14,
+  },
+  emptyTitle: {
+    color: '#0F172A',
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  emptySubtitle: {
+    color: '#64748B',
+    fontSize: 13,
+  },
+  studentCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    padding: 12,
+    marginBottom: 10,
+  },
+  studentCardSelected: {
+    borderColor: '#38BDF8',
+    backgroundColor: '#F0F9FF',
+  },
+  studentRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#94A3B8',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  radioOuterSelected: {
+    borderColor: '#0284C7',
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#0284C7',
+  },
+  studentInfo: {
+    marginLeft: 10,
+    flex: 1,
+  },
+  studentName: {
+    color: '#0F172A',
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 3,
+  },
+  studentMeta: {
+    color: '#475569',
+    fontSize: 13,
+    marginBottom: 2,
+  },
+  continueButton: {
+    marginTop: 10,
   },
 });
