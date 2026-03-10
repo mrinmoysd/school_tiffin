@@ -79,9 +79,12 @@ const SchoolsListPage = () => {
       icon: <ExclamationCircleOutlined />,
       content: (
         <div>
-          <p>Are you sure you want to delete <strong>{school.name}</strong>?</p>
+          <p>
+            Are you sure you want to delete <strong>{school.name}</strong>?
+          </p>
           <p className="text-gray-500 text-sm mt-2">
-            This action cannot be undone. All associated meal plans and subscriptions will be affected.
+            This action cannot be undone. All associated meal plans and subscriptions will be
+            affected.
           </p>
         </div>
       ),
@@ -95,45 +98,52 @@ const SchoolsListPage = () => {
   // Table columns
   const columns: ColumnsType<School> = [
     {
-      title: 'School Name',
+      title: <span className="whitespace-nowrap">School Name</span>,
       dataIndex: 'name',
       key: 'name',
+      width: 200,
+      ellipsis: true,
       sorter: (a, b) => a.name.localeCompare(b.name),
       render: (name: string, record) => (
-        <div>
-          <Text strong>{name}</Text>
-          <div className="text-xs text-gray-500">{record.code}</div>
+        <div className="min-w-0">
+          <Text strong className="whitespace-nowrap">
+            {name}
+          </Text>
+          <div className="text-xs text-gray-500 truncate">{record.code}</div>
         </div>
       ),
     },
     {
-      title: 'City',
+      title: <span className="whitespace-nowrap">City</span>,
       dataIndex: 'city',
       key: 'city',
+      width: 140,
+      ellipsis: true,
       render: (city: string) => city || '-',
     },
     {
-      title: 'Contact',
+      title: <span className="whitespace-nowrap">Contact</span>,
       key: 'contact',
+      width: 200,
+      ellipsis: true,
       render: (_, record) => (
-        <div>
-          {record.contactEmail && (
-            <div className="text-xs">{record.contactEmail}</div>
-          )}
+        <div className="min-w-0">
+          {record.contactEmail && <div className="text-xs truncate">{record.contactEmail}</div>}
           {record.contactPhone && (
-            <div className="text-xs text-gray-500">{record.contactPhone}</div>
+            <div className="text-xs text-gray-500 truncate">{record.contactPhone}</div>
           )}
           {!record.contactEmail && !record.contactPhone && '-'}
         </div>
       ),
     },
     {
-      title: 'Operating Days',
+      title: <span className="whitespace-nowrap">Operating Days</span>,
       dataIndex: 'operatingDays',
       key: 'operatingDays',
+      width: 220,
       render: (days: string) => (
         <div className="flex flex-wrap gap-1">
-          {days.split(',').map((day) => (
+          {days.split(',').map(day => (
             <Tag key={day} className="text-xs">
               {day}
             </Tag>
@@ -142,14 +152,15 @@ const SchoolsListPage = () => {
       ),
     },
     {
-      title: 'Service Available',
+      title: <span className="whitespace-nowrap">Service Available</span>,
       dataIndex: 'isServiceAvailable',
       key: 'isServiceAvailable',
       align: 'center',
+      width: 160,
       render: (isAvailable: boolean, record) => (
         <Switch
           checked={isAvailable}
-          onChange={(checked) =>
+          onChange={checked =>
             toggleServiceMutation.mutate({ id: record.id, isServiceAvailable: checked })
           }
           loading={toggleServiceMutation.isPending}
@@ -159,16 +170,18 @@ const SchoolsListPage = () => {
       ),
     },
     {
-      title: 'Created',
+      title: <span className="whitespace-nowrap">Created</span>,
       dataIndex: 'createdAt',
       key: 'createdAt',
+      width: 140,
       render: (date: string) => dayjs(date).format('MMM DD, YYYY'),
       sorter: (a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix(),
     },
     {
-      title: 'Actions',
+      title: <span className="whitespace-nowrap">Actions</span>,
       key: 'actions',
       align: 'center',
+      width: 120,
       render: (_, record) => (
         <Space>
           <Tooltip title="Edit">
@@ -196,14 +209,12 @@ const SchoolsListPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <Title level={2} className="!mb-1">Schools</Title>
+          <Title level={2} className="!mb-1">
+            Schools
+          </Title>
           <Text type="secondary">Manage schools and their service availability</Text>
         </div>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => navigate('/schools/create')}
-        >
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/schools/create')}>
           Add School
         </Button>
       </div>
@@ -215,22 +226,22 @@ const SchoolsListPage = () => {
             placeholder="Search by name or code..."
             prefix={<SearchOutlined />}
             value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+            onChange={e => setFilters({ ...filters, search: e.target.value })}
             style={{ maxWidth: 300 }}
             allowClear
           />
           <Select
             placeholder="Filter by city"
             value={filters.city}
-            onChange={(value) => setFilters({ ...filters, city: value })}
+            onChange={value => setFilters({ ...filters, city: value })}
             style={{ width: 200 }}
             allowClear
-            options={cities?.map((city) => ({ label: city, value: city }))}
+            options={cities?.map(city => ({ label: city, value: city }))}
           />
           <Select
             placeholder="Service status"
             value={filters.isServiceAvailable}
-            onChange={(value) => setFilters({ ...filters, isServiceAvailable: value })}
+            onChange={value => setFilters({ ...filters, isServiceAvailable: value })}
             style={{ width: 180 }}
             allowClear
             options={[
@@ -248,11 +259,13 @@ const SchoolsListPage = () => {
           dataSource={schools}
           rowKey="id"
           loading={isLoading}
+          tableLayout="fixed"
+          scroll={{ x: 'max-content' }}
           pagination={{
             total: schools?.length,
             pageSize: 10,
             showSizeChanger: true,
-            showTotal: (total) => `Total ${total} schools`,
+            showTotal: total => `Total ${total} schools`,
           }}
         />
       </Card>

@@ -22,26 +22,29 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
+  error => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor - handle errors and token refresh
 api.interceptors.response.use(
-  (response) => {
+  response => {
     // Return the data directly for convenience
     return response;
   },
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    const requestUrl = originalRequest?.url || '';
+    const isAuthRequest =
+      requestUrl.includes('/auth/login') || requestUrl.includes('/auth/refresh');
 
     // Handle 401 Unauthorized
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest) {
       originalRequest._retry = true;
 
       const refreshToken = useAuthStore.getState().refreshToken;
-      
+
       if (refreshToken) {
         try {
           // Try to refresh the token
@@ -50,7 +53,7 @@ api.interceptors.response.use(
           });
 
           const { accessToken, refreshToken: newRefreshToken } = response.data.data;
-          
+
           // Update tokens in store
           useAuthStore.getState().setTokens(accessToken, newRefreshToken);
 
@@ -71,13 +74,13 @@ api.interceptors.response.use(
     }
 
     // Handle other errors
-    const errorMessage = 
-      (error.response?.data as { message?: string })?.message || 
-      error.message || 
+    const errorMessage =
+      (error.response?.data as { message?: string })?.message ||
+      error.message ||
       'An unexpected error occurred';
 
     return Promise.reject(new Error(errorMessage));
-  }
+  },
 );
 
 export default api;

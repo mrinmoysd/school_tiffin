@@ -76,12 +76,19 @@ const PauseRequestsPage = () => {
       icon: <ExclamationCircleOutlined />,
       content: (
         <div>
-          <p>Approve pause for <strong>{request.subscription?.student?.fullName}</strong>?</p>
+          <p>
+            Approve pause for <strong>{request.subscription?.student?.fullName}</strong>?
+          </p>
           <div className="mt-3 p-3 bg-gray-50 rounded text-sm">
-            <div>Period: {dayjs(request.startDate).format('MMM DD')} - {dayjs(request.endDate).format('MMM DD, YYYY')}</div>
+            <div>
+              Period: {dayjs(request.startDate).format('MMM DD')} -{' '}
+              {dayjs(request.endDate).format('MMM DD, YYYY')}
+            </div>
             <div>Days: {request.pauseDays}</div>
             {request.newEndDate && (
-              <div className="text-blue-600">New subscription end date: {dayjs(request.newEndDate).format('MMM DD, YYYY')}</div>
+              <div className="text-blue-600">
+                New subscription end date: {dayjs(request.newEndDate).format('MMM DD, YYYY')}
+              </div>
             )}
           </div>
         </div>
@@ -114,20 +121,30 @@ const PauseRequestsPage = () => {
   // Table columns
   const columns: ColumnsType<PauseRequest> = [
     {
-      title: 'Parent',
+      title: <span className="whitespace-nowrap">Parent</span>,
       dataIndex: ['parent', 'fullName'],
       key: 'parent',
-      render: (name: string) => <Text strong>{name}</Text>,
+      width: 160,
+      ellipsis: true,
+      render: (name: string) => (
+        <Text strong className="whitespace-nowrap">
+          {name}
+        </Text>
+      ),
     },
     {
-      title: 'Student',
+      title: <span className="whitespace-nowrap">Student</span>,
       dataIndex: ['subscription', 'student', 'fullName'],
       key: 'student',
+      width: 160,
+      ellipsis: true,
     },
     {
-      title: 'Subscription',
+      title: <span className="whitespace-nowrap">Subscription</span>,
       dataIndex: ['subscription', 'subscriptionNumber'],
       key: 'subscription',
+      width: 150,
+      ellipsis: true,
       render: (text: string, record) => (
         <Button
           type="link"
@@ -139,40 +156,49 @@ const PauseRequestsPage = () => {
       ),
     },
     {
-      title: 'Pause Period',
+      title: <span className="whitespace-nowrap">Pause Period</span>,
       key: 'period',
+      width: 170,
       render: (_, record) => (
         <div>
-          <div>{dayjs(record.startDate).format('MMM DD')} - {dayjs(record.endDate).format('MMM DD')}</div>
+          <div>
+            {dayjs(record.startDate).format('MMM DD')} - {dayjs(record.endDate).format('MMM DD')}
+          </div>
           <div className="text-xs text-gray-500">{record.pauseDays} days</div>
         </div>
       ),
     },
     {
-      title: 'Reason',
+      title: <span className="whitespace-nowrap">Reason</span>,
       dataIndex: 'reason',
       key: 'reason',
+      width: 200,
       ellipsis: true,
       render: (reason: string) => reason || '-',
     },
     {
-      title: 'Status',
+      title: <span className="whitespace-nowrap">Status</span>,
       dataIndex: 'status',
       key: 'status',
+      width: 120,
       render: (status: PauseRequestStatus) => (
-        <Tag color={statusColors[status]}>{status}</Tag>
+        <span className="whitespace-nowrap">
+          <Tag color={statusColors[status]}>{status}</Tag>
+        </span>
       ),
     },
     {
-      title: 'Requested',
+      title: <span className="whitespace-nowrap">Requested</span>,
       dataIndex: 'createdAt',
       key: 'createdAt',
+      width: 140,
       render: (date: string) => dayjs(date).format('MMM DD, YYYY'),
       sorter: (a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix(),
     },
     {
-      title: 'Actions',
+      title: <span className="whitespace-nowrap">Actions</span>,
       key: 'actions',
+      width: 140,
       render: (_, record) => (
         <Space>
           {record.status === PauseRequestStatus.PENDING && (
@@ -213,7 +239,9 @@ const PauseRequestsPage = () => {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <Title level={2} className="!mb-1">Pause Requests</Title>
+        <Title level={2} className="!mb-1">
+          Pause Requests
+        </Title>
         <Text type="secondary">Review and manage subscription pause requests</Text>
       </div>
 
@@ -224,23 +252,23 @@ const PauseRequestsPage = () => {
             placeholder="Search..."
             prefix={<SearchOutlined />}
             value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+            onChange={e => setFilters({ ...filters, search: e.target.value })}
             style={{ width: 250 }}
             allowClear
           />
           <Select
             placeholder="Filter by status"
             value={filters.status}
-            onChange={(value) => setFilters({ ...filters, status: value })}
+            onChange={value => setFilters({ ...filters, status: value })}
             style={{ width: 150 }}
             allowClear
-            options={Object.values(PauseRequestStatus).map((s) => ({
+            options={Object.values(PauseRequestStatus).map(s => ({
               label: s,
               value: s,
             }))}
           />
           <RangePicker
-            onChange={(dates) => {
+            onChange={dates => {
               if (dates) {
                 setFilters({
                   ...filters,
@@ -262,13 +290,15 @@ const PauseRequestsPage = () => {
           dataSource={pauseRequests}
           rowKey="id"
           loading={isLoading}
+          tableLayout="fixed"
+          scroll={{ x: 'max-content' }}
           pagination={{
             total: pauseRequests?.length,
             pageSize: 10,
             showSizeChanger: true,
-            showTotal: (total) => `Total ${total} requests`,
+            showTotal: total => `Total ${total} requests`,
           }}
-          rowClassName={(record) =>
+          rowClassName={record =>
             record.status === PauseRequestStatus.PENDING ? 'bg-orange-50' : ''
           }
         />

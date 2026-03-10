@@ -110,7 +110,7 @@ const MealPlansListPage = () => {
   // Table columns
   const columns: ColumnsType<MealPlan> = [
     {
-      title: 'Image',
+      title: <span className="whitespace-nowrap">Image</span>,
       dataIndex: 'imageUrl',
       key: 'imageUrl',
       width: 80,
@@ -133,13 +133,17 @@ const MealPlansListPage = () => {
         ),
     },
     {
-      title: 'Meal Plan',
+      title: <span className="whitespace-nowrap">Meal Plan</span>,
       dataIndex: 'name',
       key: 'name',
+      width: 200,
+      ellipsis: true,
       sorter: (a, b) => a.name.localeCompare(b.name),
       render: (name: string, record) => (
-        <div>
-          <Text strong>{name}</Text>
+        <div className="min-w-0">
+          <Text strong className="whitespace-nowrap">
+            {name}
+          </Text>
           {record.description && (
             <div className="text-xs text-gray-500 truncate max-w-xs">{record.description}</div>
           )}
@@ -147,26 +151,34 @@ const MealPlansListPage = () => {
       ),
     },
     {
-      title: 'School',
+      title: <span className="whitespace-nowrap">School</span>,
       dataIndex: ['school', 'name'],
       key: 'school',
+      width: 160,
       ellipsis: true,
     },
     {
-      title: 'Type',
+      title: <span className="whitespace-nowrap">Type</span>,
       dataIndex: 'planType',
       key: 'planType',
-      render: (type: MealPlanType) => <Tag color={planTypeColors[type]}>{type}</Tag>,
+      width: 130,
+      render: (type: MealPlanType) => (
+        <span className="whitespace-nowrap">
+          <Tag color={planTypeColors[type]}>{type}</Tag>
+        </span>
+      ),
     },
     {
-      title: 'Duration',
+      title: <span className="whitespace-nowrap">Duration</span>,
       dataIndex: 'durationDays',
       key: 'durationDays',
+      width: 110,
       render: (days: number) => `${days} days`,
     },
     {
-      title: 'Price',
+      title: <span className="whitespace-nowrap">Price</span>,
       key: 'price',
+      width: 160,
       render: (_, record) => (
         <div>
           <div>₹{formatRupees(record.pricePerDay)}/day</div>
@@ -175,10 +187,11 @@ const MealPlansListPage = () => {
       ),
     },
     {
-      title: 'Active',
+      title: <span className="whitespace-nowrap">Active</span>,
       dataIndex: 'isActive',
       key: 'isActive',
       align: 'center',
+      width: 110,
       render: (isActive: boolean, record) => (
         <Switch
           checked={isActive}
@@ -188,9 +201,10 @@ const MealPlansListPage = () => {
       ),
     },
     {
-      title: 'Actions',
+      title: <span className="whitespace-nowrap">Actions</span>,
       key: 'actions',
       align: 'center',
+      width: 140,
       render: (_, record) => (
         <Space>
           <Tooltip title="Manage Menu">
@@ -292,6 +306,8 @@ const MealPlansListPage = () => {
           dataSource={mealPlans}
           rowKey="id"
           loading={isLoading}
+          tableLayout="fixed"
+          scroll={{ x: 'max-content' }}
           pagination={{
             total: mealPlans?.length,
             pageSize: 10,

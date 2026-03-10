@@ -40,36 +40,49 @@ const SubscriptionsListPage = () => {
   // Table columns
   const columns: ColumnsType<Subscription> = [
     {
-      title: 'Subscription #',
+      title: <span className="whitespace-nowrap">Subscription #</span>,
       dataIndex: 'subscriptionNumber',
       key: 'subscriptionNumber',
-      render: (text: string) => <Text strong>{text}</Text>,
+      width: 150,
+      ellipsis: true,
+      render: (text: string) => (
+        <Text strong className="whitespace-nowrap">
+          {text}
+        </Text>
+      ),
     },
     {
-      title: 'Parent',
+      title: <span className="whitespace-nowrap">Parent</span>,
       dataIndex: ['parent', 'fullName'],
       key: 'parent',
+      width: 150,
+      ellipsis: true,
     },
     {
-      title: 'Student',
+      title: <span className="whitespace-nowrap">Student</span>,
       dataIndex: ['student', 'fullName'],
       key: 'student',
+      width: 150,
+      ellipsis: true,
     },
     {
-      title: 'School',
+      title: <span className="whitespace-nowrap">School</span>,
       dataIndex: ['school', 'name'],
       key: 'school',
+      width: 160,
       ellipsis: true,
     },
     {
-      title: 'Meal Plan',
+      title: <span className="whitespace-nowrap">Meal Plan</span>,
       dataIndex: ['mealPlan', 'name'],
       key: 'mealPlan',
+      width: 140,
       ellipsis: true,
     },
     {
-      title: 'Duration',
+      title: <span className="whitespace-nowrap">Duration</span>,
       key: 'duration',
+      width: 150,
       render: (_, record) => (
         <div className="text-xs">
           <div>
@@ -80,8 +93,9 @@ const SubscriptionsListPage = () => {
       ),
     },
     {
-      title: 'Days',
+      title: <span className="whitespace-nowrap">Days</span>,
       key: 'days',
+      width: 120,
       render: (_, record) => (
         <div className="text-xs">
           <div>Total: {record.totalDays}</div>
@@ -90,8 +104,9 @@ const SubscriptionsListPage = () => {
       ),
     },
     {
-      title: 'Amount',
+      title: <span className="whitespace-nowrap">Amount</span>,
       key: 'amount',
+      width: 140,
       render: (_, record) => (
         <div>
           <div>₹{(record.totalPrice / 100).toLocaleString()}</div>
@@ -102,14 +117,20 @@ const SubscriptionsListPage = () => {
       ),
     },
     {
-      title: 'Status',
+      title: <span className="whitespace-nowrap">Status</span>,
       dataIndex: 'status',
       key: 'status',
-      render: (status: SubscriptionStatus) => <Tag color={statusColors[status]}>{status}</Tag>,
+      width: 140,
+      render: (status: SubscriptionStatus) => (
+        <span className="whitespace-nowrap">
+          <Tag color={statusColors[status]}>{status}</Tag>
+        </span>
+      ),
     },
     {
-      title: 'Actions',
+      title: <span className="whitespace-nowrap">Actions</span>,
       key: 'actions',
+      width: 110,
       render: (_, record) => (
         <Button
           type="text"
@@ -187,6 +208,8 @@ const SubscriptionsListPage = () => {
           dataSource={subscriptions}
           rowKey="id"
           loading={isLoading}
+          tableLayout="fixed"
+          scroll={{ x: 'max-content' }}
           pagination={{
             total: subscriptions?.length,
             pageSize: 10,

@@ -111,32 +111,45 @@ const DashboardPage = () => {
   // Recent subscriptions columns
   const subscriptionColumns: ColumnsType<RecentSubscriptionRow> = [
     {
-      title: 'Subscription',
+      title: <span className="whitespace-nowrap">Subscription</span>,
       dataIndex: 'subscriptionNumber',
       key: 'subscriptionNumber',
-      render: (text: string) => <Text strong>{text}</Text>,
+      width: 140,
+      ellipsis: true,
+      render: (text: string) => (
+        <Text strong className="whitespace-nowrap">
+          {text}
+        </Text>
+      ),
     },
     {
-      title: 'Student',
+      title: <span className="whitespace-nowrap">Student</span>,
       dataIndex: ['student', 'fullName'],
       key: 'student',
-    },
-    {
-      title: 'School',
-      dataIndex: ['school', 'name'],
-      key: 'school',
+      width: 160,
       ellipsis: true,
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: SubscriptionStatus) => getStatusTag(status),
+      title: <span className="whitespace-nowrap">School</span>,
+      dataIndex: ['school', 'name'],
+      key: 'school',
+      width: 160,
+      ellipsis: true,
     },
     {
-      title: 'Date',
+      title: <span className="whitespace-nowrap">Status</span>,
+      dataIndex: 'status',
+      key: 'status',
+      width: 140,
+      render: (status: SubscriptionStatus) => (
+        <span className="whitespace-nowrap">{getStatusTag(status)}</span>
+      ),
+    },
+    {
+      title: <span className="whitespace-nowrap">Date</span>,
       dataIndex: 'createdAt',
       key: 'createdAt',
+      width: 130,
       render: (date: string) => dayjs(date).format('MMM DD, YYYY'),
     },
   ];
@@ -287,6 +300,8 @@ const DashboardPage = () => {
               pagination={false}
               loading={activityLoading}
               size="small"
+              tableLayout="fixed"
+              scroll={{ x: 'max-content' }}
               onRow={record => ({
                 onClick: () => navigate(`/subscriptions/${record.id}`),
                 className: 'cursor-pointer hover:bg-gray-50',
