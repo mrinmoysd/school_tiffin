@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject, BadRequestException } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
@@ -16,12 +16,42 @@ export class SchoolsService {
   private readonly CACHE_KEY_PREFIX = 'schools:';
   private readonly CACHE_TTL = 300; // 5 minutes
 
+  private normalizeOperatingDays(operatingDays: string): string {
+    const rawOperatingDays = operatingDays?.trim();
+    if (!rawOperatingDays) {
+      throw new BadRequestException('Operating days is required');
+    }
+
+    let days: string[];
+    try {
+      const parsed = JSON.parse(rawOperatingDays);
+      if (!Array.isArray(parsed)) {
+        throw new Error('Operating days JSON is not an array');
+      }
+      days = parsed;
+    } catch {
+      days = rawOperatingDays.split(',');
+    }
+
+    days = days.map(day => day.trim().toUpperCase()).filter(Boolean);
+
+    const validDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+    if (!days.length || !days.every(day => validDays.includes(day))) {
+      throw new BadRequestException('Invalid operating days');
+    }
+
+    return days.join(',');
+  }
+
   /**
    * Create a new school (Admin only)
    */
   async create(createSchoolDto: CreateSchoolDto) {
     const school = await this.prisma.school.create({
-      data: createSchoolDto,
+      data: {
+        ...createSchoolDto,
+        operatingDays: this.normalizeOperatingDays(createSchoolDto.operatingDays),
+      },
     });
 
     // Invalidate cache
@@ -132,9 +162,16 @@ export class SchoolsService {
       throw new NotFoundException('School not found');
     }
 
+    const normalizedUpdate = {
+      ...updateSchoolDto,
+      ...(typeof updateSchoolDto.operatingDays === 'string'
+        ? { operatingDays: this.normalizeOperatingDays(updateSchoolDto.operatingDays) }
+        : {}),
+    };
+
     const updated = await this.prisma.school.update({
       where: { id },
-      data: updateSchoolDto,
+      data: normalizedUpdate,
     });
 
     // Invalidate cache
