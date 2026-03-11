@@ -31,6 +31,9 @@ import type { ColumnsType } from 'antd/es/table';
 const { Title, Text } = Typography;
 const { confirm } = Modal;
 
+const formatRupees = (amount: number) =>
+  (amount / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 const MealPlansListPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -52,8 +55,9 @@ const MealPlansListPage = () => {
   const toggleActiveMutation = useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       mealPlanService.toggleActive(id, isActive),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['mealPlans'] });
+      queryClient.invalidateQueries({ queryKey: ['mealPlan', variables.id] });
       message.success('Status updated');
     },
     onError: (error: Error) => {
@@ -80,7 +84,9 @@ const MealPlansListPage = () => {
       icon: <ExclamationCircleOutlined />,
       content: (
         <div>
-          <p>Are you sure you want to delete <strong>{mealPlan.name}</strong>?</p>
+          <p>
+            Are you sure you want to delete <strong>{mealPlan.name}</strong>?
+          </p>
           <p className="text-gray-500 text-sm mt-2">
             This will affect all associated subscriptions.
           </p>
@@ -104,7 +110,7 @@ const MealPlansListPage = () => {
   // Table columns
   const columns: ColumnsType<MealPlan> = [
     {
-      title: 'Image',
+      title: <span className="whitespace-nowrap">Image</span>,
       dataIndex: 'imageUrl',
       key: 'imageUrl',
       width: 80,
@@ -120,77 +126,85 @@ const MealPlansListPage = () => {
           />
         ) : (
           <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-            <Text type="secondary" className="text-xs">No img</Text>
+            <Text type="secondary" className="text-xs">
+              No img
+            </Text>
           </div>
         ),
     },
     {
-      title: 'Meal Plan',
+      title: <span className="whitespace-nowrap">Meal Plan</span>,
       dataIndex: 'name',
       key: 'name',
+      width: 200,
+      ellipsis: true,
       sorter: (a, b) => a.name.localeCompare(b.name),
       render: (name: string, record) => (
-        <div>
-          <Text strong>{name}</Text>
+        <div className="min-w-0">
+          <Text strong className="whitespace-nowrap">
+            {name}
+          </Text>
           {record.description && (
-            <div className="text-xs text-gray-500 truncate max-w-xs">
-              {record.description}
-            </div>
+            <div className="text-xs text-gray-500 truncate max-w-xs">{record.description}</div>
           )}
         </div>
       ),
     },
     {
-      title: 'School',
+      title: <span className="whitespace-nowrap">School</span>,
       dataIndex: ['school', 'name'],
       key: 'school',
+      width: 160,
       ellipsis: true,
     },
     {
-      title: 'Type',
+      title: <span className="whitespace-nowrap">Type</span>,
       dataIndex: 'planType',
       key: 'planType',
+      width: 130,
       render: (type: MealPlanType) => (
-        <Tag color={planTypeColors[type]}>{type}</Tag>
+        <span className="whitespace-nowrap">
+          <Tag color={planTypeColors[type]}>{type}</Tag>
+        </span>
       ),
     },
     {
-      title: 'Duration',
+      title: <span className="whitespace-nowrap">Duration</span>,
       dataIndex: 'durationDays',
       key: 'durationDays',
+      width: 110,
       render: (days: number) => `${days} days`,
     },
     {
-      title: 'Price',
+      title: <span className="whitespace-nowrap">Price</span>,
       key: 'price',
+      width: 160,
       render: (_, record) => (
         <div>
-          <div>₹{(record.pricePerDay / 100).toFixed(2)}/day</div>
-          <div className="text-xs text-gray-500">
-            Total: ₹{(record.totalPrice / 100).toLocaleString()}
-          </div>
+          <div>₹{formatRupees(record.pricePerDay)}/day</div>
+          <div className="text-xs text-gray-500">Total: ₹{formatRupees(record.totalPrice)}</div>
         </div>
       ),
     },
     {
-      title: 'Active',
+      title: <span className="whitespace-nowrap">Active</span>,
       dataIndex: 'isActive',
       key: 'isActive',
       align: 'center',
+      width: 110,
       render: (isActive: boolean, record) => (
         <Switch
           checked={isActive}
-          onChange={(checked) =>
-            toggleActiveMutation.mutate({ id: record.id, isActive: checked })
-          }
+          onChange={checked => toggleActiveMutation.mutate({ id: record.id, isActive: checked })}
           loading={toggleActiveMutation.isPending}
         />
       ),
     },
     {
-      title: 'Actions',
+      title: <span className="whitespace-nowrap">Actions</span>,
       key: 'actions',
       align: 'center',
+      width: 140,
       render: (_, record) => (
         <Space>
           <Tooltip title="Manage Menu">
@@ -225,7 +239,9 @@ const MealPlansListPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <Title level={2} className="!mb-1">Meal Plans</Title>
+          <Title level={2} className="!mb-1">
+            Meal Plans
+          </Title>
           <Text type="secondary">Manage meal plans and pricing</Text>
         </div>
         <Button
@@ -239,32 +255,32 @@ const MealPlansListPage = () => {
 
       {/* Filters */}
       <Card className="mb-4">
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4">
           <Input
             placeholder="Search by name..."
             prefix={<SearchOutlined />}
             value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-            style={{ maxWidth: 300 }}
+            onChange={e => setFilters({ ...filters, search: e.target.value })}
+            className="w-full sm:w-72"
             allowClear
           />
           <Select
             placeholder="Filter by school"
             value={filters.schoolId}
-            onChange={(value) => setFilters({ ...filters, schoolId: value })}
-            style={{ width: 200 }}
+            onChange={value => setFilters({ ...filters, schoolId: value })}
+            className="w-full sm:w-52"
             allowClear
             showSearch
             optionFilterProp="label"
-            options={schools?.map((s) => ({ label: s.name, value: s.id }))}
+            options={schools?.map(s => ({ label: s.name, value: s.id }))}
           />
           <Select
             placeholder="Filter by type"
             value={filters.planType}
-            onChange={(value) => setFilters({ ...filters, planType: value })}
-            style={{ width: 150 }}
+            onChange={value => setFilters({ ...filters, planType: value })}
+            className="w-full sm:w-40"
             allowClear
-            options={Object.values(MealPlanType).map((type) => ({
+            options={Object.values(MealPlanType).map(type => ({
               label: type,
               value: type,
             }))}
@@ -272,8 +288,8 @@ const MealPlansListPage = () => {
           <Select
             placeholder="Status"
             value={filters.isActive}
-            onChange={(value) => setFilters({ ...filters, isActive: value })}
-            style={{ width: 120 }}
+            onChange={value => setFilters({ ...filters, isActive: value })}
+            className="w-full sm:w-32"
             allowClear
             options={[
               { label: 'Active', value: true },
@@ -285,18 +301,22 @@ const MealPlansListPage = () => {
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={mealPlans}
-          rowKey="id"
-          loading={isLoading}
-          pagination={{
-            total: mealPlans?.length,
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Total ${total} meal plans`,
-          }}
-        />
+        <div className="table-scrollbar">
+          <Table
+            columns={columns}
+            dataSource={mealPlans}
+            rowKey="id"
+            loading={isLoading}
+            tableLayout="fixed"
+            scroll={{ x: 960 }}
+            pagination={{
+              total: mealPlans?.length,
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: total => `Total ${total} meal plans`,
+            }}
+          />
+        </div>
       </Card>
     </div>
   );

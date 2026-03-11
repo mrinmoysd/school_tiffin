@@ -1,16 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Table,
-  Input,
-  Select,
-  Typography,
-  Card,
-  Tag,
-  DatePicker,
-  Button,
-  message,
-} from 'antd';
+import { Table, Input, Select, Typography, Card, Tag, DatePicker, Button, message } from 'antd';
 import { SearchOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '@/services';
@@ -60,27 +50,38 @@ const OrdersListPage = () => {
   // Table columns
   const columns: ColumnsType<Order> = [
     {
-      title: 'Order #',
+      title: <span className="whitespace-nowrap">Order #</span>,
       dataIndex: 'orderNumber',
       key: 'orderNumber',
-      render: (text: string) => <Text strong>{text}</Text>,
-    },
-    {
-      title: 'Parent',
-      dataIndex: ['parent', 'fullName'],
-      key: 'parent',
-    },
-    {
-      title: 'Subscription',
-      dataIndex: ['subscription', 'subscriptionNumber'],
-      key: 'subscription',
+      width: 140,
+      ellipsis: true,
       render: (text: string) => (
-        <Text className="text-blue-600 cursor-pointer">{text}</Text>
+        <Text strong className="whitespace-nowrap">
+          {text}
+        </Text>
       ),
     },
     {
-      title: 'Amount',
+      title: <span className="whitespace-nowrap">Parent</span>,
+      dataIndex: ['parent', 'fullName'],
+      key: 'parent',
+      width: 150,
+      ellipsis: true,
+    },
+    {
+      title: <span className="whitespace-nowrap">Subscription</span>,
+      dataIndex: ['subscription', 'subscriptionNumber'],
+      key: 'subscription',
+      width: 150,
+      ellipsis: true,
+      render: (text: string) => (
+        <Text className="text-blue-600 cursor-pointer whitespace-nowrap">{text}</Text>
+      ),
+    },
+    {
+      title: <span className="whitespace-nowrap">Amount</span>,
       key: 'amount',
+      width: 140,
       render: (_, record) => (
         <div>
           <div>₹{(record.finalAmount / 100).toLocaleString()}</div>
@@ -93,35 +94,38 @@ const OrdersListPage = () => {
       ),
     },
     {
-      title: 'Payment Method',
+      title: <span className="whitespace-nowrap">Payment Method</span>,
       dataIndex: 'paymentMethod',
       key: 'paymentMethod',
+      width: 140,
+      ellipsis: true,
       render: (method: string) => method || '-',
     },
     {
-      title: 'Status',
+      title: <span className="whitespace-nowrap">Status</span>,
       dataIndex: 'status',
       key: 'status',
+      width: 130,
       render: (status: OrderStatus) => (
-        <Tag color={statusColors[status]}>{status}</Tag>
+        <span className="whitespace-nowrap">
+          <Tag color={statusColors[status]}>{status}</Tag>
+        </span>
       ),
     },
     {
-      title: 'Date',
+      title: <span className="whitespace-nowrap">Date</span>,
       dataIndex: 'createdAt',
       key: 'createdAt',
+      width: 170,
       render: (date: string) => dayjs(date).format('MMM DD, YYYY HH:mm'),
       sorter: (a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix(),
     },
     {
-      title: 'Actions',
+      title: <span className="whitespace-nowrap">Actions</span>,
       key: 'actions',
+      width: 110,
       render: (_, record) => (
-        <Button
-          type="text"
-          icon={<EyeOutlined />}
-          onClick={() => navigate(`/orders/${record.id}`)}
-        >
+        <Button type="text" icon={<EyeOutlined />} onClick={() => navigate(`/orders/${record.id}`)}>
           View
         </Button>
       ),
@@ -133,7 +137,9 @@ const OrdersListPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <Title level={2} className="!mb-1">Orders</Title>
+          <Title level={2} className="!mb-1">
+            Orders
+          </Title>
           <Text type="secondary">View and manage all orders</Text>
         </div>
         <Button icon={<DownloadOutlined />} onClick={handleExport}>
@@ -148,23 +154,23 @@ const OrdersListPage = () => {
             placeholder="Search by order #..."
             prefix={<SearchOutlined />}
             value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+            onChange={e => setFilters({ ...filters, search: e.target.value })}
             style={{ width: 250 }}
             allowClear
           />
           <Select
             placeholder="Filter by status"
             value={filters.status}
-            onChange={(value) => setFilters({ ...filters, status: value })}
+            onChange={value => setFilters({ ...filters, status: value })}
             style={{ width: 180 }}
             allowClear
-            options={Object.values(OrderStatus).map((s) => ({
+            options={Object.values(OrderStatus).map(s => ({
               label: s,
               value: s,
             }))}
           />
           <RangePicker
-            onChange={(dates) => {
+            onChange={dates => {
               if (dates) {
                 setFilters({
                   ...filters,
@@ -186,11 +192,13 @@ const OrdersListPage = () => {
           dataSource={orders}
           rowKey="id"
           loading={isLoading}
+          tableLayout="fixed"
+          scroll={{ x: 'max-content' }}
           pagination={{
             total: orders?.length,
             pageSize: 10,
             showSizeChanger: true,
-            showTotal: (total) => `Total ${total} orders`,
+            showTotal: total => `Total ${total} orders`,
           }}
         />
       </Card>

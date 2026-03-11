@@ -4,7 +4,7 @@ import { ApiResponse, Order, OrderFilters, PaymentTransaction } from '@/types';
 export const orderService = {
   // Get all orders
   getAll: async (filters?: OrderFilters): Promise<Order[]> => {
-    const params = new URLSearchParams();
+    const params = new window.URLSearchParams();
     if (filters?.status) params.append('status', filters.status);
     if (filters?.search) params.append('search', filters.search);
     if (filters?.startDate) params.append('startDate', filters.startDate);
@@ -27,9 +27,10 @@ export const orderService = {
   },
 
   // Export orders to CSV
-  exportCSV: async (filters?: OrderFilters): Promise<Blob> => {
-    const params = new URLSearchParams();
+  exportCSV: async (filters?: OrderFilters): Promise<globalThis.Blob> => {
+    const params = new window.URLSearchParams();
     if (filters?.status) params.append('status', filters.status);
+    if (filters?.search) params.append('search', filters.search);
     if (filters?.startDate) params.append('startDate', filters.startDate);
     if (filters?.endDate) params.append('endDate', filters.endDate);
 

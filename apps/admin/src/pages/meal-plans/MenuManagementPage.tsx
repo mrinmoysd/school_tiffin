@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Table,
@@ -16,6 +16,7 @@ import {
   Tag,
   Spin,
   Descriptions,
+  Tooltip as AntTooltip,
 } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -42,6 +43,37 @@ const MenuManagementPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [form] = Form.useForm();
+
+  const EllipsisCell = ({ text, className }: { text?: string; className?: string }) => {
+    const spanRef = useRef<{ scrollWidth: number; clientWidth: number } | null>(null);
+    const [isOverflow, setIsOverflow] = useState(false);
+
+    const checkOverflow = () => {
+      const el = spanRef.current;
+      if (!el) return;
+      setIsOverflow(el.scrollWidth > el.clientWidth);
+    };
+
+    return (
+      <AntTooltip
+        title={text}
+        open={isOverflow ? undefined : false}
+        mouseEnterDelay={0.05}
+        mouseLeaveDelay={0.1}
+        overlayClassName="st-ellipsis-tooltip"
+      >
+        <span
+          ref={node => {
+            spanRef.current = node;
+          }}
+          onMouseEnter={checkOverflow}
+          className={`block truncate ${className || ''}`}
+        >
+          {text || '-'}
+        </span>
+      </AntTooltip>
+    );
+  };
 
   // Fetch meal plan
   const { data: mealPlan, isLoading: mealPlanLoading } = useQuery({
@@ -150,30 +182,28 @@ const MenuManagementPage = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
-      render: (name: string) => <Text strong>{name}</Text>,
+      render: (name: string) => <EllipsisCell text={name} className="font-semibold" />,
     },
     {
       title: 'Items',
       dataIndex: 'items',
       key: 'items',
       ellipsis: true,
-      render: (items: string) => (
-        <Text className="text-gray-600">{items}</Text>
-      ),
+      render: (items: string) => <EllipsisCell text={items} className="text-gray-600" />,
     },
     {
       title: 'Calories',
       dataIndex: 'calories',
       key: 'calories',
       width: 100,
-      render: (calories: number) => calories ? `${calories} kcal` : '-',
+      render: (calories: number) => (calories ? `${calories} kcal` : '-'),
     },
     {
       title: 'Allergens',
       dataIndex: 'allergenInfo',
       key: 'allergenInfo',
       ellipsis: true,
-      render: (info: string) => info || '-',
+      render: (info: string) => <EllipsisCell text={info} />,
     },
     {
       title: 'Actions',
@@ -182,11 +212,7 @@ const MenuManagementPage = () => {
       render: (_, record) => (
         <Space>
           <Tooltip title="Edit">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              onClick={() => handleOpenModal(record)}
-            />
+            <Button type="text" icon={<EditOutlined />} onClick={() => handleOpenModal(record)} />
           </Tooltip>
           <Tooltip title="Delete">
             <Button
@@ -225,13 +251,11 @@ const MenuManagementPage = () => {
     <div>
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Button
-          type="text"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/meal-plans')}
-        />
+        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/meal-plans')} />
         <div>
-          <Title level={2} className="!mb-1">Menu Management</Title>
+          <Title level={2} className="!mb-1">
+            Menu Management
+          </Title>
           <Text type="secondary">{mealPlan.name}</Text>
         </div>
       </div>
@@ -245,7 +269,12 @@ const MenuManagementPage = () => {
           </Descriptions.Item>
           <Descriptions.Item label="Duration">{mealPlan.durationDays} days</Descriptions.Item>
           <Descriptions.Item label="Price">
-            ₹{(mealPlan.pricePerDay / 100).toFixed(2)}/day
+            ₹
+            {(mealPlan.pricePerDay / 100).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+            /day
           </Descriptions.Item>
         </Descriptions>
       </Card>
@@ -254,11 +283,7 @@ const MenuManagementPage = () => {
       <Card
         title="Menu Items"
         extra={
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => handleOpenModal()}
-          >
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => handleOpenModal()}>
             Add Menu Item
           </Button>
         }
@@ -280,11 +305,7 @@ const MenuManagementPage = () => {
         footer={null}
         width={600}
       >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-        >
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Form.Item
             name="name"
             label="Item Name"
@@ -298,63 +319,33 @@ const MenuManagementPage = () => {
             label="Items (comma-separated)"
             rules={[{ required: true, message: 'Please enter items' }]}
           >
-            <TextArea
-              rows={2}
-              placeholder="e.g., Dal, Rice, Mixed Vegetables, Roti, Salad"
-            />
+            <TextArea rows={2} placeholder="e.g., Dal, Rice, Mixed Vegetables, Roti, Salad" />
           </Form.Item>
 
-          <Form.Item
-            name="description"
-            label="Description"
-          >
-            <TextArea
-              rows={2}
-              placeholder="Optional description..."
-            />
+          <Form.Item name="description" label="Description">
+            <TextArea rows={2} placeholder="Optional description..." />
           </Form.Item>
 
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item
-              name="dayOfWeek"
-              label="Day of Week"
-            >
+            <Form.Item name="dayOfWeek" label="Day of Week">
               <Select
                 placeholder="Select day"
                 allowClear
-                options={DAYS_OF_WEEK.map((day) => ({ label: day, value: day }))}
+                options={DAYS_OF_WEEK.map(day => ({ label: day, value: day }))}
               />
             </Form.Item>
 
-            <Form.Item
-              name="dayNumber"
-              label="Day Number"
-            >
-              <InputNumber
-                min={1}
-                max={365}
-                placeholder="e.g., 1"
-                style={{ width: '100%' }}
-              />
+            <Form.Item name="dayNumber" label="Day Number">
+              <InputNumber min={1} max={365} placeholder="e.g., 1" style={{ width: '100%' }} />
             </Form.Item>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item
-              name="calories"
-              label="Calories (kcal)"
-            >
-              <InputNumber
-                min={0}
-                placeholder="e.g., 450"
-                style={{ width: '100%' }}
-              />
+            <Form.Item name="calories" label="Calories (kcal)">
+              <InputNumber min={0} placeholder="e.g., 450" style={{ width: '100%' }} />
             </Form.Item>
 
-            <Form.Item
-              name="allergenInfo"
-              label="Allergen Info"
-            >
+            <Form.Item name="allergenInfo" label="Allergen Info">
               <Input placeholder="e.g., Contains gluten, dairy" />
             </Form.Item>
           </div>

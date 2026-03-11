@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { Key } from 'react';
 import { Table, Select, Typography, Card, Tag, DatePicker, Button, Space, message } from 'antd';
 import { DownloadOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -82,50 +83,70 @@ const DeliveriesPage = () => {
   // Table columns
   const columns: ColumnsType<DeliveryItem> = [
     {
-      title: 'Student',
+      title: <span className="whitespace-nowrap">Student</span>,
       dataIndex: 'studentName',
       key: 'studentName',
+      width: 180,
+      ellipsis: true,
       render: (name: string, record) => (
-        <div>
-          <Text strong>{name}</Text>
+        <div className="min-w-0">
+          <Text strong className="whitespace-nowrap">
+            {name}
+          </Text>
           {record.grade && <div className="text-xs text-gray-500">Grade: {record.grade}</div>}
         </div>
       ),
     },
     {
-      title: 'School',
+      title: <span className="whitespace-nowrap">School</span>,
       dataIndex: 'schoolName',
       key: 'schoolName',
+      width: 160,
       ellipsis: true,
     },
     {
-      title: 'Meal Plan',
+      title: <span className="whitespace-nowrap">Meal Plan</span>,
       dataIndex: 'mealPlanName',
       key: 'mealPlanName',
+      width: 150,
       ellipsis: true,
     },
     {
-      title: 'Subscription #',
+      title: <span className="whitespace-nowrap">Subscription #</span>,
       dataIndex: 'subscriptionNumber',
       key: 'subscriptionNumber',
-      render: (text: string) => <Text code>{text}</Text>,
+      width: 150,
+      ellipsis: true,
+      render: (text: string) => (
+        <Text code className="whitespace-nowrap">
+          {text}
+        </Text>
+      ),
     },
     {
-      title: 'Parent Contact',
+      title: <span className="whitespace-nowrap">Parent Contact</span>,
       dataIndex: 'parentPhone',
       key: 'parentPhone',
+      width: 140,
+      ellipsis: true,
       render: (phone: string) => phone || '-',
     },
     {
-      title: 'Status',
+      title: <span className="whitespace-nowrap">Status</span>,
       dataIndex: 'status',
       key: 'status',
-      render: (status: DeliveryStatus) => <Tag color={statusColors[status]}>{status}</Tag>,
+      width: 130,
+      render: (status: DeliveryStatus) => (
+        <span className="whitespace-nowrap">
+          <Tag color={statusColors[status]}>{status}</Tag>
+        </span>
+      ),
     },
     {
-      title: 'Notes',
+      title: <span className="whitespace-nowrap">Notes</span>,
       dataIndex: 'notes',
       key: 'notes',
+      width: 200,
       ellipsis: true,
       render: (notes: string) => notes || '-',
     },
@@ -134,7 +155,7 @@ const DeliveriesPage = () => {
   // Row selection
   const rowSelection = {
     selectedRowKeys: selectedRows,
-    onChange: (keys: React.Key[]) => setSelectedRows(keys as string[]),
+    onChange: (keys: Key[]) => setSelectedRows(keys as string[]),
     getCheckboxProps: (record: DeliveryItem) => ({
       disabled: record.status !== DeliveryStatus.SCHEDULED,
     }),
@@ -232,6 +253,8 @@ const DeliveriesPage = () => {
           rowKey="id"
           loading={isLoading}
           rowSelection={rowSelection}
+          tableLayout="fixed"
+          scroll={{ x: 'max-content' }}
           pagination={{
             total: deliveries?.length,
             pageSize: 20,

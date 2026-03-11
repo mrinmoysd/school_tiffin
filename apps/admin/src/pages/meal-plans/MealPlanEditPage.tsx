@@ -22,6 +22,21 @@ import { UpdateMealPlanDto, MealPlanType } from '@/types';
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
+const formatRupeesInput = (value?: string | number) => {
+  if (value === undefined || value === null || value === '') return '';
+  const num = typeof value === 'number' ? value : Number(value);
+  if (Number.isNaN(num)) return '';
+  return `₹${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
+
+const parseRupeesInput = (value?: string) => (value ? value.replace(/[₹,\s]/g, '') : '');
+
+const paiseToRupees = (value?: number) =>
+  value === undefined || value === null ? value : Number((value / 100).toFixed(2));
+
+const rupeesToPaise = (value?: number) =>
+  value === undefined || value === null ? value : Math.round(value * 100);
+
 const MealPlanEditPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -33,8 +48,9 @@ const MealPlanEditPage = () => {
   const durationDays = Form.useWatch('durationDays', form);
 
   useEffect(() => {
-    if (pricePerDay && durationDays) {
-      form.setFieldValue('totalPrice', pricePerDay * durationDays);
+    if (typeof pricePerDay === 'number' && typeof durationDays === 'number') {
+      const total = Number((pricePerDay * durationDays).toFixed(2));
+      form.setFieldValue('totalPrice', total);
     }
   }, [pricePerDay, durationDays, form]);
 
@@ -54,7 +70,11 @@ const MealPlanEditPage = () => {
   // Set form values when data loads
   useEffect(() => {
     if (mealPlan) {
-      form.setFieldsValue(mealPlan);
+      form.setFieldsValue({
+        ...mealPlan,
+        pricePerDay: paiseToRupees(mealPlan.pricePerDay),
+        totalPrice: paiseToRupees(mealPlan.totalPrice),
+      });
     }
   }, [mealPlan, form]);
 
@@ -72,7 +92,12 @@ const MealPlanEditPage = () => {
   });
 
   const onFinish = (values: UpdateMealPlanDto) => {
-    updateMutation.mutate(values);
+    const payload: UpdateMealPlanDto = {
+      ...values,
+      pricePerDay: rupeesToPaise(values.pricePerDay) ?? values.pricePerDay,
+      totalPrice: rupeesToPaise(values.totalPrice) ?? values.totalPrice,
+    };
+    updateMutation.mutate(payload);
   };
 
   if (isLoading) {
@@ -99,25 +124,18 @@ const MealPlanEditPage = () => {
     <div>
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Button
-          type="text"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/meal-plans')}
-        />
+        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/meal-plans')} />
         <div>
-          <Title level={2} className="!mb-1">Edit Meal Plan</Title>
+          <Title level={2} className="!mb-1">
+            Edit Meal Plan
+          </Title>
           <Text type="secondary">{mealPlan.name}</Text>
         </div>
       </div>
 
       {/* Form */}
       <Card>
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={onFinish}
-          requiredMark="optional"
-        >
+        <Form form={form} layout="vertical" onFinish={onFinish} requiredMark="optional">
           <Row gutter={24}>
             <Col xs={24} md={12}>
               <Form.Item
@@ -129,7 +147,7 @@ const MealPlanEditPage = () => {
                   placeholder="Select school"
                   showSearch
                   optionFilterProp="label"
-                  options={schools?.map((s) => ({ label: s.name, value: s.id }))}
+                  options={schools?.map(s => ({ label: s.name, value: s.id }))}
                 />
               </Form.Item>
             </Col>
@@ -141,7 +159,7 @@ const MealPlanEditPage = () => {
               >
                 <Select
                   placeholder="Select type"
-                  options={Object.values(MealPlanType).map((type) => ({
+                  options={Object.values(MealPlanType).map(type => ({
                     label: type,
                     value: type,
                   }))}
@@ -169,57 +187,50 @@ const MealPlanEditPage = () => {
                 label="Duration (Days)"
                 rules={[{ required: true, message: 'Please enter duration' }]}
               >
-                <InputNumber
-                  min={1}
-                  max={365}
-                  style={{ width: '100%' }}
-                />
+                <InputNumber min={1} max={365} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
 
-          <Form.Item
-            name="description"
-            label="Description"
-          >
-            <TextArea
-              rows={3}
-              placeholder="Describe the meal plan..."
-            />
+          <Form.Item name="description" label="Description">
+            <TextArea rows={3} placeholder="Describe the meal plan..." />
           </Form.Item>
 
           <Row gutter={24}>
             <Col xs={24} md={8}>
               <Form.Item
                 name="pricePerDay"
-                label="Price per Day (in paise)"
+                label="Price per Day (₹)"
                 rules={[{ required: true, message: 'Please enter price' }]}
               >
                 <InputNumber
                   min={0}
+                  step={0.01}
+                  precision={2}
                   style={{ width: '100%' }}
-                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  formatter={formatRupeesInput}
+                  parser={parseRupeesInput}
                 />
               </Form.Item>
             </Col>
             <Col xs={24} md={8}>
               <Form.Item
                 name="totalPrice"
-                label="Total Price (in paise)"
+                label="Total Price (₹)"
                 rules={[{ required: true, message: 'Please enter total price' }]}
               >
                 <InputNumber
                   min={0}
+                  step={0.01}
+                  precision={2}
                   style={{ width: '100%' }}
-                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  formatter={formatRupeesInput}
+                  parser={parseRupeesInput}
                 />
               </Form.Item>
             </Col>
             <Col xs={24} md={8}>
-              <Form.Item
-                name="currency"
-                label="Currency"
-              >
+              <Form.Item name="currency" label="Currency">
                 <Select
                   options={[
                     { label: 'INR (₹)', value: 'INR' },
@@ -230,19 +241,13 @@ const MealPlanEditPage = () => {
             </Col>
           </Row>
 
-          <Form.Item
-            name="isActive"
-            label="Active"
-            valuePropName="checked"
-          >
+          <Form.Item name="isActive" label="Active" valuePropName="checked">
             <Switch checkedChildren="Yes" unCheckedChildren="No" />
           </Form.Item>
 
           {/* Actions */}
           <div className="flex justify-end gap-3 mt-6 pt-6 border-t">
-            <Button onClick={() => navigate('/meal-plans')}>
-              Cancel
-            </Button>
+            <Button onClick={() => navigate('/meal-plans')}>Cancel</Button>
             <Button
               type="primary"
               htmlType="submit"

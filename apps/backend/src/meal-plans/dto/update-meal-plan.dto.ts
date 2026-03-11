@@ -1,5 +1,17 @@
-import { IsString, IsNumber, IsBoolean, IsOptional, MinLength, MaxLength, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { MealPlanType } from './create-meal-plan.dto';
 
 export class UpdateMealPlanDto {
   @ApiProperty({
@@ -24,6 +36,26 @@ export class UpdateMealPlanDto {
   description?: string;
 
   @ApiProperty({
+    description: 'Meal plan type',
+    enum: MealPlanType,
+    example: MealPlanType.LUNCH,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(MealPlanType)
+  planType?: MealPlanType;
+
+  @ApiProperty({
+    description: 'Duration in days',
+    example: 30,
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  durationDays?: number;
+
+  @ApiProperty({
     description: 'Price per day in smallest currency unit (paise for INR)',
     example: 10000,
     required: false,
@@ -34,6 +66,16 @@ export class UpdateMealPlanDto {
   pricePerDay?: number;
 
   @ApiProperty({
+    description: 'Total price for the entire plan',
+    example: 300000,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  totalPrice?: number;
+
+  @ApiProperty({
     description: 'Currency code',
     example: 'INR',
     required: false,
@@ -41,6 +83,15 @@ export class UpdateMealPlanDto {
   @IsOptional()
   @IsString()
   currency?: string;
+
+  @ApiProperty({
+    description: 'School ID',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    required: false,
+  })
+  @IsOptional()
+  @IsUUID()
+  schoolId?: string;
 
   @ApiProperty({
     description: 'Is meal plan active',

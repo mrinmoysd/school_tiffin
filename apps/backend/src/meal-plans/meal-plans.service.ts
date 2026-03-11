@@ -183,6 +183,16 @@ export class MealPlansService {
       throw new NotFoundException('Meal plan not found');
     }
 
+    if (updateMealPlanDto.schoolId && updateMealPlanDto.schoolId !== mealPlan.schoolId) {
+      const school = await this.prisma.school.findUnique({
+        where: { id: updateMealPlanDto.schoolId },
+      });
+
+      if (!school) {
+        throw new BadRequestException('School not found');
+      }
+    }
+
     const updated = await this.prisma.mealPlan.update({
       where: { id },
       data: updateMealPlanDto,
@@ -199,6 +209,9 @@ export class MealPlansService {
     // Invalidate cache
     await this.cacheManager.del(`${this.CACHE_KEY_PREFIX}${id}`);
     await this.cacheManager.del(`${this.CACHE_KEY_BY_SCHOOL}${mealPlan.schoolId}`);
+    if (updateMealPlanDto.schoolId && updateMealPlanDto.schoolId !== mealPlan.schoolId) {
+      await this.cacheManager.del(`${this.CACHE_KEY_BY_SCHOOL}${updateMealPlanDto.schoolId}`);
+    }
 
     return updated;
   }

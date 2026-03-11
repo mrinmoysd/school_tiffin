@@ -1,4 +1,4 @@
-import { IsString, IsOptional, MinLength, MaxLength, IsJSON, IsUrl } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUrl, MaxLength, Min, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateMenuItemDto {
@@ -14,6 +14,15 @@ export class UpdateMenuItemDto {
   name?: string;
 
   @ApiProperty({
+    description: 'Menu items description (comma-separated)',
+    example: 'Dal, Rice, Mixed Vegetables, Roti',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  items?: string;
+
+  @ApiProperty({
     description: 'Menu item description',
     example: 'Protein-rich lentils with steamed rice and seasonal vegetables',
     required: false,
@@ -24,13 +33,43 @@ export class UpdateMenuItemDto {
   description?: string;
 
   @ApiProperty({
-    description: 'Category (breakfast, lunch, snack, etc.)',
-    example: 'lunch',
+    description: 'Day of week (optional)',
+    example: 'Monday',
     required: false,
   })
   @IsOptional()
   @IsString()
-  category?: string;
+  @MaxLength(20)
+  dayOfWeek?: string;
+
+  @ApiProperty({
+    description: 'Day number in plan (optional)',
+    example: 1,
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  dayNumber?: number;
+
+  @ApiProperty({
+    description: 'Calories (kcal)',
+    example: 450,
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  calories?: number;
+
+  @ApiProperty({
+    description: 'Allergen information',
+    example: 'Contains gluten',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  allergenInfo?: string;
 
   @ApiProperty({
     description: 'Image URL',
@@ -40,13 +79,4 @@ export class UpdateMenuItemDto {
   @IsOptional()
   @IsUrl()
   imageUrl?: string;
-
-  @ApiProperty({
-    description: 'Allergens (JSON array)',
-    example: ['gluten', 'dairy'],
-    required: false,
-  })
-  @IsOptional()
-  @IsJSON()
-  allergens?: string;
 }

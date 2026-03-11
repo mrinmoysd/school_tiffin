@@ -47,6 +47,19 @@ body {
   font-weight: 600;
 }
 
+/* Always-visible horizontal scroll area for tables */
+.table-scrollbar {
+  overflow-x: scroll;
+  scrollbar-gutter: stable both-edges;
+  padding-bottom: 6px;
+}
+
+/* Rounded, faster ellipsis tooltips (subscriptions page) */
+.st-ellipsis-tooltip .ant-tooltip-inner {
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
 /* Stats card hover effect */
 .stats-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;

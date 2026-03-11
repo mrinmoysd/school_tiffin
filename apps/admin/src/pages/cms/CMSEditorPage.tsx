@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { ChangeEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Form, Input, Button, Card, Typography, message, Switch, Spin, Tabs, Row, Col } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined, EyeOutlined } from '@ant-design/icons';
@@ -63,12 +64,16 @@ const CMSEditorPage = () => {
     if (isEditing) {
       updateMutation.mutate(values);
     } else {
-      createMutation.mutate(values as CreateCMSPageDto);
+      // New pages are created as published so they are visible immediately in CMS list.
+      createMutation.mutate({
+        ...(values as CreateCMSPageDto),
+        isPublished: true,
+      });
     }
   };
 
   // Handle content change for preview
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleContentChange = (e: ChangeEvent<globalThis.HTMLTextAreaElement>) => {
     setPreviewContent(e.target.value);
   };
 

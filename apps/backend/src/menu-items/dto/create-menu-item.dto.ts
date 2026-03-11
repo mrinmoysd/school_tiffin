@@ -1,5 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsUrl, IsUUID, MaxLength, MinLength } from 'class-validator';
+import {
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsUUID,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class CreateMenuItemDto {
   @ApiProperty({
@@ -27,6 +36,36 @@ export class CreateMenuItemDto {
   @IsString()
   @MaxLength(1000)
   description?: string;
+
+  @ApiProperty({
+    description: 'Day of week (optional)',
+    example: 'Monday',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  dayOfWeek?: string;
+
+  @ApiProperty({
+    description: 'Day number in plan (optional)',
+    example: 1,
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  dayNumber?: number;
+
+  @ApiProperty({
+    description: 'Calories (kcal)',
+    example: 450,
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  calories?: number;
 
   @ApiProperty({
     description: 'Meal plan ID',

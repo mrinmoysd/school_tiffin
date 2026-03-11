@@ -66,27 +66,45 @@ const CMSListPage = () => {
   // Table columns
   const columns: ColumnsType<CMSPage> = [
     {
-      title: 'Slug',
+      title: <span className="whitespace-nowrap">Slug</span>,
       dataIndex: 'slug',
       key: 'slug',
-      render: (slug: string) => <Text code>{slug}</Text>,
+      width: 200,
+      ellipsis: true,
+      render: (slug: string) => (
+        <Text code className="whitespace-nowrap">
+          {slug}
+        </Text>
+      ),
     },
     {
-      title: 'Title',
+      title: <span className="whitespace-nowrap">Title</span>,
       dataIndex: 'title',
       key: 'title',
-      render: (title: string) => <Text strong>{title}</Text>,
+      width: 220,
+      ellipsis: true,
+      render: (title: string) => (
+        <Text strong className="whitespace-nowrap">
+          {title}
+        </Text>
+      ),
     },
     {
-      title: 'Version',
+      title: <span className="whitespace-nowrap">Version</span>,
       dataIndex: 'version',
       key: 'version',
-      render: (version: number) => <Tag>v{version}</Tag>,
+      width: 90,
+      render: (version: number) => (
+        <span className="whitespace-nowrap">
+          <Tag>v{version}</Tag>
+        </span>
+      ),
     },
     {
-      title: 'Published',
+      title: <span className="whitespace-nowrap">Published</span>,
       dataIndex: 'isPublished',
       key: 'isPublished',
+      width: 140,
       render: (isPublished: boolean, record) => (
         <Switch
           checked={isPublished}
@@ -98,22 +116,26 @@ const CMSListPage = () => {
       ),
     },
     {
-      title: 'Last Updated',
+      title: <span className="whitespace-nowrap">Last Updated</span>,
       dataIndex: 'updatedAt',
       key: 'updatedAt',
+      width: 170,
       render: (date: string) => dayjs(date).format('MMM DD, YYYY HH:mm'),
       sorter: (a, b) => dayjs(a.updatedAt).unix() - dayjs(b.updatedAt).unix(),
     },
     {
-      title: 'Actions',
+      title: <span className="whitespace-nowrap">Actions</span>,
       key: 'actions',
+      width: 140,
       render: (_, record) => (
         <Space>
           <Tooltip title="Preview">
             <Button
               type="text"
               icon={<EyeOutlined />}
-              onClick={() => window.open(`/page/${record.slug}`, '_blank')}
+              onClick={() =>
+                window.open(`/cms/${record.slug}/preview`, '_blank', 'noopener,noreferrer')
+              }
             />
           </Tooltip>
           <Tooltip title="Edit">
@@ -158,6 +180,8 @@ const CMSListPage = () => {
           dataSource={pages}
           rowKey="id"
           loading={isLoading}
+          tableLayout="fixed"
+          scroll={{ x: 'max-content' }}
           pagination={{
             total: pages?.length,
             pageSize: 10,

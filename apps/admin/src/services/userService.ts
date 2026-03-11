@@ -18,7 +18,7 @@ export const userService = {
     skip: number = 0,
     take: number = 20,
   ): Promise<AdminUsersListData> => {
-    const params = new URLSearchParams();
+    const params = new globalThis.URLSearchParams();
     if (filters?.role) params.append('role', filters.role);
     if (filters?.isActive !== undefined) params.append('isActive', String(filters.isActive));
     if (filters?.search) params.append('search', filters.search);
@@ -58,11 +58,9 @@ export const userService = {
   },
 
   // Activate/Deactivate user
-  toggleActive: async (id: string, isActive: boolean): Promise<User> => {
-    // Backend toggles status; the 'isActive' value is derived from current state
-    const response = await api.patch<ApiResponse<User>>(`/admin/users/${id}/toggle-status`, {
-      isActive,
-    });
+  toggleActive: async (id: string): Promise<User> => {
+    // Backend toggles status; no payload needed
+    const response = await api.patch<ApiResponse<User>>(`/admin/users/${id}/toggle-status`);
     return response.data.data;
   },
 };

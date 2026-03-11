@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Input, Select, Typography, Card, Tag, DatePicker, Button } from 'antd';
+import { Table, Input, Select, Typography, Card, Tag, DatePicker, Button, Tooltip } from 'antd';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { subscriptionService, schoolService } from '@/services';
@@ -37,39 +37,89 @@ const SubscriptionsListPage = () => {
     [SubscriptionStatus.CANCELLED]: 'red',
   };
 
+  const ellipsisTooltip = {
+    mouseEnterDelay: 0.05,
+    mouseLeaveDelay: 0.1,
+    overlayClassName: 'st-ellipsis-tooltip',
+  };
+
+  const EllipsisCell = ({ text, strong }: { text?: string; strong?: boolean }) => {
+    const spanRef = useRef<{ scrollWidth: number; clientWidth: number } | null>(null);
+    const [isOverflow, setIsOverflow] = useState(false);
+
+    const checkOverflow = () => {
+      const el = spanRef.current;
+      if (!el) return;
+      setIsOverflow(el.scrollWidth > el.clientWidth);
+    };
+
+    return (
+      <Tooltip
+        title={text}
+        open={isOverflow ? undefined : false}
+        mouseEnterDelay={ellipsisTooltip.mouseEnterDelay}
+        mouseLeaveDelay={ellipsisTooltip.mouseLeaveDelay}
+        overlayClassName={ellipsisTooltip.overlayClassName}
+      >
+        <span
+          ref={node => {
+            spanRef.current = node;
+          }}
+          onMouseEnter={checkOverflow}
+          className={`block truncate ${strong ? 'font-semibold' : ''}`}
+        >
+          {text || '-'}
+        </span>
+      </Tooltip>
+    );
+  };
+
   // Table columns
   const columns: ColumnsType<Subscription> = [
     {
-      title: 'Subscription #',
+      title: <span className="whitespace-nowrap">Subscription #</span>,
       dataIndex: 'subscriptionNumber',
       key: 'subscriptionNumber',
-      render: (text: string) => <Text strong>{text}</Text>,
+      width: 150,
+      ellipsis: true,
+      render: (text: string) => <EllipsisCell text={text} strong />,
     },
     {
-      title: 'Parent',
+      title: <span className="whitespace-nowrap">Parent</span>,
       dataIndex: ['parent', 'fullName'],
       key: 'parent',
+      width: 150,
+      ellipsis: true,
+      render: (text: string) => <EllipsisCell text={text} />,
     },
     {
-      title: 'Student',
+      title: <span className="whitespace-nowrap">Student</span>,
       dataIndex: ['student', 'fullName'],
       key: 'student',
+      width: 150,
+      ellipsis: true,
+      render: (text: string) => <EllipsisCell text={text} />,
     },
     {
-      title: 'School',
+      title: <span className="whitespace-nowrap">School</span>,
       dataIndex: ['school', 'name'],
       key: 'school',
+      width: 160,
       ellipsis: true,
+      render: (text: string) => <EllipsisCell text={text} />,
     },
     {
-      title: 'Meal Plan',
+      title: <span className="whitespace-nowrap">Meal Plan</span>,
       dataIndex: ['mealPlan', 'name'],
       key: 'mealPlan',
+      width: 140,
       ellipsis: true,
+      render: (text: string) => <EllipsisCell text={text} />,
     },
     {
-      title: 'Duration',
+      title: <span className="whitespace-nowrap">Duration</span>,
       key: 'duration',
+      width: 150,
       render: (_, record) => (
         <div className="text-xs">
           <div>
@@ -80,8 +130,9 @@ const SubscriptionsListPage = () => {
       ),
     },
     {
-      title: 'Days',
+      title: <span className="whitespace-nowrap">Days</span>,
       key: 'days',
+      width: 120,
       render: (_, record) => (
         <div className="text-xs">
           <div>Total: {record.totalDays}</div>
@@ -90,8 +141,9 @@ const SubscriptionsListPage = () => {
       ),
     },
     {
-      title: 'Amount',
+      title: <span className="whitespace-nowrap">Amount</span>,
       key: 'amount',
+      width: 140,
       render: (_, record) => (
         <div>
           <div>₹{(record.totalPrice / 100).toLocaleString()}</div>
@@ -102,14 +154,20 @@ const SubscriptionsListPage = () => {
       ),
     },
     {
-      title: 'Status',
+      title: <span className="whitespace-nowrap">Status</span>,
       dataIndex: 'status',
       key: 'status',
-      render: (status: SubscriptionStatus) => <Tag color={statusColors[status]}>{status}</Tag>,
+      width: 140,
+      render: (status: SubscriptionStatus) => (
+        <span className="whitespace-nowrap">
+          <Tag color={statusColors[status]}>{status}</Tag>
+        </span>
+      ),
     },
     {
-      title: 'Actions',
+      title: <span className="whitespace-nowrap">Actions</span>,
       key: 'actions',
+      width: 110,
       render: (_, record) => (
         <Button
           type="text"
@@ -182,22 +240,26 @@ const SubscriptionsListPage = () => {
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={subscriptions}
-          rowKey="id"
-          loading={isLoading}
-          pagination={{
-            total: subscriptions?.length,
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: total => `Total ${total} subscriptions`,
-          }}
-          onRow={record => ({
-            onClick: () => navigate(`/subscriptions/${record.id}`),
-            className: 'cursor-pointer hover:bg-gray-50',
-          })}
-        />
+        <div className="table-scrollbar">
+          <Table
+            columns={columns}
+            dataSource={subscriptions}
+            rowKey="id"
+            loading={isLoading}
+            tableLayout="fixed"
+            scroll={{ x: 1200 }}
+            pagination={{
+              total: subscriptions?.length,
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: total => `Total ${total} subscriptions`,
+            }}
+            onRow={record => ({
+              onClick: () => navigate(`/subscriptions/${record.id}`),
+              className: 'cursor-pointer hover:bg-gray-50',
+            })}
+          />
+        </div>
       </Card>
     </div>
   );
