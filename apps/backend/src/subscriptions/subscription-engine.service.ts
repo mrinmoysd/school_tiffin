@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
-    generateDeliverySchedule,
-    generateSubscriptionNumber,
-    validateOperatingDays
+  generateDeliverySchedule,
+  generateSubscriptionNumber,
+  validateOperatingDays,
 } from './utils/schedule-generator.util';
 
 @Injectable()
@@ -28,12 +28,34 @@ export class SubscriptionEngineService {
       throw new BadRequestException('School not found');
     }
 
-    // Parse operating days (stored as JSON string)
+    // Parse operating days (stored as JSON string or CSV string)
     let operatingDays: string[];
     try {
-      operatingDays = typeof school.operatingDays === 'string' 
-        ? JSON.parse(school.operatingDays) 
-        : school.operatingDays;
+      if (Array.isArray(school.operatingDays)) {
+        operatingDays = school.operatingDays;
+      } else if (typeof school.operatingDays === 'string') {
+        const rawOperatingDays = school.operatingDays.trim();
+        if (!rawOperatingDays) {
+          throw new Error('Operating days is empty');
+        }
+
+        try {
+          const parsed = JSON.parse(rawOperatingDays);
+          if (!Array.isArray(parsed)) {
+            throw new Error('Operating days JSON is not an array');
+          }
+          operatingDays = parsed;
+        } catch {
+          operatingDays = rawOperatingDays
+            .split(',')
+            .map(day => day.trim())
+            .filter(Boolean);
+        }
+      } else {
+        throw new Error('Operating days is not a supported type');
+      }
+
+      operatingDays = operatingDays.map(day => day.trim().toUpperCase()).filter(Boolean);
     } catch (error) {
       throw new BadRequestException('Invalid operating days format');
     }
