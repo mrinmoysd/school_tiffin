@@ -1,13 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
@@ -29,10 +21,25 @@ const WEEKDAY_TO_INDEX: Record<string, number> = {
   SAT: 6,
 };
 
-const toISODate = (date: Date) => date.toISOString().slice(0, 10);
+const toISODate = (date: Date) => {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
+const parseISODateLocal = (isoDate: string) => {
+  const [yearString, monthString, dayString] = isoDate.split('-');
+  const year = Number(yearString);
+  const month = Number(monthString);
+  const day = Number(dayString);
+
+  return new Date(year, month - 1, day);
+};
 
 const formatDate = (isoDate: string) =>
-  new Date(`${isoDate}T00:00:00`).toLocaleDateString(undefined, {
+  parseISODateLocal(isoDate).toLocaleDateString(undefined, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -56,7 +63,7 @@ const buildPreviewSchedule = (
   operatingDays: string[] | string,
 ): string[] => {
   const schedule: string[] = [];
-  const date = new Date(`${startDate}T00:00:00`);
+  const date = parseISODateLocal(startDate);
   const allowedDays = parseOperatingDayIndexes(operatingDays);
   let guard = 0;
 
@@ -76,11 +83,10 @@ export const SubscriptionReviewScreen = ({ route, navigation }: Props) => {
   const [student, setStudent] = useState<Student | null>(null);
   const [mealPlan, setMealPlan] = useState<MealPlanDetails | null>(null);
   const [school, setSchool] = useState<SchoolDetails | null>(null);
-  const [startDate, setStartDate] = useState(route.params.startDate);
+  const startDate = route.params.startDate;
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [startDateModalVisible, setStartDateModalVisible] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -126,20 +132,6 @@ export const SubscriptionReviewScreen = ({ route, navigation }: Props) => {
 
     return schedulePreview[schedulePreview.length - 1];
   }, [schedulePreview]);
-
-  const candidateDates = useMemo(() => {
-    const values: string[] = [];
-    const current = new Date();
-    current.setHours(0, 0, 0, 0);
-
-    for (let index = 0; index < 21; index += 1) {
-      const date = new Date(current);
-      date.setDate(current.getDate() + index);
-      values.push(toISODate(date));
-    }
-
-    return values;
-  }, []);
 
   const onProceedToPayment = async () => {
     if (!mealPlan || !student) {
@@ -209,26 +201,6 @@ export const SubscriptionReviewScreen = ({ route, navigation }: Props) => {
         </Text>
       </View>
 
-      <Pressable style={styles.changeDateButton} onPress={() => setStartDateModalVisible(true)}>
-        <Text style={styles.changeDateLabel}>Select Start Date</Text>
-      </Pressable>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Generated Delivery Schedule</Text>
-        {schedulePreview.length === 0 ? (
-          <Text style={styles.helperText}>Unable to generate preview schedule.</Text>
-        ) : (
-          schedulePreview.slice(0, 14).map(date => (
-            <View style={styles.scheduleItem} key={date}>
-              <Text style={styles.scheduleText}>{formatDate(date)}</Text>
-            </View>
-          ))
-        )}
-        {schedulePreview.length > 14 ? (
-          <Text style={styles.helperText}>Showing first 14 of {schedulePreview.length} dates.</Text>
-        ) : null}
-      </View>
-
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
       <AppButton
@@ -236,31 +208,6 @@ export const SubscriptionReviewScreen = ({ route, navigation }: Props) => {
         onPress={() => void onProceedToPayment()}
         loading={submitting}
       />
-
-      <Modal
-        visible={startDateModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setStartDateModalVisible(false)}
-      >
-        <Pressable style={styles.modalOverlay} onPress={() => setStartDateModalVisible(false)}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Select Start Date</Text>
-            {candidateDates.map(date => (
-              <Pressable
-                key={date}
-                style={[styles.modalOption, startDate === date && styles.modalOptionSelected]}
-                onPress={() => {
-                  setStartDate(date);
-                  setStartDateModalVisible(false);
-                }}
-              >
-                <Text style={styles.modalOptionText}>{formatDate(date)}</Text>
-              </Pressable>
-            ))}
-          </View>
-        </Pressable>
-      </Modal>
     </ScrollView>
   );
 };
@@ -306,83 +253,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
-  changeDateButton: {
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#BAE6FD',
-    backgroundColor: '#E0F2FE',
-    paddingVertical: 10,
-    alignItems: 'center',
-    marginBottom: 14,
-  },
-  changeDateLabel: {
-    color: '#0369A1',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  section: {
-    marginBottom: 14,
-  },
-  sectionTitle: {
-    color: '#0F172A',
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  scheduleItem: {
-    borderRadius: 10,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginBottom: 8,
-  },
-  scheduleText: {
-    color: '#334155',
-    fontSize: 13,
-  },
-  helperText: {
-    color: '#64748B',
-    fontSize: 12,
-  },
   errorText: {
     color: '#DC2626',
     fontSize: 13,
     marginBottom: 10,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.45)',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  modalCard: {
-    borderRadius: 14,
-    backgroundColor: '#FFFFFF',
-    padding: 14,
-    maxHeight: '70%',
-  },
-  modalTitle: {
-    color: '#0F172A',
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-  modalOption: {
-    minHeight: 42,
-    borderRadius: 10,
-    backgroundColor: '#F8FAFC',
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    marginBottom: 8,
-  },
-  modalOptionSelected: {
-    backgroundColor: '#E0F2FE',
-  },
-  modalOptionText: {
-    color: '#0F172A',
-    fontSize: 14,
-    fontWeight: '500',
   },
 });

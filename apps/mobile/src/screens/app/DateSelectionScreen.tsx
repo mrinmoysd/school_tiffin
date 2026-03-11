@@ -1,66 +1,84 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DateSelection'>;
 
-const toISODate = (date: Date) => date.toISOString().slice(0, 10);
+const formatDateForInput = (date: Date) => {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
 
-const formatDisplayDate = (isoDate: string) => {
-  const date = new Date(`${isoDate}T00:00:00`);
+  return `${year}-${month}-${day}`;
+};
 
-  return date.toLocaleDateString(undefined, {
+const formatDisplayDate = (date: Date) =>
+  date.toLocaleDateString(undefined, {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
     year: 'numeric',
   });
-};
 
 export const DateSelectionScreen = ({ route, navigation }: Props) => {
-  const candidateDates = useMemo(() => {
-    const values: string[] = [];
-    const current = new Date();
-    current.setHours(0, 0, 0, 0);
-
-    for (let index = 0; index < 21; index += 1) {
-      const date = new Date(current);
-      date.setDate(current.getDate() + index);
-      values.push(toISODate(date));
-    }
-
-    return values;
+  const tomorrow = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() + 1);
+    return date;
   }, []);
 
-  const [selectedDate, setSelectedDate] = useState<string>(candidateDates[0]);
+  const maxSelectableDate = useMemo(() => {
+    const date = new Date(tomorrow);
+    date.setMonth(date.getMonth() + 3);
+    return date;
+  }, [tomorrow]);
+
+  const [selectedDate, setSelectedDate] = useState<Date>(tomorrow);
+  const [pickerVisible, setPickerVisible] = useState(false);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Select Start Date</Text>
-      <Text style={styles.subtitle}>Choose when subscription delivery should begin.</Text>
+      <Text style={styles.subtitle}>Choose a date from tomorrow up to the next 3 months.</Text>
 
-      <View style={styles.dateList}>
-        {candidateDates.map(date => {
-          const selected = selectedDate === date;
-
-          return (
-            <Pressable
-              key={date}
-              style={[styles.dateOption, selected && styles.dateOptionSelected]}
-              onPress={() => setSelectedDate(date)}
-            >
-              <View style={[styles.radioOuter, selected && styles.radioOuterSelected]}>
-                {selected ? <View style={styles.radioInner} /> : null}
-              </View>
-              <Text style={[styles.dateText, selected && styles.dateTextSelected]}>
-                {formatDisplayDate(date)}
-              </Text>
-            </Pressable>
-          );
-        })}
+      <View style={styles.fieldWrapper}>
+        <Text style={styles.fieldLabel}>Start Date</Text>
+        <Pressable style={styles.dropdown} onPress={() => setPickerVisible(true)}>
+          <Text style={styles.dropdownText}>{formatDisplayDate(selectedDate)}</Text>
+          <Text style={styles.dropdownArrow}>v</Text>
+        </Pressable>
       </View>
+
+      {pickerVisible ? (
+        <DateTimePicker
+          value={selectedDate}
+          mode="date"
+          display={Platform.OS === 'android' ? 'calendar' : 'default'}
+          minimumDate={tomorrow}
+          maximumDate={maxSelectableDate}
+          onChange={(event: DateTimePickerEvent, date?: Date) => {
+            if (Platform.OS === 'android') {
+              setPickerVisible(false);
+            }
+
+            if (event.type === 'dismissed') {
+              return;
+            }
+
+            if (date) {
+              setSelectedDate(date);
+            }
+
+            if (Platform.OS === 'ios') {
+              setPickerVisible(false);
+            }
+          }}
+        />
+      ) : null}
 
       <AppButton
         title="Continue to Review"
@@ -69,7 +87,7 @@ export const DateSelectionScreen = ({ route, navigation }: Props) => {
             mealPlanId: route.params.mealPlanId,
             schoolId: route.params.schoolId,
             studentId: route.params.studentId,
-            startDate: selectedDate,
+            startDate: formatDateForInput(selectedDate),
           })
         }
       />
@@ -97,48 +115,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 12,
   },
-  dateList: {
+  fieldWrapper: {
     marginBottom: 16,
   },
-  dateOption: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
-    padding: 12,
-    marginBottom: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  dateOptionSelected: {
-    borderColor: '#38BDF8',
-    backgroundColor: '#F0F9FF',
-  },
-  radioOuter: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#94A3B8',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  radioOuterSelected: {
-    borderColor: '#0284C7',
-  },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#0284C7',
-  },
-  dateText: {
+  fieldLabel: {
+    marginBottom: 6,
     color: '#0F172A',
     fontSize: 14,
     fontWeight: '500',
   },
-  dateTextSelected: {
-    color: '#0C4A6E',
+  dropdown: {
+    minHeight: 48,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dropdownText: {
+    color: '#0F172A',
+    fontSize: 15,
+    flex: 1,
+  },
+  dropdownArrow: {
+    color: '#475569',
+    fontSize: 13,
+    marginLeft: 8,
   },
 });

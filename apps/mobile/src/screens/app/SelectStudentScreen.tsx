@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -31,6 +33,8 @@ export const SelectStudentScreen = ({ navigation, route }: Props) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
+  const [selectedStartDate, setSelectedStartDate] = useState<string | null>(null);
 
   const loadStudents = useCallback(async () => {
     setError(null);
@@ -80,13 +84,46 @@ export const SelectStudentScreen = ({ navigation, route }: Props) => {
   useEffect(() => {
     if (eligibleStudents.length === 0) {
       setSelectedStudentId(null);
+      setSelectedStartDate(null);
       return;
     }
 
     if (!selectedStudentId || !eligibleStudents.some(student => student.id === selectedStudentId)) {
       setSelectedStudentId(eligibleStudents[0].id);
+      setSelectedStartDate(null);
     }
   }, [eligibleStudents, selectedStudentId]);
+
+  const tomorrow = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() + 1);
+    return date;
+  }, []);
+
+  const maxSelectableDate = useMemo(() => {
+    const date = new Date(tomorrow);
+    date.setMonth(date.getMonth() + 3);
+    return date;
+  }, [tomorrow]);
+
+  const formatDateForInput = (date: Date) => {
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const formatDisplayDate = (isoDate: string) => {
+    const [yearString, monthString, dayString] = isoDate.split('-');
+    const date = new Date(Number(yearString), Number(monthString) - 1, Number(dayString));
+    return date.toLocaleDateString(undefined, {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
 
   if (loading) {
     return (
@@ -174,20 +211,71 @@ export const SelectStudentScreen = ({ navigation, route }: Props) => {
         }
       />
 
+      {selectedStudentId ? (
+        <View style={styles.dateWrapper}>
+          <Text style={styles.dateLabel}>Start Date</Text>
+          <Pressable style={styles.datePickerButton} onPress={() => setDatePickerVisible(true)}>
+            <Text style={styles.datePickerText}>
+              {selectedStartDate ? formatDisplayDate(selectedStartDate) : 'Select date'}
+            </Text>
+            <Text style={styles.datePickerArrow}>v</Text>
+          </Pressable>
+
+          {datePickerVisible ? (
+            <DateTimePicker
+              value={
+                selectedStartDate
+                  ? (() => {
+                      const [yearString, monthString, dayString] = selectedStartDate.split('-');
+                      return new Date(
+                        Number(yearString),
+                        Number(monthString) - 1,
+                        Number(dayString),
+                      );
+                    })()
+                  : tomorrow
+              }
+              mode="date"
+              display={Platform.OS === 'android' ? 'calendar' : 'default'}
+              minimumDate={tomorrow}
+              maximumDate={maxSelectableDate}
+              onChange={(event: DateTimePickerEvent, date?: Date) => {
+                if (Platform.OS === 'android') {
+                  setDatePickerVisible(false);
+                }
+
+                if (event.type === 'dismissed') {
+                  return;
+                }
+
+                if (date) {
+                  setSelectedStartDate(formatDateForInput(date));
+                }
+
+                if (Platform.OS === 'ios') {
+                  setDatePickerVisible(false);
+                }
+              }}
+            />
+          ) : null}
+        </View>
+      ) : null}
+
       <AppButton
-        title="Continue to Date Selection"
+        title="Continue to Review"
         onPress={() => {
-          if (!selectedStudentId) {
+          if (!selectedStudentId || !selectedStartDate) {
             return;
           }
 
-          navigation.navigate('DateSelection', {
+          navigation.navigate('SubscriptionReview', {
             mealPlanId: route.params.mealPlanId,
             schoolId: route.params.schoolId,
             studentId: selectedStudentId,
+            startDate: selectedStartDate,
           });
         }}
-        disabled={!selectedStudentId}
+        disabled={!selectedStudentId || !selectedStartDate}
         style={styles.continueButton}
       />
     </ScrollView>
@@ -310,6 +398,37 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     marginTop: 10,
+  },
+  dateWrapper: {
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  dateLabel: {
+    marginBottom: 6,
+    color: '#0F172A',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  datePickerButton: {
+    minHeight: 48,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  datePickerText: {
+    color: '#0F172A',
+    fontSize: 15,
+    flex: 1,
+  },
+  datePickerArrow: {
+    color: '#475569',
+    fontSize: 13,
+    marginLeft: 8,
   },
   editLink: {
     marginTop: 6,
