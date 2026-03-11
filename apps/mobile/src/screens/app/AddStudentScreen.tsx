@@ -1,6 +1,7 @@
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import {
   ActivityIndicator,
   Modal,
@@ -11,12 +12,11 @@ import {
   Text,
   View,
 } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppButton, FormTextInput } from '../../components/ui';
-import { RootStackParamList } from '../../navigation/types';
+import { ApiClientError } from '../../api/client/apiClient';
 import { schoolsApi, type School } from '../../api/schools';
 import { studentsApi } from '../../api/students';
-import { ApiClientError } from '../../api/client/apiClient';
+import { AppButton, FormTextInput } from '../../components/ui';
+import { RootStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddStudent'>;
 
@@ -310,21 +310,30 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
               onRequestClose={() => setGradeModalVisible(false)}
             >
               <Pressable style={styles.modalOverlay} onPress={() => setGradeModalVisible(false)}>
-                <View style={styles.modalCard}>
+                <Pressable
+                  style={[styles.modalCard, styles.modalCardTall]}
+                  onPress={() => undefined}
+                >
                   <Text style={styles.modalTitle}>Select Grade</Text>
-                  {GRADE_OPTIONS.map(option => (
-                    <Pressable
-                      key={option}
-                      style={styles.modalOption}
-                      onPress={() => {
-                        onChange(option);
-                        setGradeModalVisible(false);
-                      }}
-                    >
-                      <Text style={styles.modalOptionText}>{option}</Text>
-                    </Pressable>
-                  ))}
-                </View>
+                  <ScrollView
+                    style={styles.modalOptionsList}
+                    contentContainerStyle={styles.modalOptionsListContent}
+                    showsVerticalScrollIndicator
+                  >
+                    {GRADE_OPTIONS.map(option => (
+                      <Pressable
+                        key={option}
+                        style={styles.modalOption}
+                        onPress={() => {
+                          onChange(option);
+                          setGradeModalVisible(false);
+                        }}
+                      >
+                        <Text style={styles.modalOptionText}>{option}</Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                </Pressable>
               </Pressable>
             </Modal>
           </View>
@@ -353,21 +362,27 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
               onRequestClose={() => setSchoolModalVisible(false)}
             >
               <Pressable style={styles.modalOverlay} onPress={() => setSchoolModalVisible(false)}>
-                <View style={styles.modalCard}>
+                <Pressable style={styles.modalCard} onPress={() => undefined}>
                   <Text style={styles.modalTitle}>Select School</Text>
-                  {schools.map(school => (
-                    <Pressable
-                      key={school.id}
-                      style={styles.modalOption}
-                      onPress={() => {
-                        onChange(school.id);
-                        setSchoolModalVisible(false);
-                      }}
-                    >
-                      <Text style={styles.modalOptionText}>{school.name}</Text>
-                    </Pressable>
-                  ))}
-                </View>
+                  <ScrollView
+                    style={styles.modalOptionsList}
+                    contentContainerStyle={styles.modalOptionsListContent}
+                    showsVerticalScrollIndicator
+                  >
+                    {schools.map(school => (
+                      <Pressable
+                        key={school.id}
+                        style={styles.modalOption}
+                        onPress={() => {
+                          onChange(school.id);
+                          setSchoolModalVisible(false);
+                        }}
+                      >
+                        <Text style={styles.modalOptionText}>{school.name}</Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                </Pressable>
               </Pressable>
             </Modal>
           </View>
@@ -496,12 +511,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     padding: 14,
     maxHeight: '70%',
+    width: '100%',
+    maxWidth: 380,
+    alignSelf: 'center',
+  },
+  modalCardTall: {
+    minHeight: 250,
   },
   modalTitle: {
     color: '#0F172A',
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 10,
+  },
+  modalOptionsList: {
+    flexGrow: 0,
+  },
+  modalOptionsListContent: {
+    paddingBottom: 4,
   },
   modalOption: {
     minHeight: 42,
