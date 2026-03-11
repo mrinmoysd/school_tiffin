@@ -8,7 +8,7 @@ export type SubscriptionStatus =
 export interface SubscriptionStudent {
   id: string;
   fullName: string;
-  grade: number;
+  grade: number | string | null;
   school: {
     id: string;
     name: string;
@@ -37,4 +37,19 @@ export interface Subscription {
   student: SubscriptionStudent;
   mealPlan: SubscriptionMealPlan;
   createdAt: string;
+}
+
+export interface CreateSubscriptionPayload {
+  studentId: string;
+  mealPlanId: string;
+  startDate: string;
+  numberOfDays: number;
+}
+
+export interface SubscriptionScheduleDay {
+  id: string;
+  subscriptionId: string;
+  scheduledDate: string;
+  status: string;
+  deliveredAt: string | null;
 }

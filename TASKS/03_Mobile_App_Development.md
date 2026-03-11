@@ -322,22 +322,22 @@
 **Priority**: Critical
 **Dependencies**: Backend 2.4.2
 
-- [ ] Create SubscriptionReviewScreen
-- [ ] Display subscription summary
+- [x] Create SubscriptionReviewScreen
+- [x] Display subscription summary
   - Student name
   - Meal plan name
   - Start date, end date
   - Total days (delivery count)
   - Price breakdown (per day, total)
-- [ ] Display generated delivery schedule
+- [x] Display generated delivery schedule
   - Calendar view or list view
   - Show delivery dates
-- [ ] Add "Select Start Date" option
-- [ ] Add "Proceed to Payment" button
-- [ ] Connect to create subscription API
-- [ ] Handle subscription creation
-- [ ] Navigate to payment on success
-- [ ] Handle loading/error states
+- [x] Add "Select Start Date" option
+- [x] Add "Proceed to Payment" button
+- [x] Connect to create subscription API
+- [x] Handle subscription creation
+- [x] Navigate to payment on success
+- [x] Handle loading/error states
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**

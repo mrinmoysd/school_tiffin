@@ -1,5 +1,10 @@
 import { apiRequest } from '../client/apiClient';
-import { Subscription, SubscriptionStatus } from './subscriptionsApi.types';
+import {
+  CreateSubscriptionPayload,
+  Subscription,
+  SubscriptionScheduleDay,
+  SubscriptionStatus,
+} from './subscriptionsApi.types';
 
 export const subscriptionsApi = {
   getSubscriptions: async (status?: SubscriptionStatus): Promise<Subscription[]> => {
@@ -10,4 +15,17 @@ export const subscriptionsApi = {
       requiresAuth: true,
     });
   },
+
+  createSubscription: async (payload: CreateSubscriptionPayload): Promise<Subscription> =>
+    apiRequest<Subscription>('/subscriptions', {
+      method: 'POST',
+      requiresAuth: true,
+      body: JSON.stringify(payload),
+    }),
+
+  getSubscriptionSchedule: async (subscriptionId: string): Promise<SubscriptionScheduleDay[]> =>
+    apiRequest<SubscriptionScheduleDay[]>(`/subscriptions/${subscriptionId}/schedule`, {
+      method: 'GET',
+      requiresAuth: true,
+    }),
 };

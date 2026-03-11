@@ -12,6 +12,13 @@ export type RootStackParamList = {
   SelectStudent: { mealPlanId: string; schoolId: string };
   AddStudent: { mealPlanId: string; schoolId: string; studentId?: string };
   DateSelection: { mealPlanId: string; schoolId: string; studentId: string };
+  SubscriptionReview: {
+    mealPlanId: string;
+    schoolId: string;
+    studentId: string;
+    startDate: string;
+  };
+  Payment: { subscriptionId: string; amount: number | string; currency: string };
   Orders: undefined;
   SubscriptionDetail: { subscriptionId: string };
   PauseRequest: { subscriptionId: string };

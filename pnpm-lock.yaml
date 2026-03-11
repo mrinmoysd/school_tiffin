@@ -330,6 +330,9 @@ importers:
       '@babel/runtime':
         specifier: ^7.28.4
         version: 7.28.6
+      '@react-native-community/datetimepicker':
+        specifier: ^8.4.1
+        version: 8.4.1(expo@53.0.27)(react-native@0.79.6)(react@19.0.0)
       '@react-navigation/native':
         specifier: ^7.1.33
         version: 7.1.33(react-native@0.79.6)(react@19.0.0)
@@ -5515,6 +5518,28 @@ packages:
       rc-util: 5.44.4(react-dom@18.3.1)(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+    dev: false
+
+  /@react-native-community/datetimepicker@8.4.1(expo@53.0.27)(react-native@0.79.6)(react@19.0.0):
+    resolution:
+      {
+        integrity: sha512-DrK+CUS5fZnz8dhzBezirkzQTcNDdaXer3oDLh0z4nc2tbdIdnzwvXCvi8IEOIvleoc9L95xS5tKUl0/Xv71Mg==,
+      }
+    peerDependencies:
+      expo: '>=52.0.0'
+      react: '*'
+      react-native: '*'
+      react-native-windows: '*'
+    peerDependenciesMeta:
+      expo:
+        optional: true
+      react-native-windows:
+        optional: true
+    dependencies:
+      expo: 53.0.27(@babel/core@7.29.0)(react-native@0.79.6)(react@19.0.0)
+      invariant: 2.2.4
+      react: 19.0.0
+      react-native: 0.79.6(@babel/core@7.29.0)(@types/react@19.0.14)(react@19.0.0)
     dev: false
 
   /@react-native/assets-registry@0.79.6:

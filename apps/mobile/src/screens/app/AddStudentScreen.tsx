@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import {
   ActivityIndicator,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -52,8 +54,40 @@ const isValidDateString = (value: string) => {
     return false;
   }
 
-  const parsed = new Date(value);
-  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+  const [yearString, monthString, dayString] = value.split('-');
+  const year = Number(yearString);
+  const month = Number(monthString);
+  const day = Number(dayString);
+  const parsed = new Date(year, month - 1, day);
+
+  return (
+    !Number.isNaN(parsed.getTime()) &&
+    parsed.getFullYear() === year &&
+    parsed.getMonth() === month - 1 &&
+    parsed.getDate() === day
+  );
+};
+
+const formatDateForInput = (date: Date) => {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
+const parseInputDate = (value: string): Date | null => {
+  if (!isValidDateString(value)) {
+    return null;
+  }
+
+  const [yearString, monthString, dayString] = value.split('-');
+  const year = Number(yearString);
+  const month = Number(monthString);
+  const day = Number(dayString);
+  const parsed = new Date(year, month - 1, day);
+
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
 const normalizeGradeValue = (grade: string | number | null) => {
@@ -72,6 +106,8 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
   const [error, setError] = useState<string | null>(null);
   const [gradeModalVisible, setGradeModalVisible] = useState(false);
   const [schoolModalVisible, setSchoolModalVisible] = useState(false);
+  const [dobPickerVisible, setDobPickerVisible] = useState(false);
+  const [dobDraftDate, setDobDraftDate] = useState<Date>(new Date());
 
   const { control, handleSubmit, setValue, watch } = useForm<StudentFormValues>({
     defaultValues: {
@@ -200,17 +236,56 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
           required: 'Date of birth is required',
           validate: value => isValidDateString(value.trim()) || 'Enter date in YYYY-MM-DD format',
         }}
-        render={({ field: { value, onChange, onBlur }, fieldState: { error: fieldError } }) => (
-          <FormTextInput
-            label="Date of Birth (YYYY-MM-DD)"
-            value={value}
-            onChangeText={onChange}
-            onBlur={onBlur}
-            error={fieldError?.message}
-            placeholder="2015-08-31"
-            autoCapitalize="none"
-          />
-        )}
+        render={({ field: { value, onChange, onBlur }, fieldState: { error: fieldError } }) => {
+          const selectedDate = parseInputDate(value);
+
+          return (
+            <View style={styles.fieldWrapper}>
+              <Text style={styles.fieldLabel}>Date of Birth</Text>
+              <Pressable
+                style={styles.dropdown}
+                onPress={() => {
+                  setDobDraftDate(selectedDate ?? new Date());
+                  setDobPickerVisible(true);
+                }}
+              >
+                <Text style={styles.dropdownText}>
+                  {selectedDate ? formatDateForInput(selectedDate) : 'Select date'}
+                </Text>
+                <Text style={styles.dropdownArrow}>v</Text>
+              </Pressable>
+              {fieldError ? <Text style={styles.fieldError}>{fieldError.message}</Text> : null}
+
+              {dobPickerVisible ? (
+                <DateTimePicker
+                  value={dobDraftDate}
+                  mode="date"
+                  display={Platform.OS === 'android' ? 'calendar' : 'default'}
+                  maximumDate={new Date()}
+                  onChange={(event: DateTimePickerEvent, date?: Date) => {
+                    if (Platform.OS === 'android') {
+                      setDobPickerVisible(false);
+                    }
+
+                    if (event.type === 'dismissed') {
+                      return;
+                    }
+
+                    if (date) {
+                      setDobDraftDate(date);
+                      onChange(formatDateForInput(date));
+                      onBlur();
+                    }
+
+                    if (Platform.OS === 'ios') {
+                      setDobPickerVisible(false);
+                    }
+                  }}
+                />
+              ) : null}
+            </View>
+          );
+        }}
       />
 
       <Controller

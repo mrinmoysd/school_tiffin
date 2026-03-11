@@ -10,10 +10,12 @@ import {
   HomeScreen,
   MealPlanDetailScreen,
   OrdersScreen,
+  PaymentScreen,
   PauseRequestScreen,
   SelectStudentScreen,
   SchoolDetailScreen,
   SchoolListScreen,
+  SubscriptionReviewScreen,
   SubscriptionDetailScreen,
 } from '../screens/app';
 import {
@@ -71,6 +73,12 @@ export const AppNavigator = () => {
               component={DateSelectionScreen}
               options={{ title: 'Date Selection' }}
             />
+            <Stack.Screen
+              name="SubscriptionReview"
+              component={SubscriptionReviewScreen}
+              options={{ title: 'Review Subscription' }}
+            />
+            <Stack.Screen name="Payment" component={PaymentScreen} options={{ title: 'Payment' }} />
             <Stack.Screen name="Orders" component={OrdersScreen} />
             <Stack.Screen
               name="SubscriptionDetail"

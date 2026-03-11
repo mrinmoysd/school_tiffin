@@ -5,6 +5,8 @@ export * from './MealPlanDetailScreen';
 export * from './SelectStudentScreen';
 export * from './AddStudentScreen';
 export * from './DateSelectionScreen';
+export * from './SubscriptionReviewScreen';
+export * from './PaymentScreen';
 export * from './OrdersScreen';
 export * from './SubscriptionDetailScreen';
 export * from './PauseRequestScreen';
