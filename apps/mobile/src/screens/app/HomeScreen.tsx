@@ -199,6 +199,10 @@ export const HomeScreen = ({ navigation }: Props) => {
         <Text style={styles.ordersLinkText}>My Orders</Text>
       </Pressable>
 
+      <Pressable style={styles.ordersLink} onPress={() => navigation.navigate('SubscriptionsList')}>
+        <Text style={styles.ordersLinkText}>My Subscriptions</Text>
+      </Pressable>
+
       <Pressable style={styles.logoutLink} onPress={() => void dispatch(logout())}>
         <Text style={styles.logoutLinkText}>Logout</Text>
       </Pressable>

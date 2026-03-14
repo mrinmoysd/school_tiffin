@@ -7,6 +7,7 @@ export * from './AddStudentScreen';
 export * from './DateSelectionScreen';
 export * from './SubscriptionReviewScreen';
 export * from './PaymentScreen';
+export * from './SubscriptionsListScreen';
 export * from './OrdersScreen';
 export * from './SubscriptionDetailScreen';
 export * from './PauseRequestScreen';

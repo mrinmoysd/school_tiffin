@@ -15,6 +15,7 @@ import {
   SelectStudentScreen,
   SchoolDetailScreen,
   SchoolListScreen,
+  SubscriptionsListScreen,
   SubscriptionReviewScreen,
   SubscriptionDetailScreen,
 } from '../screens/app';
@@ -79,6 +80,11 @@ export const AppNavigator = () => {
               options={{ title: 'Review Subscription' }}
             />
             <Stack.Screen name="Payment" component={PaymentScreen} options={{ title: 'Payment' }} />
+            <Stack.Screen
+              name="SubscriptionsList"
+              component={SubscriptionsListScreen}
+              options={{ title: 'My Subscriptions' }}
+            />
             <Stack.Screen name="Orders" component={OrdersScreen} />
             <Stack.Screen
               name="SubscriptionDetail"

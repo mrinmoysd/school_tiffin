@@ -397,19 +397,19 @@
 **Priority**: High
 **Dependencies**: Backend 2.4.3
 
-- [ ] Create SubscriptionsListScreen
-- [ ] Implement tabs: Active, Completed
-- [ ] Display subscription cards
-  - Student name
-  - Meal plan name
-  - Start date, end date
-  - Status badge
-  - Remaining days
-  - Quick actions (view, pause)
-- [ ] Add pull-to-refresh
-- [ ] Connect to subscriptions API
-- [ ] Handle empty states
-- [ ] Navigate to subscription details
+- [x] Create SubscriptionsListScreen
+- [x] Implement tabs: Active, Completed
+- [x] Display subscription cards
+  - [x] Student name
+  - [x] Meal plan name
+  - [x] Start date, end date
+  - [x] Status badge
+  - [x] Remaining days
+  - [x] Quick actions (view, pause)
+- [x] Add pull-to-refresh
+- [x] Connect to subscriptions API
+- [x] Handle empty states
+- [x] Navigate to subscription details
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
