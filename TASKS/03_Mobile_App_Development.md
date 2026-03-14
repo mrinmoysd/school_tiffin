@@ -457,18 +457,18 @@
 **Priority**: High
 **Dependencies**: Backend 2.4.3
 
-- [ ] Create DeliveryScheduleScreen
-- [ ] Implement calendar view
-  - Use react-native-calendars
-  - Mark delivery dates
-  - Color code by status (scheduled, delivered, paused)
-- [ ] Add legend for colors
-- [ ] Display day details on tap
-  - Date
-  - Status
-  - Delivery confirmation time (if delivered)
-- [ ] Add month navigation
-- [ ] Connect to schedule API
+- [x] Create DeliveryScheduleScreen
+- [x] Implement calendar view
+  - [x] Use react-native-calendars
+  - [x] Mark delivery dates
+  - [x] Color code by status (scheduled, delivered, paused)
+- [x] Add legend for colors
+- [x] Display day details on tap
+  - [x] Date
+  - [x] Status
+  - [x] Delivery confirmation time (if delivered)
+- [x] Add month navigation
+- [x] Connect to schedule API
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
