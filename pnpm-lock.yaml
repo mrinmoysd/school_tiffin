@@ -342,6 +342,12 @@ importers:
       '@reduxjs/toolkit':
         specifier: ^2.11.2
         version: 2.11.2(react-redux@9.2.0)(react@19.0.0)
+      '@standard-schema/spec':
+        specifier: ^1.1.0
+        version: 1.1.0
+      '@standard-schema/utils':
+        specifier: ^0.3.0
+        version: 0.3.0
       expo:
         specifier: ~53.0.0
         version: 53.0.27(@babel/core@7.29.0)(react-native@0.79.6)(react@19.0.0)
@@ -357,6 +363,9 @@ importers:
       expo-status-bar:
         specifier: ~2.2.3
         version: 2.2.3(react-native@0.79.6)(react@19.0.0)
+      immer:
+        specifier: ^11.1.4
+        version: 11.1.4
       react:
         specifier: 19.0.0
         version: 19.0.0
@@ -366,9 +375,6 @@ importers:
       react-native:
         specifier: 0.79.6
         version: 0.79.6(@babel/core@7.29.0)(@types/react@19.0.14)(react@19.0.0)
-      react-native-calendars:
-        specifier: ^1.1314.0
-        version: 1.1314.0(react-native@0.79.6)(react@19.0.0)
       react-native-gesture-handler:
         specifier: ~2.24.0
         version: 2.24.0(react-native@0.79.6)(react@19.0.0)
@@ -387,6 +393,18 @@ importers:
       react-redux:
         specifier: ^9.2.0
         version: 9.2.0(@types/react@19.0.14)(react@19.0.0)(redux@5.0.1)
+      redux:
+        specifier: ^5.0.1
+        version: 5.0.1
+      redux-thunk:
+        specifier: ^3.1.0
+        version: 3.1.0(redux@5.0.1)
+      reselect:
+        specifier: ^5.1.1
+        version: 5.1.1
+      use-sync-external-store:
+        specifier: ^1.6.0
+        version: 1.6.0(react@19.0.0)
     devDependencies:
       '@types/react':
         specifier: ~19.0.10
@@ -15154,15 +15172,6 @@ packages:
     hasBin: true
     dev: false
 
-  /moment@2.30.1:
-    resolution:
-      {
-        integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==,
-      }
-    requiresBuild: true
-    dev: false
-    optional: true
-
   /ms@2.0.0:
     resolution:
       {
@@ -17219,27 +17228,6 @@ packages:
       }
     dev: false
 
-  /react-native-calendars@1.1314.0(react-native@0.79.6)(react@19.0.0):
-    resolution:
-      {
-        integrity: sha512-4DLAVto8Qo9L3ggL2vsY9Gk8FFpJWtne8F/3wN8yUb7Xha9/SKS4B+vs7xlhWjKeqZUHws/Vi/q/6IZ8s60kcQ==,
-      }
-    engines: { node: '>=18' }
-    dependencies:
-      hoist-non-react-statics: 3.3.2
-      lodash: 4.17.23
-      memoize-one: 5.2.1
-      prop-types: 15.8.1
-      react-native-swipe-gestures: 1.0.5
-      recyclerlistview: 4.2.3(react-native@0.79.6)(react@19.0.0)
-      xdate: 0.8.3
-    optionalDependencies:
-      moment: 2.30.1
-    transitivePeerDependencies:
-      - react
-      - react-native
-    dev: false
-
   /react-native-edge-to-edge@1.6.0(react-native@0.79.6)(react@19.0.0):
     resolution:
       {
@@ -17330,13 +17318,6 @@ packages:
       react-native: 0.79.6(@babel/core@7.29.0)(@types/react@19.0.14)(react@19.0.0)
       react-native-is-edge-to-edge: 1.3.1(react-native@0.79.6)(react@19.0.0)
       warn-once: 0.1.1
-    dev: false
-
-  /react-native-swipe-gestures@1.0.5:
-    resolution:
-      {
-        integrity: sha512-Ns7Bn9H/Tyw278+5SQx9oAblDZ7JixyzeOczcBK8dipQk2pD7Djkcfnf1nB/8RErAmMLL9iXgW0QHqiII8AhKw==,
-      }
     dev: false
 
   /react-native@0.79.6(@babel/core@7.29.0)(@types/react@19.0.14)(react@19.0.0):
@@ -17621,22 +17602,6 @@ packages:
       recharts-scale: 0.4.5
       tiny-invariant: 1.3.3
       victory-vendor: 36.9.2
-    dev: false
-
-  /recyclerlistview@4.2.3(react-native@0.79.6)(react@19.0.0):
-    resolution:
-      {
-        integrity: sha512-STR/wj/FyT8EMsBzzhZ1l2goYirMkIgfV3gYEPxI3Kf3lOnu6f7Dryhyw7/IkQrgX5xtTcDrZMqytvteH9rL3g==,
-      }
-    peerDependencies:
-      react: '>= 15.2.1'
-      react-native: '>= 0.30.0'
-    dependencies:
-      lodash.debounce: 4.0.8
-      prop-types: 15.8.1
-      react: 19.0.0
-      react-native: 0.79.6(@babel/core@7.29.0)(@types/react@19.0.14)(react@19.0.0)
-      ts-object-utils: 0.0.5
     dev: false
 
   /redent@3.0.0:
@@ -19547,13 +19512,6 @@ packages:
       yn: 3.1.1
     dev: true
 
-  /ts-object-utils@0.0.5:
-    resolution:
-      {
-        integrity: sha512-iV0GvHqOmilbIKJsfyfJY9/dNHCs969z3so90dQWsO1eMMozvTpnB1MEaUbb3FYtZTGjv5sIy/xmslEz0Rg2TA==,
-      }
-    dev: false
-
   /tsconfig-paths-webpack-plugin@4.2.0:
     resolution:
       {
@@ -20511,13 +20469,6 @@ packages:
     dependencies:
       simple-plist: 1.3.1
       uuid: 7.0.3
-    dev: false
-
-  /xdate@0.8.3:
-    resolution:
-      {
-        integrity: sha512-1NhJWPJwN+VjbkACT9XHbQK4o6exeSVtS2CxhMPwUE7xQakoEFTlwra9YcqV/uHQVyeEUYoYC46VGDJ+etnIiw==,
-      }
     dev: false
 
   /xml2js@0.6.0:

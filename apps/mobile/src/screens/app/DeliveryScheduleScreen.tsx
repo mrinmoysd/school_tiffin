@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -8,29 +9,33 @@ import {
   View,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Calendar, type DateData } from 'react-native-calendars';
-import type { MarkedDates } from 'react-native-calendars/src/types';
 import { ApiClientError } from '../../api/client/apiClient';
 import { subscriptionsApi, type SubscriptionScheduleDay } from '../../api/subscriptions';
 import { RootStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DeliverySchedule'>;
 
-const formatDate = (value: string) => {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
+const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  return date.toLocaleDateString(undefined, {
+const toDateKey = (value: Date) => {
+  const year = value.getFullYear();
+  const month = `${value.getMonth() + 1}`.padStart(2, '0');
+  const day = `${value.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const fromDateKey = (value: string) => {
+  const [yearString, monthString, dayString] = value.split('-');
+  return new Date(Number(yearString), Number(monthString) - 1, Number(dayString));
+};
+
+const formatDate = (value: string) =>
+  fromDateKey(value).toLocaleDateString(undefined, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
     weekday: 'short',
   });
-};
-
-const toDateKey = (value: string) => value.slice(0, 10);
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -41,8 +46,20 @@ const getStatusColor = (status: string) => {
     case 'SCHEDULED':
       return '#2563EB';
     default:
-      return '#64748B';
+      return '#94A3B8';
   }
+};
+
+const buildMonthGrid = (monthDate: Date): Date[] => {
+  const first = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+  const start = new Date(first);
+  start.setDate(first.getDate() - first.getDay());
+
+  return Array.from({ length: 42 }).map((_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    return date;
+  });
 };
 
 export const DeliveryScheduleScreen = ({ route }: Props) => {
@@ -51,6 +68,7 @@ export const DeliveryScheduleScreen = ({ route }: Props) => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [visibleMonth, setVisibleMonth] = useState(new Date());
 
   const loadSchedule = useCallback(async () => {
     setError(null);
@@ -58,8 +76,11 @@ export const DeliveryScheduleScreen = ({ route }: Props) => {
     try {
       const response = await subscriptionsApi.getSubscriptionSchedule(route.params.subscriptionId);
       setSchedule(response);
+
       if (!selectedDate && response.length > 0) {
-        setSelectedDate(toDateKey(response[0].scheduledDate));
+        const initialDate = response[0].scheduledDate.slice(0, 10);
+        setSelectedDate(initialDate);
+        setVisibleMonth(fromDateKey(initialDate));
       }
     } catch (requestError) {
       if (requestError instanceof ApiClientError) {
@@ -88,36 +109,18 @@ export const DeliveryScheduleScreen = ({ route }: Props) => {
 
   const scheduleByDate = useMemo(() => {
     const map = new Map<string, SubscriptionScheduleDay>();
-    schedule.forEach(item => {
-      map.set(toDateKey(item.scheduledDate), item);
-    });
+    schedule.forEach(item => map.set(item.scheduledDate.slice(0, 10), item));
     return map;
   }, [schedule]);
 
-  const markedDates = useMemo<MarkedDates>(() => {
-    const marks: MarkedDates = {};
-
-    schedule.forEach(item => {
-      const dateKey = toDateKey(item.scheduledDate);
-      marks[dateKey] = {
-        marked: true,
-        dotColor: getStatusColor(item.status),
-      };
-    });
-
-    if (selectedDate) {
-      const existing = marks[selectedDate] ?? {};
-      marks[selectedDate] = {
-        ...existing,
-        selected: true,
-        selectedColor: '#0EA5E9',
-      };
-    }
-
-    return marks;
-  }, [schedule, selectedDate]);
+  const monthGrid = useMemo(() => buildMonthGrid(visibleMonth), [visibleMonth]);
 
   const selectedDay = selectedDate ? (scheduleByDate.get(selectedDate) ?? null) : null;
+
+  const visibleMonthLabel = visibleMonth.toLocaleDateString(undefined, {
+    month: 'long',
+    year: 'numeric',
+  });
 
   if (loading) {
     return (
@@ -133,59 +136,90 @@ export const DeliveryScheduleScreen = ({ route }: Props) => {
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <Text style={styles.title}>Delivery Calendar</Text>
+      <Text style={styles.title}>Delivery Schedule</Text>
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      {schedule.length === 0 ? (
-        <Text style={styles.emptyText}>No delivery schedule found.</Text>
-      ) : null}
+      <View style={styles.monthHeader}>
+        <Pressable
+          style={styles.monthNavButton}
+          onPress={() =>
+            setVisibleMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
+          }
+        >
+          <Text style={styles.monthNavLabel}>{'<'}</Text>
+        </Pressable>
+        <Text style={styles.monthLabel}>{visibleMonthLabel}</Text>
+        <Pressable
+          style={styles.monthNavButton}
+          onPress={() =>
+            setVisibleMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))
+          }
+        >
+          <Text style={styles.monthNavLabel}>{'>'}</Text>
+        </Pressable>
+      </View>
 
-      {schedule.length > 0 ? (
-        <>
-          <Calendar
-            markedDates={markedDates}
-            onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
-            enableSwipeMonths
-            style={styles.calendar}
-            theme={{
-              todayTextColor: '#0EA5E9',
-              arrowColor: '#0EA5E9',
-              monthTextColor: '#0F172A',
-              textDayHeaderFontWeight: '600',
-            }}
-          />
-
-          <View style={styles.legendCard}>
-            <Text style={styles.legendTitle}>Legend</Text>
-            <View style={styles.legendRow}>
-              <View style={[styles.legendDot, { backgroundColor: '#2563EB' }]} />
-              <Text style={styles.legendText}>Scheduled</Text>
-            </View>
-            <View style={styles.legendRow}>
-              <View style={[styles.legendDot, { backgroundColor: '#16A34A' }]} />
-              <Text style={styles.legendText}>Delivered</Text>
-            </View>
-            <View style={styles.legendRow}>
-              <View style={[styles.legendDot, { backgroundColor: '#F59E0B' }]} />
-              <Text style={styles.legendText}>Paused</Text>
-            </View>
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.dateText}>
-              {selectedDay ? formatDate(selectedDay.scheduledDate) : 'Select a date'}
+      <View style={styles.calendarCard}>
+        <View style={styles.weekHeaderRow}>
+          {WEEK_DAYS.map(day => (
+            <Text key={day} style={styles.weekHeaderText}>
+              {day}
             </Text>
-            <Text style={styles.statusText}>
-              Status: {selectedDay?.status ?? 'No delivery on this day'}
-            </Text>
-            {selectedDay?.deliveredAt ? (
-              <Text style={styles.statusText}>
-                Delivered At: {formatDate(selectedDay.deliveredAt)}
-              </Text>
-            ) : null}
-          </View>
-        </>
-      ) : null}
+          ))}
+        </View>
+
+        <View style={styles.grid}>
+          {monthGrid.map(date => {
+            const dateKey = toDateKey(date);
+            const isCurrentMonth = date.getMonth() === visibleMonth.getMonth();
+            const dayEntry = scheduleByDate.get(dateKey);
+            const isSelected = selectedDate === dateKey;
+
+            return (
+              <Pressable
+                key={dateKey}
+                style={[styles.dayCell, isSelected && styles.dayCellSelected]}
+                onPress={() => setSelectedDate(dateKey)}
+              >
+                <Text style={[styles.dayText, !isCurrentMonth && styles.dayTextMuted]}>
+                  {date.getDate()}
+                </Text>
+                {dayEntry ? (
+                  <View
+                    style={[styles.dayDot, { backgroundColor: getStatusColor(dayEntry.status) }]}
+                  />
+                ) : null}
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
+      <View style={styles.legendCard}>
+        <Text style={styles.legendTitle}>Legend</Text>
+        <View style={styles.legendRow}>
+          <View style={[styles.legendDot, { backgroundColor: '#2563EB' }]} />
+          <Text style={styles.legendText}>Scheduled</Text>
+        </View>
+        <View style={styles.legendRow}>
+          <View style={[styles.legendDot, { backgroundColor: '#16A34A' }]} />
+          <Text style={styles.legendText}>Delivered</Text>
+        </View>
+        <View style={styles.legendRow}>
+          <View style={[styles.legendDot, { backgroundColor: '#F59E0B' }]} />
+          <Text style={styles.legendText}>Paused</Text>
+        </View>
+      </View>
+
+      <View style={styles.detailsCard}>
+        <Text style={styles.detailsTitle}>Day Details</Text>
+        <Text style={styles.detailText}>Date: {selectedDate ? formatDate(selectedDate) : '-'}</Text>
+        <Text style={styles.detailText}>Status: {selectedDay?.status ?? 'No delivery'}</Text>
+        <Text style={styles.detailText}>
+          Delivery Time:{' '}
+          {selectedDay?.deliveredAt ? new Date(selectedDay.deliveredAt).toLocaleString() : '-'}
+        </Text>
+      </View>
     </ScrollView>
   );
 };
@@ -195,56 +229,96 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
+  content: {
+    padding: 16,
+    paddingBottom: 24,
+  },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F8FAFC',
   },
-  content: {
-    padding: 16,
-    paddingBottom: 24,
-  },
   title: {
     color: '#0F172A',
     fontSize: 22,
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   errorText: {
     color: '#DC2626',
     fontSize: 13,
     marginBottom: 10,
   },
-  emptyText: {
-    color: '#64748B',
-    fontSize: 14,
-    textAlign: 'center',
-    paddingVertical: 18,
+  monthHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
   },
-  calendar: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginBottom: 12,
+  monthNavButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  card: {
+  monthNavLabel: {
+    color: '#0F172A',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  monthLabel: {
+    color: '#0F172A',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  calendarCard: {
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     backgroundColor: '#FFFFFF',
-    padding: 12,
+    padding: 10,
     marginBottom: 10,
   },
-  dateText: {
-    color: '#0F172A',
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 4,
+  weekHeaderRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
   },
-  statusText: {
+  weekHeaderText: {
+    flex: 1,
+    textAlign: 'center',
     color: '#475569',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  dayCell: {
+    width: '14.2857%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  dayCellSelected: {
+    backgroundColor: '#E0F2FE',
+  },
+  dayText: {
+    color: '#0F172A',
     fontSize: 13,
+  },
+  dayTextMuted: {
+    color: '#94A3B8',
+  },
+  dayDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    marginTop: 4,
   },
   legendCard: {
     borderRadius: 12,
@@ -274,5 +348,23 @@ const styles = StyleSheet.create({
   legendText: {
     color: '#334155',
     fontSize: 13,
+  },
+  detailsCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    padding: 12,
+  },
+  detailsTitle: {
+    color: '#0F172A',
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  detailText: {
+    color: '#334155',
+    fontSize: 13,
+    marginBottom: 6,
   },
 });
