@@ -10,4 +10,5 @@ export * from './PaymentScreen';
 export * from './SubscriptionsListScreen';
 export * from './OrdersScreen';
 export * from './SubscriptionDetailScreen';
+export * from './DeliveryScheduleScreen';
 export * from './PauseRequestScreen';

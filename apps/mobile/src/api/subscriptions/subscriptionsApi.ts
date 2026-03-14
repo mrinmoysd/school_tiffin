@@ -1,8 +1,10 @@
 import { apiRequest } from '../client/apiClient';
 import { ApiClientError } from '../client/apiClient';
 import {
+  CancelSubscriptionResponse,
   CreateSubscriptionPayload,
   Subscription,
+  SubscriptionDetails,
   SubscriptionScheduleDay,
   SubscriptionStatus,
 } from './subscriptionsApi.types';
@@ -57,6 +59,18 @@ export const subscriptionsApi = {
   getSubscriptionSchedule: async (subscriptionId: string): Promise<SubscriptionScheduleDay[]> =>
     apiRequest<SubscriptionScheduleDay[]>(`/subscriptions/${subscriptionId}/schedule`, {
       method: 'GET',
+      requiresAuth: true,
+    }),
+
+  getSubscriptionById: async (subscriptionId: string): Promise<SubscriptionDetails> =>
+    apiRequest<SubscriptionDetails>(`/subscriptions/${subscriptionId}`, {
+      method: 'GET',
+      requiresAuth: true,
+    }),
+
+  cancelSubscription: async (subscriptionId: string): Promise<CancelSubscriptionResponse> =>
+    apiRequest<CancelSubscriptionResponse>(`/subscriptions/${subscriptionId}`, {
+      method: 'DELETE',
       requiresAuth: true,
     }),
 };

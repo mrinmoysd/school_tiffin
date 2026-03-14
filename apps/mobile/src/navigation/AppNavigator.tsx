@@ -7,6 +7,7 @@ import { RootStackParamList } from './types';
 import {
   AddStudentScreen,
   DateSelectionScreen,
+  DeliveryScheduleScreen,
   HomeScreen,
   MealPlanDetailScreen,
   OrdersScreen,
@@ -90,6 +91,11 @@ export const AppNavigator = () => {
               name="SubscriptionDetail"
               component={SubscriptionDetailScreen}
               options={{ title: 'Subscription Details' }}
+            />
+            <Stack.Screen
+              name="DeliverySchedule"
+              component={DeliveryScheduleScreen}
+              options={{ title: 'Delivery Schedule' }}
             />
             <Stack.Screen
               name="PauseRequest"

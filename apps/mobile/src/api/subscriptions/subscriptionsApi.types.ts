@@ -39,6 +39,22 @@ export interface Subscription {
   createdAt: string;
 }
 
+export interface SubscriptionDetails extends Subscription {
+  cancelledAt?: string | null;
+  activatedAt?: string | null;
+  student: SubscriptionStudent & {
+    school: {
+      id: string;
+      name: string;
+      address?: string | null;
+      city?: string | null;
+    };
+  };
+  mealPlan: SubscriptionMealPlan & {
+    description?: string | null;
+  };
+}
+
 export interface CreateSubscriptionPayload {
   studentId: string;
   mealPlanId: string;
@@ -52,4 +68,12 @@ export interface SubscriptionScheduleDay {
   scheduledDate: string;
   status: string;
   deliveredAt: string | null;
+}
+
+export interface CancelSubscriptionResponse {
+  id: string;
+  status: SubscriptionStatus;
+  cancelledAt: string | null;
+  refundAmount: number;
+  message: string;
 }
