@@ -12,6 +12,10 @@ const iosConfig = expoConfig.ios || {};
 module.exports = {
   ...expoConfig,
   name: isDevelopment ? 'School-tiffin (dev)' : 'School-tiffin',
+  updates: {
+    ...(expoConfig.updates || {}),
+    url: 'https://u.expo.dev/2a1dfbb6-a789-4560-a14c-fa396b1b6a22',
+  },
   extra: {
     ...(expoConfig.extra || {}),
     eas: {
