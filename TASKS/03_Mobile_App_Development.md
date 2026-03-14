@@ -366,9 +366,9 @@
   - [x] Open Razorpay payment UI
   - [x] Handle payment success
   - [x] Handle payment failure
-- [x] Verify payment via backend
-- [x] Show success/failure message
-- [x] Navigate to subscription details on success
+- [ ] Verify payment via backend
+- [ ] Show success/failure message
+- [ ] Navigate to subscription details on success
 - [x] Handle errors gracefully
 - [ ] Test with Razorpay test cards
 - [ ] Test on iOS and Android
