@@ -9,7 +9,9 @@
     "android": "cross-env EXPO_NO_METRO_WORKSPACE_ROOT=1 ORG_GRADLE_PROJECT_reactNativeArchitectures=arm64-v8a expo run:android --all-arch",
     "android:no-bundler": "cross-env EXPO_NO_METRO_WORKSPACE_ROOT=1 ORG_GRADLE_PROJECT_reactNativeArchitectures=arm64-v8a expo run:android --all-arch --no-bundler",
     "ios": "cross-env EXPO_NO_METRO_WORKSPACE_ROOT=1 expo run:ios",
-    "web": "cross-env EXPO_NO_METRO_WORKSPACE_ROOT=1 expo start --web"
+    "web": "cross-env EXPO_NO_METRO_WORKSPACE_ROOT=1 expo start --web",
+    "update:development": "cross-env APP_VARIANT=development eas update --channel development",
+    "update:production": "cross-env APP_VARIANT=production eas update --channel production"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.4",

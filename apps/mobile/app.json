@@ -3,6 +3,9 @@
     "name": "School Tiffin Mobile",
     "slug": "school-tiffin-mobile",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "scheme": "schooltiffin",
     "newArchEnabled": false,
     "orientation": "portrait",
