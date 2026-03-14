@@ -372,6 +372,9 @@ importers:
       react-native-keychain:
         specifier: ^10.0.0
         version: 10.0.0
+      react-native-razorpay:
+        specifier: ^2.3.1
+        version: 2.3.1(react-native@0.79.6)(react@19.0.0)
       react-native-safe-area-context:
         specifier: 5.4.0
         version: 5.4.0(react-native@0.79.6)(react@19.0.0)
@@ -17252,6 +17255,19 @@ packages:
         integrity: sha512-YzPKSAnSzGEJ12IK6CctNLU79T1W15WDrElRQ+1/FsOazGX9ucFPTQwgYe8Dy8jiSEDJKM4wkVa3g4lD2Z+Pnw==,
       }
     engines: { node: '>=16' }
+    dev: false
+
+  /react-native-razorpay@2.3.1(react-native@0.79.6)(react@19.0.0):
+    resolution:
+      {
+        integrity: sha512-aEod2YigiWx9Vik+2YRpTh9kNKK9KZbfhrRpk5tU8z8ZPDdLt57rRsqd7lVuDybqqO6nLY6ughPjMN+FPyX8Ag==,
+      }
+    peerDependencies:
+      react: '>=16.8.0'
+      react-native: '>=0.66.0'
+    dependencies:
+      react: 19.0.0
+      react-native: 0.79.6(@babel/core@7.29.0)(@types/react@19.0.14)(react@19.0.0)
     dev: false
 
   /react-native-safe-area-context@5.4.0(react-native@0.79.6)(react@19.0.0):

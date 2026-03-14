@@ -356,20 +356,20 @@
 **Priority**: Critical
 **Dependencies**: Backend 2.6.2
 
-- [ ] Install Razorpay React Native SDK
+- [x] Install Razorpay React Native SDK
   ```bash
   npm install react-native-razorpay
   ```
-- [ ] Create PaymentScreen
-- [ ] Integrate Razorpay checkout
-  - Create payment intent via API
-  - Open Razorpay payment UI
-  - Handle payment success
-  - Handle payment failure
-- [ ] Verify payment via backend
-- [ ] Show success/failure message
-- [ ] Navigate to subscription details on success
-- [ ] Handle errors gracefully
+- [x] Create PaymentScreen
+- [x] Integrate Razorpay checkout
+  - [x] Create payment intent via API
+  - [x] Open Razorpay payment UI
+  - [x] Handle payment success
+  - [x] Handle payment failure
+- [x] Verify payment via backend
+- [x] Show success/failure message
+- [x] Navigate to subscription details on success
+- [x] Handle errors gracefully
 - [ ] Test with Razorpay test cards
 - [ ] Test on iOS and Android
 
