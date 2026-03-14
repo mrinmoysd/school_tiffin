@@ -12,6 +12,13 @@ const iosConfig = expoConfig.ios || {};
 module.exports = {
   ...expoConfig,
   name: isDevelopment ? 'School-tiffin (dev)' : 'School-tiffin',
+  extra: {
+    ...(expoConfig.extra || {}),
+    eas: {
+      ...((expoConfig.extra && expoConfig.extra.eas) || {}),
+      projectId: '2a1dfbb6-a789-4560-a14c-fa396b1b6a22',
+    },
+  },
   android: {
     ...androidConfig,
     // Use a separate package in development so dev/prod can be installed together.
