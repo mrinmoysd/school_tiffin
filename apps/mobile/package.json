@@ -11,7 +11,11 @@
     "ios": "cross-env EXPO_NO_METRO_WORKSPACE_ROOT=1 expo run:ios",
     "web": "cross-env EXPO_NO_METRO_WORKSPACE_ROOT=1 expo start --web",
     "update:development": "cross-env APP_VARIANT=development eas update --channel development",
-    "update:production": "cross-env APP_VARIANT=production eas update --channel production"
+    "update:development:android": "cross-env APP_VARIANT=development eas update --channel development --platform android",
+    "update:development:ios": "cross-env APP_VARIANT=development eas update --channel development --platform ios",
+    "update:production": "cross-env APP_VARIANT=production eas update --channel production",
+    "update:production:android": "cross-env APP_VARIANT=production eas update --channel production --platform android",
+    "update:production:ios": "cross-env APP_VARIANT=production eas update --channel production --platform ios"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.4",
