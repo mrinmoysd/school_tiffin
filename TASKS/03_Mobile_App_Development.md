@@ -693,16 +693,16 @@
 **Priority**: Medium
 **Dependencies**: Backend 2.2.3, Task 3.3.2
 
-- [ ] Create StudentsScreen
-- [ ] Display students list
+- [x] Create StudentsScreen
+- [x] Display students list
   - Student name, grade, school
   - Edit button
   - Delete button (with confirmation)
-- [ ] Add "Add New Student" button
-- [ ] Implement swipe actions (edit, delete)
-- [ ] Connect to students API
-- [ ] Handle delete with confirmation dialog
-- [ ] Navigate to add/edit student
+- [x] Add "Add New Student" button
+- [x] Implement swipe actions (edit, delete)
+- [x] Connect to students API
+- [x] Handle delete with confirmation dialog
+- [x] Navigate to add/edit student
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**

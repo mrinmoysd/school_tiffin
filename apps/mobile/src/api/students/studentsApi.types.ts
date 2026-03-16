@@ -24,3 +24,7 @@ export interface UpdateStudentPayload {
   grade?: string;
   schoolId?: string;
 }
+
+export interface DeleteStudentResponse {
+  message: string;
+}

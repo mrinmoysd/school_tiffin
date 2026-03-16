@@ -3,6 +3,7 @@ export * from './SchoolListScreen';
 export * from './SchoolDetailScreen';
 export * from './MealPlanDetailScreen';
 export * from './SelectStudentScreen';
+export * from './StudentsScreen';
 export * from './AddStudentScreen';
 export * from './DateSelectionScreen';
 export * from './SubscriptionReviewScreen';

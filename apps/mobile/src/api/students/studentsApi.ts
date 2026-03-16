@@ -1,5 +1,10 @@
 import { apiRequest } from '../client/apiClient';
-import { CreateStudentPayload, Student, UpdateStudentPayload } from './studentsApi.types';
+import {
+  CreateStudentPayload,
+  DeleteStudentResponse,
+  Student,
+  UpdateStudentPayload,
+} from './studentsApi.types';
 
 export const studentsApi = {
   getStudents: async (): Promise<Student[]> =>
@@ -26,5 +31,11 @@ export const studentsApi = {
       method: 'PATCH',
       requiresAuth: true,
       body: JSON.stringify(payload),
+    }),
+
+  deleteStudent: async (studentId: string): Promise<DeleteStudentResponse> =>
+    apiRequest<DeleteStudentResponse>(`/students/${studentId}`, {
+      method: 'DELETE',
+      requiresAuth: true,
     }),
 };

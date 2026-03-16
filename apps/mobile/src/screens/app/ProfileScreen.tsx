@@ -178,6 +178,12 @@ export const ProfileScreen = ({ navigation }: Props) => {
         style={styles.secondaryButton}
       />
       <AppButton
+        title="Manage Students"
+        onPress={() => navigation.navigate('Students')}
+        variant="secondary"
+        style={styles.secondaryButton}
+      />
+      <AppButton
         title="Refresh"
         onPress={() => void onRefresh()}
         loading={refreshing}

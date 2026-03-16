@@ -21,6 +21,7 @@ import {
   SelectStudentScreen,
   SchoolDetailScreen,
   SchoolListScreen,
+  StudentsScreen,
   SubscriptionsListScreen,
   SubscriptionReviewScreen,
   SubscriptionDetailScreen,
@@ -69,6 +70,11 @@ export const AppNavigator = () => {
               name="SelectStudent"
               component={SelectStudentScreen}
               options={{ title: 'Select Student' }}
+            />
+            <Stack.Screen
+              name="Students"
+              component={StudentsScreen}
+              options={{ title: 'Students' }}
             />
             <Stack.Screen
               name="AddStudent"

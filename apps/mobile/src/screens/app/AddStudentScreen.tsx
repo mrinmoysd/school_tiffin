@@ -114,7 +114,7 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
       fullName: '',
       dateOfBirth: '',
       grade: '',
-      schoolId: route.params.schoolId,
+      schoolId: route.params.schoolId ?? '',
       allergies: '',
       dietaryPreferences: '',
     },
@@ -139,9 +139,9 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
         const student = await studentsApi.getStudentById(route.params.studentId);
         setValue('fullName', student.fullName ?? '');
         setValue('grade', normalizeGradeValue(student.grade));
-        setValue('schoolId', student.school?.id ?? route.params.schoolId);
+        setValue('schoolId', student.school?.id ?? route.params.schoolId ?? '');
       } else {
-        setValue('schoolId', route.params.schoolId);
+        setValue('schoolId', route.params.schoolId ?? '');
       }
     } catch (requestError) {
       if (requestError instanceof ApiClientError) {
@@ -180,10 +180,15 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
         return;
       }
 
-      navigation.navigate('SelectStudent', {
-        mealPlanId: route.params.mealPlanId,
-        schoolId: route.params.schoolId,
-      });
+      if (route.params.mealPlanId && route.params.schoolId) {
+        navigation.navigate('SelectStudent', {
+          mealPlanId: route.params.mealPlanId,
+          schoolId: route.params.schoolId,
+        });
+        return;
+      }
+
+      navigation.navigate('Students');
     } catch (requestError) {
       if (requestError instanceof ApiClientError) {
         setError(requestError.message);
