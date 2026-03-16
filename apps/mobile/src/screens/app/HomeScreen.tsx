@@ -195,6 +195,10 @@ export const HomeScreen = ({ navigation }: Props) => {
         style={styles.primaryAction}
       />
 
+      <Pressable style={styles.ordersLink} onPress={() => navigation.navigate('Profile')}>
+        <Text style={styles.ordersLinkText}>Profile</Text>
+      </Pressable>
+
       <Pressable style={styles.ordersLink} onPress={() => navigation.navigate('Orders')}>
         <Text style={styles.ordersLinkText}>My Orders</Text>
       </Pressable>

@@ -19,6 +19,7 @@ export type RootStackParamList = {
     startDate: string;
   };
   Payment: { subscriptionId: string; amount: number | string; currency: string };
+  Profile: undefined;
   SubscriptionsList: undefined;
   Orders: undefined;
   OrderDetail: { orderId: string };

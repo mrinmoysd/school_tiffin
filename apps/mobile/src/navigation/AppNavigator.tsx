@@ -13,6 +13,7 @@ import {
   OrderDetailScreen,
   OrdersScreen,
   PaymentScreen,
+  ProfileScreen,
   PauseRequestScreen,
   PauseRequestsScreen,
   SelectStudentScreen,
@@ -83,6 +84,7 @@ export const AppNavigator = () => {
               options={{ title: 'Review Subscription' }}
             />
             <Stack.Screen name="Payment" component={PaymentScreen} options={{ title: 'Payment' }} />
+            <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
             <Stack.Screen
               name="SubscriptionsList"
               component={SubscriptionsListScreen}

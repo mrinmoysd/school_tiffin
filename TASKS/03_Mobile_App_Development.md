@@ -607,18 +607,18 @@
 **Priority**: Medium
 **Dependencies**: Backend 2.2.2
 
-- [ ] Create ProfileScreen
-- [ ] Display user information
+- [x] Create ProfileScreen
+- [x] Display user information
   - Name
   - Email
   - Phone
   - Verified badges
-- [ ] Add "Edit Profile" button
-- [ ] Add "My Students" section with count
-- [ ] Add "Change Password" option
-- [ ] Add "Logout" button
-- [ ] Connect to user profile API
-- [ ] Implement logout functionality
+- [x] Add "Edit Profile" button
+- [x] Add "My Students" section with count
+- [x] Add "Change Password" option
+- [x] Add "Logout" button
+- [x] Connect to user profile API
+- [x] Implement logout functionality
   - Clear tokens
   - Reset Redux state
   - Navigate to login
