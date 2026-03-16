@@ -521,17 +521,17 @@
 **Priority**: Medium
 **Dependencies**: Backend 2.5.1
 
-- [ ] Create PauseRequestsScreen (or section in subscriptions)
-- [ ] Display pause requests list
+- [x] Create PauseRequestsScreen (or section in subscriptions)
+- [x] Display pause requests list
   - Subscription info
   - Pause date range
   - Days paused
   - Status badge (pending, approved, rejected)
   - Requested date
-- [ ] Add filter by status
-- [ ] Allow cancellation of pending requests
-- [ ] Connect to pause requests API
-- [ ] Handle empty states
+- [x] Add filter by status
+- [x] Allow cancellation of pending requests
+- [x] Connect to pause requests API
+- [x] Handle empty states
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**

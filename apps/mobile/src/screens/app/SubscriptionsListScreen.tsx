@@ -104,6 +104,13 @@ export const SubscriptionsListScreen = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
+      <Pressable
+        style={styles.pauseRequestsLink}
+        onPress={() => navigation.navigate('PauseRequests')}
+      >
+        <Text style={styles.pauseRequestsLinkText}>View Pause Requests</Text>
+      </Pressable>
+
       <View style={styles.tabsRow}>
         <Pressable
           style={[styles.tabButton, activeTab === 'ACTIVE' && styles.tabButtonActive]}
@@ -202,6 +209,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#E2E8F0',
     padding: 4,
     marginBottom: 12,
+  },
+  pauseRequestsLink: {
+    alignSelf: 'flex-start',
+    marginBottom: 10,
+    borderRadius: 999,
+    backgroundColor: '#E0F2FE',
+    borderWidth: 1,
+    borderColor: '#7DD3FC',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  pauseRequestsLinkText: {
+    color: '#0369A1',
+    fontSize: 13,
+    fontWeight: '700',
   },
   tabButton: {
     flex: 1,

@@ -1,10 +1,13 @@
 import { apiRequest } from '../client/apiClient';
 import { ApiClientError } from '../client/apiClient';
 import {
+  CancelPauseRequestResponse,
   CancelSubscriptionResponse,
   CreatePauseRequestPayload,
   CreateSubscriptionPayload,
+  PauseRequestListItem,
   PauseRequestResponse,
+  PauseRequestStatus,
   Subscription,
   SubscriptionDetails,
   SubscriptionScheduleDay,
@@ -88,5 +91,20 @@ export const subscriptionsApi = {
       method: 'POST',
       requiresAuth: true,
       body: JSON.stringify(normalizePausePayload(payload)),
+    }),
+
+  getPauseRequests: async (status?: PauseRequestStatus): Promise<PauseRequestListItem[]> => {
+    const query = status ? `?status=${encodeURIComponent(status)}` : '';
+
+    return apiRequest<PauseRequestListItem[]>(`/pause-requests${query}`, {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+
+  cancelPauseRequest: async (pauseRequestId: string): Promise<CancelPauseRequestResponse> =>
+    apiRequest<CancelPauseRequestResponse>(`/pause-requests/${pauseRequestId}`, {
+      method: 'DELETE',
+      requiresAuth: true,
     }),
 };

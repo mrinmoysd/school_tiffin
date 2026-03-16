@@ -24,4 +24,5 @@ export type RootStackParamList = {
   SubscriptionDetail: { subscriptionId: string };
   DeliverySchedule: { subscriptionId: string };
   PauseRequest: { subscriptionId: string };
+  PauseRequests: undefined;
 };

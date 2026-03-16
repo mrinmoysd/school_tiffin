@@ -105,3 +105,31 @@ export interface PauseRequestResponse {
   createdAt: string;
   impact: PauseRequestImpact;
 }
+
+export type PauseRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'PROCESSED';
+
+export interface PauseRequestListItem {
+  id: string;
+  subscriptionId: string;
+  parentId: string;
+  startDate: string;
+  endDate: string;
+  reason?: string | null;
+  pauseDays: number;
+  affectedDays: number;
+  newEndDate: string;
+  status: PauseRequestStatus;
+  createdAt: string;
+  processedAt?: string | null;
+  subscription: {
+    id: string;
+    subscriptionNumber: string;
+    student: {
+      fullName: string;
+    };
+  };
+}
+
+export interface CancelPauseRequestResponse {
+  message: string;
+}

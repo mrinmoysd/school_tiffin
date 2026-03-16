@@ -13,6 +13,7 @@ import {
   OrdersScreen,
   PaymentScreen,
   PauseRequestScreen,
+  PauseRequestsScreen,
   SelectStudentScreen,
   SchoolDetailScreen,
   SchoolListScreen,
@@ -101,6 +102,11 @@ export const AppNavigator = () => {
               name="PauseRequest"
               component={PauseRequestScreen}
               options={{ title: 'Pause Request' }}
+            />
+            <Stack.Screen
+              name="PauseRequests"
+              component={PauseRequestsScreen}
+              options={{ title: 'Pause Requests' }}
             />
           </>
         ) : (

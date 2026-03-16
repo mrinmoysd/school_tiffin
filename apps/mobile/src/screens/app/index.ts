@@ -12,3 +12,4 @@ export * from './OrdersScreen';
 export * from './SubscriptionDetailScreen';
 export * from './DeliveryScheduleScreen';
 export * from './PauseRequestScreen';
+export * from './PauseRequestsScreen';
