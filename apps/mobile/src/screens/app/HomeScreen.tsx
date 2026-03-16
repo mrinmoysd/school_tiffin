@@ -12,8 +12,7 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { logout } from '../../store/auth';
+import { useAppSelector } from '../../store/hooks';
 import { studentsApi, type Student } from '../../api/students';
 import { subscriptionsApi, type Subscription } from '../../api/subscriptions';
 import { ApiClientError } from '../../api/client/apiClient';
@@ -33,7 +32,6 @@ const getGreetingName = (fullName: string | null | undefined, email: string | nu
 };
 
 export const HomeScreen = ({ navigation }: Props) => {
-  const dispatch = useAppDispatch();
   const user = useAppSelector(state => state.auth.user);
 
   const [students, setStudents] = useState<Student[]>([]);
@@ -194,26 +192,26 @@ export const HomeScreen = ({ navigation }: Props) => {
         onPress={() => navigation.navigate('SchoolList')}
         style={styles.primaryAction}
       />
-
-      <Pressable style={styles.ordersLink} onPress={() => navigation.navigate('Profile')}>
-        <Text style={styles.ordersLinkText}>Profile</Text>
-      </Pressable>
-
-      <Pressable style={styles.ordersLink} onPress={() => navigation.navigate('Notifications')}>
-        <Text style={styles.ordersLinkText}>Notifications</Text>
-      </Pressable>
-
-      <Pressable style={styles.ordersLink} onPress={() => navigation.navigate('Orders')}>
-        <Text style={styles.ordersLinkText}>My Orders</Text>
-      </Pressable>
-
-      <Pressable style={styles.ordersLink} onPress={() => navigation.navigate('SubscriptionsList')}>
-        <Text style={styles.ordersLinkText}>My Subscriptions</Text>
-      </Pressable>
-
-      <Pressable style={styles.logoutLink} onPress={() => void dispatch(logout())}>
-        <Text style={styles.logoutLinkText}>Logout</Text>
-      </Pressable>
+      <AppButton
+        title="Profile"
+        onPress={() => navigation.navigate('Profile')}
+        style={styles.primaryAction}
+      />
+      <AppButton
+        title="Notifications"
+        onPress={() => navigation.navigate('Notifications')}
+        style={styles.primaryAction}
+      />
+      <AppButton
+        title="My Orders"
+        onPress={() => navigation.navigate('Orders')}
+        style={styles.primaryAction}
+      />
+      <AppButton
+        title="My Subscriptions"
+        onPress={() => navigation.navigate('SubscriptionsList')}
+        style={styles.primaryAction}
+      />
 
       <Modal
         visible={studentSelectorVisible}
@@ -393,25 +391,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   primaryAction: {
-    marginTop: 4,
-  },
-  ordersLink: {
-    marginTop: 16,
-    alignSelf: 'center',
-  },
-  ordersLinkText: {
-    fontSize: 15,
-    color: '#0369A1',
-    fontWeight: '600',
-  },
-  logoutLink: {
-    marginTop: 16,
-    alignSelf: 'center',
-  },
-  logoutLinkText: {
-    fontSize: 14,
-    color: '#475569',
-    fontWeight: '500',
+    marginTop: 10,
   },
   modalOverlay: {
     flex: 1,
