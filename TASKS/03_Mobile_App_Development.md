@@ -664,19 +664,19 @@
 **Priority**: Low
 **Dependencies**: Backend 2.1.5
 
-- [ ] Create ChangePasswordScreen
-- [ ] Implement form
+- [x] Create ChangePasswordScreen
+- [x] Implement form
   - Current password field
   - New password field
   - Confirm new password field
-- [ ] Add validation
+- [x] Add validation
   - Current password required
   - New password strength
   - Passwords match
-- [ ] Connect to change password API
-- [ ] Handle success/error
-- [ ] Show success message
-- [ ] Navigate back
+- [x] Connect to change password API
+- [x] Handle success/error
+- [x] Show success message
+- [x] Navigate back
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**

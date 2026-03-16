@@ -6,6 +6,7 @@ import { linking } from './linking';
 import { RootStackParamList } from './types';
 import {
   AddStudentScreen,
+  ChangePasswordScreen,
   DateSelectionScreen,
   DeliveryScheduleScreen,
   EditProfileScreen,
@@ -90,6 +91,11 @@ export const AppNavigator = () => {
               name="EditProfile"
               component={EditProfileScreen}
               options={{ title: 'Edit Profile' }}
+            />
+            <Stack.Screen
+              name="ChangePassword"
+              component={ChangePasswordScreen}
+              options={{ title: 'Change Password' }}
             />
             <Stack.Screen
               name="SubscriptionsList"

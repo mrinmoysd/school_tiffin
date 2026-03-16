@@ -21,6 +21,7 @@ export type RootStackParamList = {
   Payment: { subscriptionId: string; amount: number | string; currency: string };
   Profile: undefined;
   EditProfile: undefined;
+  ChangePassword: undefined;
   SubscriptionsList: undefined;
   Orders: undefined;
   OrderDetail: { orderId: string };

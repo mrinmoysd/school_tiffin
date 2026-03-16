@@ -1,6 +1,7 @@
 import { apiRequest } from '../client/apiClient';
 import {
   AuthResponse,
+  ChangePasswordRequest,
   ForgotPasswordRequest,
   LoginRequest,
   MessageResponse,
@@ -45,6 +46,13 @@ export const authApi = {
   resetPassword: async (payload: ResetPasswordRequest): Promise<MessageResponse> =>
     apiRequest<MessageResponse>('/auth/reset-password', {
       method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  changePassword: async (payload: ChangePasswordRequest): Promise<MessageResponse> =>
+    apiRequest<MessageResponse>('/auth/change-password', {
+      method: 'PATCH',
+      requiresAuth: true,
       body: JSON.stringify(payload),
     }),
 };

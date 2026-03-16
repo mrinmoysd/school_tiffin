@@ -1,6 +1,7 @@
 import { authApi } from '../../api/auth';
 import {
   AuthResponse,
+  ChangePasswordRequest,
   ForgotPasswordRequest,
   LoginRequest,
   MessageResponse,
@@ -40,6 +41,9 @@ export const authService = {
 
   resetPassword: async (payload: ResetPasswordRequest): Promise<MessageResponse> =>
     authApi.resetPassword(payload),
+
+  changePassword: async (payload: ChangePasswordRequest): Promise<MessageResponse> =>
+    authApi.changePassword(payload),
 
   logout: async (): Promise<void> => {
     await tokenStorage.clearTokens();

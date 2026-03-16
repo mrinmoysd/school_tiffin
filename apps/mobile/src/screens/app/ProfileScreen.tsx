@@ -173,9 +173,7 @@ export const ProfileScreen = ({ navigation }: Props) => {
       <AppButton title="Edit Profile" onPress={() => navigation.navigate('EditProfile')} />
       <AppButton
         title="Change Password"
-        onPress={() =>
-          Alert.alert('Coming Soon', 'Change Password screen will be added in task 3.7.3.')
-        }
+        onPress={() => navigation.navigate('ChangePassword')}
         variant="secondary"
         style={styles.secondaryButton}
       />
