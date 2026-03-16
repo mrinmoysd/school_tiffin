@@ -579,8 +579,8 @@
 **Priority**: Low
 **Dependencies**: Backend 2.6.3
 
-- [ ] Create OrderDetailScreen
-- [ ] Display order information
+- [x] Create OrderDetailScreen
+- [x] Display order information
   - Order number
   - Subscription details
   - Amount breakdown
@@ -588,8 +588,8 @@
   - Payment status
   - Transaction ID
   - Date & time
-- [ ] Add "Download Receipt" button (future)
-- [ ] Connect to order detail API
+- [x] Add "Download Receipt" button (future)
+- [x] Connect to order detail API
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
