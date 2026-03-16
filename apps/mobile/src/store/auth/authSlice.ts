@@ -73,6 +73,9 @@ const authSlice = createSlice({
     setOtpExpiry: (state, action: PayloadAction<number>) => {
       state.otpExpiresAt = action.payload;
     },
+    setAuthUser: (state, action: PayloadAction<AuthUser | null>) => {
+      state.user = action.payload;
+    },
   },
   extraReducers: builder => {
     builder
@@ -200,5 +203,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearAuthErrors, clearAuthMessages, setOtpExpiry } = authSlice.actions;
+export const { clearAuthErrors, clearAuthMessages, setOtpExpiry, setAuthUser } = authSlice.actions;
 export const authReducer = authSlice.reducer;

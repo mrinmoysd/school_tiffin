@@ -1,11 +1,16 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi } from '../../api/students';
 import { usersApi, type UserProfile } from '../../api/users';
 import { AppButton } from '../../components/ui';
+import { RootStackParamList } from '../../navigation/types';
 import { logout } from '../../store/auth';
 import { useAppDispatch } from '../../store/hooks';
+
+type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
 
 const formatDate = (value?: string | null) => {
   if (!value) {
@@ -32,8 +37,9 @@ const getVerificationStatus = (profile: UserProfile | null) => ({
   phone: Boolean(profile?.phoneVerified || profile?.phoneVerifiedAt),
 });
 
-export const ProfileScreen = () => {
+export const ProfileScreen = ({ navigation }: Props) => {
   const dispatch = useAppDispatch();
+  const hasFocusedOnceRef = useRef(false);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [studentsCount, setStudentsCount] = useState<number>(0);
@@ -73,6 +79,16 @@ export const ProfileScreen = () => {
 
     void run();
   }, [loadProfileData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (hasFocusedOnceRef.current) {
+        void loadProfileData();
+      } else {
+        hasFocusedOnceRef.current = true;
+      }
+    }, [loadProfileData]),
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -154,12 +170,7 @@ export const ProfileScreen = () => {
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      <AppButton
-        title="Edit Profile"
-        onPress={() =>
-          Alert.alert('Coming Soon', 'Edit Profile screen will be added in task 3.7.2.')
-        }
-      />
+      <AppButton title="Edit Profile" onPress={() => navigation.navigate('EditProfile')} />
       <AppButton
         title="Change Password"
         onPress={() =>

@@ -8,6 +8,7 @@ import {
   AddStudentScreen,
   DateSelectionScreen,
   DeliveryScheduleScreen,
+  EditProfileScreen,
   HomeScreen,
   MealPlanDetailScreen,
   OrderDetailScreen,
@@ -85,6 +86,11 @@ export const AppNavigator = () => {
             />
             <Stack.Screen name="Payment" component={PaymentScreen} options={{ title: 'Payment' }} />
             <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
+            <Stack.Screen
+              name="EditProfile"
+              component={EditProfileScreen}
+              options={{ title: 'Edit Profile' }}
+            />
             <Stack.Screen
               name="SubscriptionsList"
               component={SubscriptionsListScreen}

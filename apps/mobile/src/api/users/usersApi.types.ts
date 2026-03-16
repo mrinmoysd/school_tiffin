@@ -14,3 +14,9 @@ export interface UserProfile {
   updatedAt?: string;
   lastLoginAt?: string | null;
 }
+
+export interface UpdateUserProfilePayload {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+}

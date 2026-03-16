@@ -638,16 +638,16 @@
 **Priority**: Low
 **Dependencies**: Backend 2.2.2
 
-- [ ] Create EditProfileScreen
-- [ ] Implement form
+- [x] Create EditProfileScreen
+- [x] Implement form
   - Full name field
   - Phone field
   - (Email read-only or with verification flow)
-- [ ] Add validation
-- [ ] Connect to update profile API
-- [ ] Handle success/error
-- [ ] Update Redux state on success
-- [ ] Navigate back
+- [x] Add validation
+- [x] Connect to update profile API
+- [x] Handle success/error
+- [x] Update Redux state on success
+- [x] Navigate back
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**

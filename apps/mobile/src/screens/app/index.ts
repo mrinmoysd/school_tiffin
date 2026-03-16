@@ -8,6 +8,7 @@ export * from './DateSelectionScreen';
 export * from './SubscriptionReviewScreen';
 export * from './PaymentScreen';
 export * from './ProfileScreen';
+export * from './EditProfileScreen';
 export * from './SubscriptionsListScreen';
 export * from './OrdersScreen';
 export * from './OrderDetailScreen';
