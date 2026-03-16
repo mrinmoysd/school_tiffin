@@ -12,6 +12,7 @@ import {
   EditProfileScreen,
   HomeScreen,
   MealPlanDetailScreen,
+  NotificationsScreen,
   OrderDetailScreen,
   OrdersScreen,
   PaymentScreen,
@@ -102,6 +103,11 @@ export const AppNavigator = () => {
               name="ChangePassword"
               component={ChangePasswordScreen}
               options={{ title: 'Change Password' }}
+            />
+            <Stack.Screen
+              name="Notifications"
+              component={NotificationsScreen}
+              options={{ title: 'Notifications' }}
             />
             <Stack.Screen
               name="SubscriptionsList"

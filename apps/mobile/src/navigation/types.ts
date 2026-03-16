@@ -27,6 +27,7 @@ export type RootStackParamList = {
   Profile: undefined;
   EditProfile: undefined;
   ChangePassword: undefined;
+  Notifications: undefined;
   SubscriptionsList: undefined;
   Orders: undefined;
   OrderDetail: { orderId: string };

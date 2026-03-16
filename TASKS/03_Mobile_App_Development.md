@@ -749,17 +749,17 @@
 **Priority**: Medium
 **Dependencies**: Backend 2.7.2
 
-- [ ] Create NotificationsScreen
-- [ ] Display notifications list
+- [x] Create NotificationsScreen
+- [x] Display notifications list
   - Title
   - Body
   - Time ago
   - Read/unread indicator
-- [ ] Implement mark as read on tap
-- [ ] Add "Mark all as read" button
-- [ ] Implement pull-to-refresh
-- [ ] Connect to notifications API
-- [ ] Handle empty states
+- [x] Implement mark as read on tap
+- [x] Add "Mark all as read" button
+- [x] Implement pull-to-refresh
+- [x] Connect to notifications API
+- [x] Handle empty states
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**
