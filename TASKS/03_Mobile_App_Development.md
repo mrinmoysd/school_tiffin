@@ -550,18 +550,18 @@
 **Priority**: Medium
 **Dependencies**: Backend 2.6.3
 
-- [ ] Create OrdersScreen
-- [ ] Display orders list
+- [x] Create OrdersScreen
+- [x] Display orders list
   - Order number
   - Subscription info
   - Amount
   - Payment status badge
   - Date
-- [ ] Add filter by status dropdown
-- [ ] Implement pagination
-- [ ] Navigate to order details on tap
-- [ ] Connect to orders API
-- [ ] Handle empty states
+- [x] Add filter by status dropdown
+- [x] Implement pagination
+- [x] Navigate to order details on tap
+- [x] Connect to orders API
+- [x] Handle empty states
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**

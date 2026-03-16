@@ -10,6 +10,7 @@ import {
   DeliveryScheduleScreen,
   HomeScreen,
   MealPlanDetailScreen,
+  OrderDetailScreen,
   OrdersScreen,
   PaymentScreen,
   PauseRequestScreen,
@@ -88,6 +89,11 @@ export const AppNavigator = () => {
               options={{ title: 'My Subscriptions' }}
             />
             <Stack.Screen name="Orders" component={OrdersScreen} />
+            <Stack.Screen
+              name="OrderDetail"
+              component={OrderDetailScreen}
+              options={{ title: 'Order Details' }}
+            />
             <Stack.Screen
               name="SubscriptionDetail"
               component={SubscriptionDetailScreen}

@@ -21,6 +21,7 @@ export type RootStackParamList = {
   Payment: { subscriptionId: string; amount: number | string; currency: string };
   SubscriptionsList: undefined;
   Orders: undefined;
+  OrderDetail: { orderId: string };
   SubscriptionDetail: { subscriptionId: string };
   DeliverySchedule: { subscriptionId: string };
   PauseRequest: { subscriptionId: string };

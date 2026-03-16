@@ -9,6 +9,7 @@ export * from './SubscriptionReviewScreen';
 export * from './PaymentScreen';
 export * from './SubscriptionsListScreen';
 export * from './OrdersScreen';
+export * from './OrderDetailScreen';
 export * from './SubscriptionDetailScreen';
 export * from './DeliveryScheduleScreen';
 export * from './PauseRequestScreen';
