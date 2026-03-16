@@ -77,3 +77,31 @@ export interface CancelSubscriptionResponse {
   refundAmount: number;
   message: string;
 }
+
+export interface CreatePauseRequestPayload {
+  subscriptionId: string;
+  startDate: string;
+  endDate: string;
+  reason?: string;
+}
+
+export interface PauseRequestImpact {
+  daysAffected: number;
+  currentEndDate: string;
+  newEndDate: string;
+  extensionDays: number;
+}
+
+export interface PauseRequestResponse {
+  id: string;
+  subscriptionId: string;
+  startDate: string;
+  endDate: string;
+  reason?: string | null;
+  pauseDays: number;
+  affectedDays: number;
+  newEndDate: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PROCESSED';
+  createdAt: string;
+  impact: PauseRequestImpact;
+}

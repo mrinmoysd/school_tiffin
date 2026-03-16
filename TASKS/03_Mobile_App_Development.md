@@ -488,21 +488,21 @@
 **Priority**: High
 **Dependencies**: Backend 2.5.1
 
-- [ ] Create PauseRequestScreen
-- [ ] Implement date range picker
+- [x] Create PauseRequestScreen
+- [x] Implement date range picker
   - Pause from date
   - Pause to date
   - Disable past dates
   - Disable dates beyond subscription end
-- [ ] Show affected days calculation
+- [x] Show affected days calculation
   - Number of days that will be paused
   - New end date after extension
-- [ ] Add reason field (optional)
-- [ ] Add "Submit Request" button
-- [ ] Connect to pause request API
-- [ ] Show impact preview before submission
-- [ ] Handle validation errors
-- [ ] Navigate back on success with message
+- [x] Add reason field (optional)
+- [x] Add "Submit Request" button
+- [x] Connect to pause request API
+- [x] Show impact preview before submission
+- [x] Handle validation errors
+- [x] Navigate back on success with message
 - [ ] Test on iOS and Android
 
 **Acceptance Criteria:**

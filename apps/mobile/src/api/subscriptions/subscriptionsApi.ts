@@ -2,7 +2,9 @@ import { apiRequest } from '../client/apiClient';
 import { ApiClientError } from '../client/apiClient';
 import {
   CancelSubscriptionResponse,
+  CreatePauseRequestPayload,
   CreateSubscriptionPayload,
+  PauseRequestResponse,
   Subscription,
   SubscriptionDetails,
   SubscriptionScheduleDay,
@@ -39,6 +41,13 @@ const normalizeCreatePayload = (payload: CreateSubscriptionPayload): CreateSubsc
   numberOfDays: normalizeNumberOfDays(payload.numberOfDays),
 });
 
+const normalizePausePayload = (payload: CreatePauseRequestPayload): CreatePauseRequestPayload => ({
+  subscriptionId: payload.subscriptionId.trim(),
+  startDate: normalizeStartDate(payload.startDate),
+  endDate: normalizeStartDate(payload.endDate),
+  reason: payload.reason?.trim(),
+});
+
 export const subscriptionsApi = {
   getSubscriptions: async (status?: SubscriptionStatus): Promise<Subscription[]> => {
     const query = status ? `?status=${encodeURIComponent(status)}` : '';
@@ -72,5 +81,12 @@ export const subscriptionsApi = {
     apiRequest<CancelSubscriptionResponse>(`/subscriptions/${subscriptionId}`, {
       method: 'DELETE',
       requiresAuth: true,
+    }),
+
+  createPauseRequest: async (payload: CreatePauseRequestPayload): Promise<PauseRequestResponse> =>
+    apiRequest<PauseRequestResponse>('/pause-requests', {
+      method: 'POST',
+      requiresAuth: true,
+      body: JSON.stringify(normalizePausePayload(payload)),
     }),
 };
