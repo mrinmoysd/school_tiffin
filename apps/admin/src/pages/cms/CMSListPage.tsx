@@ -10,6 +10,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cmsService } from '@/services';
 import { CMSPage } from '@/types';
+import TableSkeleton from '@/components/TableSkeleton';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -133,9 +134,7 @@ const CMSListPage = () => {
             <Button
               type="text"
               icon={<EyeOutlined />}
-              onClick={() =>
-                window.open(`/cms/${record.slug}/preview`, '_blank', 'noopener,noreferrer')
-              }
+              onClick={() => navigate(`/cms/${record.slug}/preview`)}
             />
           </Tooltip>
           <Tooltip title="Edit">
@@ -175,20 +174,23 @@ const CMSListPage = () => {
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={pages}
-          rowKey="id"
-          loading={isLoading}
-          tableLayout="fixed"
-          scroll={{ x: 'max-content' }}
-          pagination={{
-            total: pages?.length,
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: total => `Total ${total} pages`,
-          }}
-        />
+        {isLoading ? (
+          <TableSkeleton rows={8} />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={pages}
+            rowKey="id"
+            tableLayout="fixed"
+            scroll={{ x: 'max-content' }}
+            pagination={{
+              total: pages?.length,
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: total => `Total ${total} pages`,
+            }}
+          />
+        )}
       </Card>
     </div>
   );

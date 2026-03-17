@@ -5,6 +5,7 @@ import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { subscriptionService, schoolService } from '@/services';
 import { Subscription, SubscriptionFilters, SubscriptionStatus } from '@/types';
+import TableSkeleton from '@/components/TableSkeleton';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -241,24 +242,27 @@ const SubscriptionsListPage = () => {
       {/* Table */}
       <Card>
         <div className="table-scrollbar">
-          <Table
-            columns={columns}
-            dataSource={subscriptions}
-            rowKey="id"
-            loading={isLoading}
-            tableLayout="fixed"
-            scroll={{ x: 1200 }}
-            pagination={{
-              total: subscriptions?.length,
-              pageSize: 10,
-              showSizeChanger: true,
-              showTotal: total => `Total ${total} subscriptions`,
-            }}
-            onRow={record => ({
-              onClick: () => navigate(`/subscriptions/${record.id}`),
-              className: 'cursor-pointer hover:bg-gray-50',
-            })}
-          />
+          {isLoading ? (
+            <TableSkeleton rows={9} />
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={subscriptions}
+              rowKey="id"
+              tableLayout="fixed"
+              scroll={{ x: 1200 }}
+              pagination={{
+                total: subscriptions?.length,
+                pageSize: 10,
+                showSizeChanger: true,
+                showTotal: total => `Total ${total} subscriptions`,
+              }}
+              onRow={record => ({
+                onClick: () => navigate(`/subscriptions/${record.id}`),
+                className: 'cursor-pointer hover:bg-gray-50',
+              })}
+            />
+          )}
         </div>
       </Card>
     </div>

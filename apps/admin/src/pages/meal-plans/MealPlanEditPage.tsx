@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Form,
@@ -13,11 +13,13 @@ import {
   InputNumber,
   Switch,
   Spin,
+  Upload,
 } from 'antd';
-import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { mealPlanService, schoolService } from '@/services';
+import { mealPlanService, schoolService, uploadService } from '@/services';
 import { UpdateMealPlanDto, MealPlanType } from '@/types';
+import { DEFAULT_MEAL_PLAN_IMAGE } from '@/constants/images';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -37,11 +39,18 @@ const paiseToRupees = (value?: number) =>
 const rupeesToPaise = (value?: number) =>
   value === undefined || value === null ? value : Math.round(value * 100);
 
+const MAX_IMAGE_SIZE_MB = 5;
+const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+
 const MealPlanEditPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
+  const [imagePreview, setImagePreview] = useState<string>(DEFAULT_MEAL_PLAN_IMAGE);
+  const [hasCustomImage, setHasCustomImage] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [uploadedImageKey, setUploadedImageKey] = useState<string | null>(null);
 
   // Watch for price changes
   const pricePerDay = Form.useWatch('pricePerDay', form);
@@ -75,6 +84,8 @@ const MealPlanEditPage = () => {
         pricePerDay: paiseToRupees(mealPlan.pricePerDay),
         totalPrice: paiseToRupees(mealPlan.totalPrice),
       });
+      setImagePreview(mealPlan.imageUrl || DEFAULT_MEAL_PLAN_IMAGE);
+      setHasCustomImage(Boolean(mealPlan.imageUrl));
     }
   }, [mealPlan, form]);
 
@@ -98,6 +109,47 @@ const MealPlanEditPage = () => {
       totalPrice: rupeesToPaise(values.totalPrice) ?? values.totalPrice,
     };
     updateMutation.mutate(payload);
+  };
+
+  const handleImageUpload = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      message.error('Please upload an image file (JPG, PNG, or WEBP).');
+      return Upload.LIST_IGNORE;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      message.error(`Image must be smaller than ${MAX_IMAGE_SIZE_MB}MB.`);
+      return Upload.LIST_IGNORE;
+    }
+
+    try {
+      setImageUploading(true);
+      const result = await uploadService.uploadImage(file, 'meal-plans');
+      setImagePreview(result.url);
+      setHasCustomImage(true);
+      setUploadedImageKey(result.key);
+      form.setFieldValue('imageUrl', result.url);
+    } catch {
+      message.error('Image upload failed. Please check your S3 configuration.');
+    } finally {
+      setImageUploading(false);
+    }
+
+    return false;
+  };
+
+  const handleRemoveImage = async () => {
+    if (uploadedImageKey) {
+      try {
+        await uploadService.deleteImage(uploadedImageKey);
+      } catch {
+        message.error('Failed to remove image from storage.');
+      }
+    }
+    setImagePreview(DEFAULT_MEAL_PLAN_IMAGE);
+    setHasCustomImage(false);
+    setUploadedImageKey(null);
+    form.setFieldValue('imageUrl', null);
   };
 
   if (isLoading) {
@@ -194,6 +246,36 @@ const MealPlanEditPage = () => {
 
           <Form.Item name="description" label="Description">
             <TextArea rows={3} placeholder="Describe the meal plan..." />
+          </Form.Item>
+
+          <Form.Item
+            label="Plan Image (optional)"
+            extra={`JPG, PNG, or WEBP. Max ${MAX_IMAGE_SIZE_MB}MB.`}
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-24 h-24 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                <img
+                  src={imagePreview}
+                  alt="Meal plan preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Upload beforeUpload={handleImageUpload} showUploadList={false} accept="image/*">
+                  <Button icon={<UploadOutlined />} loading={imageUploading}>
+                    Upload Image
+                  </Button>
+                </Upload>
+                {hasCustomImage && (
+                  <Button danger onClick={handleRemoveImage} disabled={imageUploading}>
+                    Remove Image
+                  </Button>
+                )}
+              </div>
+            </div>
+            <Form.Item name="imageUrl" noStyle>
+              <Input type="hidden" />
+            </Form.Item>
           </Form.Item>
 
           <Row gutter={24}>

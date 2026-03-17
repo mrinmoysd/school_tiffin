@@ -24,6 +24,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { schoolService } from '@/services';
 import { School, SchoolFilters } from '@/types';
+import TableSkeleton from '@/components/TableSkeleton';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -254,20 +255,23 @@ const SchoolsListPage = () => {
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={schools}
-          rowKey="id"
-          loading={isLoading}
-          tableLayout="fixed"
-          scroll={{ x: 'max-content' }}
-          pagination={{
-            total: schools?.length,
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: total => `Total ${total} schools`,
-          }}
-        />
+        {isLoading ? (
+          <TableSkeleton rows={8} />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={schools}
+            rowKey="id"
+            tableLayout="fixed"
+            scroll={{ x: 'max-content' }}
+            pagination={{
+              total: schools?.length,
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: total => `Total ${total} schools`,
+            }}
+          />
+        )}
       </Card>
     </div>
   );

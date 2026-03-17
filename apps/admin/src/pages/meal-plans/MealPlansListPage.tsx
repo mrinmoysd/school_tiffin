@@ -25,7 +25,9 @@ import {
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { mealPlanService, schoolService } from '@/services';
+import { DEFAULT_MEAL_PLAN_IMAGE } from '@/constants/images';
 import { MealPlan, MealPlanFilters, MealPlanType } from '@/types';
+import TableSkeleton from '@/components/TableSkeleton';
 import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
@@ -114,23 +116,16 @@ const MealPlansListPage = () => {
       dataIndex: 'imageUrl',
       key: 'imageUrl',
       width: 80,
-      render: (url: string) =>
-        url ? (
-          <Image
-            src={url}
-            alt="Meal plan"
-            width={50}
-            height={50}
-            className="rounded-lg object-cover"
-            fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/+F9PQAJpAN4pokyXwAAAABJRU5ErkJggg=="
-          />
-        ) : (
-          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-            <Text type="secondary" className="text-xs">
-              No img
-            </Text>
-          </div>
-        ),
+      render: (url: string) => (
+        <Image
+          src={url || DEFAULT_MEAL_PLAN_IMAGE}
+          alt="Meal plan"
+          width={50}
+          height={50}
+          className="rounded-lg object-cover"
+          fallback={DEFAULT_MEAL_PLAN_IMAGE}
+        />
+      ),
     },
     {
       title: <span className="whitespace-nowrap">Meal Plan</span>,
@@ -302,20 +297,23 @@ const MealPlansListPage = () => {
       {/* Table */}
       <Card>
         <div className="table-scrollbar">
-          <Table
-            columns={columns}
-            dataSource={mealPlans}
-            rowKey="id"
-            loading={isLoading}
-            tableLayout="fixed"
-            scroll={{ x: 960 }}
-            pagination={{
-              total: mealPlans?.length,
-              pageSize: 10,
-              showSizeChanger: true,
-              showTotal: total => `Total ${total} meal plans`,
-            }}
-          />
+          {isLoading ? (
+            <TableSkeleton rows={8} />
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={mealPlans}
+              rowKey="id"
+              tableLayout="fixed"
+              scroll={{ x: 960 }}
+              pagination={{
+                total: mealPlans?.length,
+                pageSize: 10,
+                showSizeChanger: true,
+                showTotal: total => `Total ${total} meal plans`,
+              }}
+            />
+          )}
         </div>
       </Card>
     </div>

@@ -28,6 +28,8 @@ const SubscriptionsReportPage = lazy(() => import('./pages/reports/Subscriptions
 const CMSListPage = lazy(() => import('./pages/cms/CMSListPage'));
 const CMSEditorPage = lazy(() => import('./pages/cms/CMSEditorPage'));
 const CMSPreviewPage = lazy(() => import('./pages/cms/CMSPreviewPage'));
+const ProfilePage = lazy(() => import('./pages/profile/ProfilePage'));
+const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
 
 // Loading fallback
 const PageLoader = () => (
@@ -90,6 +92,10 @@ function App() {
               <Route path="/cms/create" element={<CMSEditorPage />} />
               <Route path="/cms/:slug/edit" element={<CMSEditorPage />} />
               <Route path="/cms/:slug/preview" element={<CMSPreviewPage />} />
+
+              {/* Account */}
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Route>
 

@@ -123,6 +123,7 @@ export interface CreateMealPlanDto {
   totalPrice: number;
   currency?: string;
   isActive?: boolean;
+  imageUrl?: string | null;
 }
 
 export interface UpdateMealPlanDto extends Partial<CreateMealPlanDto> {}

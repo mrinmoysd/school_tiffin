@@ -5,6 +5,7 @@ import { SearchOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '@/services';
 import { Order, OrderFilters, OrderStatus } from '@/types';
+import TableSkeleton from '@/components/TableSkeleton';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -14,6 +15,7 @@ const { RangePicker } = DatePicker;
 const OrdersListPage = () => {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<OrderFilters>({});
+  const [isExporting, setIsExporting] = useState(false);
 
   // Fetch orders
   const { data: orders, isLoading } = useQuery({
@@ -24,6 +26,7 @@ const OrdersListPage = () => {
   // Export handler
   const handleExport = async () => {
     try {
+      setIsExporting(true);
       const blob = await orderService.exportCSV(filters);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -34,6 +37,8 @@ const OrdersListPage = () => {
       message.success('Export started');
     } catch (error) {
       message.error('Export failed');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -142,7 +147,7 @@ const OrdersListPage = () => {
           </Title>
           <Text type="secondary">View and manage all orders</Text>
         </div>
-        <Button icon={<DownloadOutlined />} onClick={handleExport}>
+        <Button icon={<DownloadOutlined />} onClick={handleExport} loading={isExporting}>
           Export CSV
         </Button>
       </div>
@@ -187,20 +192,23 @@ const OrdersListPage = () => {
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={orders}
-          rowKey="id"
-          loading={isLoading}
-          tableLayout="fixed"
-          scroll={{ x: 'max-content' }}
-          pagination={{
-            total: orders?.length,
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: total => `Total ${total} orders`,
-          }}
-        />
+        {isLoading ? (
+          <TableSkeleton rows={8} />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={orders}
+            rowKey="id"
+            tableLayout="fixed"
+            scroll={{ x: 'max-content' }}
+            pagination={{
+              total: orders?.length,
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: total => `Total ${total} orders`,
+            }}
+          />
+        )}
       </Card>
     </div>
   );

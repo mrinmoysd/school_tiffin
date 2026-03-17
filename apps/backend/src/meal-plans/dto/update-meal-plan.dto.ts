@@ -36,6 +36,15 @@ export class UpdateMealPlanDto {
   description?: string;
 
   @ApiProperty({
+    description: 'Meal plan image URL',
+    example: 'https://example.com/meal-plan.jpg',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string | null;
+
+  @ApiProperty({
     description: 'Meal plan type',
     enum: MealPlanType,
     example: MealPlanType.LUNCH,

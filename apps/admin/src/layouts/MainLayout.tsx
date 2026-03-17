@@ -1,21 +1,21 @@
 import { pauseRequestService } from '@/services';
 import { useAuthStore } from '@/stores/authStore';
 import {
-    BankOutlined,
-    BarChartOutlined,
-    BellOutlined,
-    CalendarOutlined,
-    CarOutlined,
-    CoffeeOutlined,
-    DashboardOutlined,
-    FileTextOutlined,
-    LogoutOutlined,
-    MenuFoldOutlined,
-    MenuUnfoldOutlined,
-    PauseCircleOutlined,
-    SettingOutlined,
-    ShoppingCartOutlined,
-    UserOutlined,
+  BankOutlined,
+  BarChartOutlined,
+  BellOutlined,
+  CalendarOutlined,
+  CarOutlined,
+  CoffeeOutlined,
+  DashboardOutlined,
+  FileTextOutlined,
+  LogoutOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  PauseCircleOutlined,
+  SettingOutlined,
+  ShoppingCartOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import type { MenuProps } from 'antd';
@@ -84,9 +84,7 @@ const MainLayout = () => {
       label: (
         <span className="flex items-center justify-between w-full">
           Pause Requests
-          {pendingCount > 0 && (
-            <Badge count={pendingCount} size="small" className="ml-2" />
-          )}
+          {pendingCount > 0 && <Badge count={pendingCount} size="small" className="ml-2" />}
         </span>
       ),
     },
@@ -115,17 +113,22 @@ const MainLayout = () => {
       icon: <FileTextOutlined />,
       label: 'CMS',
     },
+    {
+      key: '/settings',
+      icon: <SettingOutlined />,
+      label: 'Settings',
+    },
   ];
 
   // User dropdown menu
   const userMenuItems: MenuProps['items'] = [
     {
-      key: 'profile',
+      key: '/profile',
       icon: <UserOutlined />,
       label: 'Profile',
     },
     {
-      key: 'settings',
+      key: '/settings',
       icon: <SettingOutlined />,
       label: 'Settings',
     },
@@ -148,7 +151,9 @@ const MainLayout = () => {
     if (key === 'logout') {
       logout();
       navigate('/login');
+      return;
     }
+    navigate(key);
   };
 
   // Get current selected menu key
@@ -163,6 +168,8 @@ const MainLayout = () => {
     if (path.startsWith('/reports/sales')) return '/reports/sales';
     if (path.startsWith('/reports/subscriptions')) return '/reports/subscriptions';
     if (path.startsWith('/cms')) return '/cms';
+    if (path.startsWith('/settings')) return '/settings';
+    if (path.startsWith('/profile')) return '/profile';
     return path;
   };
 
@@ -178,6 +185,7 @@ const MainLayout = () => {
       <Sider
         trigger={null}
         collapsible
+        breakpoint="lg"
         collapsed={collapsed}
         width={260}
         className="shadow-md"
@@ -189,6 +197,7 @@ const MainLayout = () => {
           top: 0,
           bottom: 0,
         }}
+        onBreakpoint={broken => setCollapsed(broken)}
       >
         {/* Logo */}
         <div className="h-16 flex items-center justify-center border-b border-gray-700">
@@ -196,9 +205,7 @@ const MainLayout = () => {
             <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
               <CoffeeOutlined className="text-white text-lg" />
             </div>
-            {!collapsed && (
-              <span className="text-white font-semibold text-lg">School Tiffin</span>
-            )}
+            {!collapsed && <span className="text-white font-semibold text-lg">School Tiffin</span>}
           </div>
         </div>
 
@@ -253,10 +260,7 @@ const MainLayout = () => {
               trigger={['click']}
             >
               <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded-lg transition-colors">
-                <Avatar
-                  style={{ backgroundColor: '#16a34a' }}
-                  icon={<UserOutlined />}
-                />
+                <Avatar style={{ backgroundColor: '#16a34a' }} icon={<UserOutlined />} />
                 <div className="hidden md:block">
                   <div className="text-sm font-medium">{user?.fullName}</div>
                   <div className="text-xs text-gray-500">{user?.role}</div>
@@ -276,7 +280,9 @@ const MainLayout = () => {
             borderRadius: borderRadiusLG,
           }}
         >
-          <Outlet />
+          <div className="page-transition" key={location.pathname}>
+            <Outlet />
+          </div>
         </Content>
       </Layout>
     </Layout>

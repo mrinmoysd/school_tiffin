@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import { adminService } from '@/services';
 import { useAuthStore } from '@/stores/authStore';
 import { SubscriptionStatus, OrderStatus, RecentActivity } from '@/types';
+import TableSkeleton from '@/components/TableSkeleton';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -304,20 +305,23 @@ const DashboardPage = () => {
               </Button>
             }
           >
-            <Table
-              columns={subscriptionColumns}
-              dataSource={activity?.recentSubscriptions || []}
-              rowKey="id"
-              pagination={false}
-              loading={activityLoading}
-              size="small"
-              tableLayout="fixed"
-              scroll={{ x: 'max-content' }}
-              onRow={record => ({
-                onClick: () => navigate(`/subscriptions/${record.id}`),
-                className: 'cursor-pointer hover:bg-gray-50',
-              })}
-            />
+            {activityLoading ? (
+              <TableSkeleton rows={5} />
+            ) : (
+              <Table
+                columns={subscriptionColumns}
+                dataSource={activity?.recentSubscriptions || []}
+                rowKey="id"
+                pagination={false}
+                size="small"
+                tableLayout="fixed"
+                scroll={{ x: 'max-content' }}
+                onRow={record => ({
+                  onClick: () => navigate(`/subscriptions/${record.id}`),
+                  className: 'cursor-pointer hover:bg-gray-50',
+                })}
+              />
+            )}
           </Card>
         </Col>
         <Col xs={24} lg={10} xl={9}>
@@ -334,20 +338,23 @@ const DashboardPage = () => {
               </Button>
             }
           >
-            <Table
-              columns={orderColumns}
-              dataSource={activity?.recentOrders || []}
-              rowKey="id"
-              pagination={false}
-              loading={activityLoading}
-              size="small"
-              tableLayout="fixed"
-              scroll={{ x: 'max-content' }}
-              onRow={record => ({
-                onClick: () => navigate(`/orders/${record.id}`),
-                className: 'cursor-pointer hover:bg-gray-50',
-              })}
-            />
+            {activityLoading ? (
+              <TableSkeleton rows={5} />
+            ) : (
+              <Table
+                columns={orderColumns}
+                dataSource={activity?.recentOrders || []}
+                rowKey="id"
+                pagination={false}
+                size="small"
+                tableLayout="fixed"
+                scroll={{ x: 'max-content' }}
+                onRow={record => ({
+                  onClick: () => navigate(`/orders/${record.id}`),
+                  className: 'cursor-pointer hover:bg-gray-50',
+                })}
+              />
+            )}
           </Card>
         </Col>
       </Row>

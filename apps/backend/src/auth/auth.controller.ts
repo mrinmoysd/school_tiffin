@@ -110,7 +110,11 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 requests per 15 minutes
+  @Throttle(
+    process.env.NODE_ENV === 'development'
+      ? { default: { limit: 50, ttl: 60000 } } // Dev: 50 requests per minute
+      : { default: { limit: 5, ttl: 900000 } }, // Prod: 5 requests per 15 minutes
+  )
   @ApiOperation({
     summary: 'Login with email and password',
     description: 'Authenticate user with email and password. Returns user data and JWT tokens.',

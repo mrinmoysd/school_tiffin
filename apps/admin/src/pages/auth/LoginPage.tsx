@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Form, Input, Button, Card, Typography, message, Checkbox } from 'antd';
 import type { InputRef } from 'antd';
@@ -7,22 +7,36 @@ import { useMutation } from '@tanstack/react-query';
 import { authService } from '@/services';
 import { useAuthStore } from '@/stores/authStore';
 import { LoginRequest, UserRole } from '@/types';
+import { Controller, useForm } from 'react-hook-form';
 
 const { Title, Text } = Typography;
+
+type LoginFormValues = LoginRequest & { rememberMe: boolean };
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuthStore();
-  const [form] = Form.useForm();
-  const [rememberMe, setRememberMe] = useState(true);
+  const { login, rememberMe: storedRememberMe } = useAuthStore();
   const passwordRef = useRef<InputRef>(null);
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard';
 
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    defaultValues: {
+      email: '',
+      password: '',
+      rememberMe: storedRememberMe ?? true,
+    },
+  });
+
   const loginMutation = useMutation({
-    mutationFn: (data: LoginRequest) => authService.login(data),
-    onSuccess: data => {
+    mutationFn: (data: LoginFormValues) =>
+      authService.login({ email: data.email, password: data.password }),
+    onSuccess: (data, variables) => {
       // Check if user is admin
       if (data.user.role !== UserRole.ADMIN && data.user.role !== UserRole.SCHOOL_ADMIN) {
         message.error('Access denied. Admin privileges required.');
@@ -42,6 +56,7 @@ const LoginPage = () => {
         },
         data.tokens.accessToken,
         data.tokens.refreshToken,
+        variables.rememberMe,
       );
       message.success(`Welcome back, ${data.user.fullName || 'Admin'}!`);
       navigate(from, { replace: true });
@@ -52,7 +67,7 @@ const LoginPage = () => {
     },
   });
 
-  const onFinish = (values: LoginRequest) => {
+  const onSubmit = (values: LoginFormValues) => {
     loginMutation.mutate(values);
   };
 
@@ -71,71 +86,94 @@ const LoginPage = () => {
         </div>
 
         {/* Login Form */}
-        <Form
-          name="login"
-          form={form}
-          onFinish={onFinish}
-          layout="vertical"
-          size="large"
-          requiredMark={false}
-        >
-          <Form.Item
-            name="email"
-            label="Email"
-            rules={[
-              { required: true, message: 'Please enter your email' },
-              { type: 'email', message: 'Please enter a valid email' },
-            ]}
-          >
-            <Input
-              prefix={<UserOutlined className="text-gray-400" />}
-              placeholder="admin@schooltiffin.com"
-              autoComplete="email"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="password"
-            label="Password"
-            rules={[
-              { required: true, message: 'Please enter your password' },
-              { min: 6, message: 'Password must be at least 6 characters' },
-            ]}
-          >
-            <Input.Password
-              ref={passwordRef}
-              prefix={<LockOutlined className="text-gray-400" />}
-              placeholder="Enter your password"
-              autoComplete="current-password"
-            />
-          </Form.Item>
-
-          <Form.Item>
-            <div className="flex items-center justify-between">
-              <Checkbox checked={rememberMe} onChange={e => setRememberMe(e.target.checked)}>
-                Remember me
-              </Checkbox>
-              <a href="#" className="text-green-600 hover:text-green-700">
-                Forgot password?
-              </a>
-            </div>
-          </Form.Item>
-
-          <Form.Item className="mb-0">
-            <Button
-              type="primary"
-              htmlType="submit"
-              block
-              loading={loginMutation.isPending}
-              className="h-12 text-base font-medium"
-              style={{
-                background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-                border: 'none',
-              }}
+        <Form layout="vertical" size="large" requiredMark={false} component={false}>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Form.Item
+              label="Email"
+              validateStatus={errors.email ? 'error' : ''}
+              help={errors.email?.message}
             >
-              {loginMutation.isPending ? 'Signing in...' : 'Sign In'}
-            </Button>
-          </Form.Item>
+              <Controller
+                name="email"
+                control={control}
+                rules={{
+                  required: 'Please enter your email',
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: 'Please enter a valid email',
+                  },
+                }}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    prefix={<UserOutlined className="text-gray-400" />}
+                    placeholder="admin@schooltiffin.com"
+                    autoComplete="email"
+                  />
+                )}
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Password"
+              validateStatus={errors.password ? 'error' : ''}
+              help={errors.password?.message}
+            >
+              <Controller
+                name="password"
+                control={control}
+                rules={{
+                  required: 'Please enter your password',
+                  minLength: { value: 6, message: 'Password must be at least 6 characters' },
+                }}
+                render={({ field }) => (
+                  <Input.Password
+                    {...field}
+                    ref={passwordRef}
+                    prefix={<LockOutlined className="text-gray-400" />}
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                  />
+                )}
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <div className="flex items-center justify-between">
+                <Controller
+                  name="rememberMe"
+                  control={control}
+                  render={({ field }) => (
+                    <Checkbox
+                      checked={field.value}
+                      onChange={e => field.onChange(e.target.checked)}
+                    >
+                      Remember me
+                    </Checkbox>
+                  )}
+                />
+                <a href="#" className="text-green-600 hover:text-green-700">
+                  Forgot password?
+                </a>
+              </div>
+            </Form.Item>
+
+            <Form.Item className="mb-0">
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                loading={loginMutation.isPending}
+                className="h-12 text-base font-medium"
+                style={{
+                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  border: 'none',
+                }}
+              >
+                {loginMutation.isPending ? 'Signing in...' : 'Sign In'}
+              </Button>
+            </Form.Item>
+          </form>
         </Form>
 
         {/* Footer */}

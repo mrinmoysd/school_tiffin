@@ -5,6 +5,7 @@ import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userService } from '@/services';
 import { User, UserFilters, UserRole } from '@/types';
+import TableSkeleton from '@/components/TableSkeleton';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -183,28 +184,31 @@ const UsersListPage = () => {
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={data?.users}
-          rowKey="id"
-          loading={isLoading}
-          tableLayout="fixed"
-          scroll={{ x: 'max-content' }}
-          pagination={{
-            current: page,
-            pageSize,
-            total: data?.pagination.total,
-            showSizeChanger: true,
-            onChange: (nextPage, nextPageSize) => {
-              setPage(nextPage);
-              if (nextPageSize && nextPageSize !== pageSize) {
-                setPageSize(nextPageSize);
-                setPage(1);
-              }
-            },
-            showTotal: total => `Total ${total} users`,
-          }}
-        />
+        {isLoading ? (
+          <TableSkeleton rows={8} />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={data?.users}
+            rowKey="id"
+            tableLayout="fixed"
+            scroll={{ x: 'max-content' }}
+            pagination={{
+              current: page,
+              pageSize,
+              total: data?.pagination.total,
+              showSizeChanger: true,
+              onChange: (nextPage, nextPageSize) => {
+                setPage(nextPage);
+                if (nextPageSize && nextPageSize !== pageSize) {
+                  setPageSize(nextPageSize);
+                  setPage(1);
+                }
+              },
+              showTotal: total => `Total ${total} users`,
+            }}
+          />
+        )}
       </Card>
     </div>
   );

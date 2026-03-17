@@ -26,6 +26,12 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-width: 768px; /* Tablet-first: do not optimize for mobile widths */
+  overflow-x: auto;
+}
+
+#root {
+  min-width: 768px;
 }
 
 /* Ant Design overrides */
@@ -71,15 +77,19 @@ body {
 }
 
 /* Page transitions */
-.page-enter {
-  opacity: 0;
-  transform: translateY(10px);
+.page-transition {
+  animation: pageFadeIn 200ms ease both;
 }
 
-.page-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 200ms, transform 200ms;
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Login page background */

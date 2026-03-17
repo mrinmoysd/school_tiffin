@@ -17,6 +17,8 @@ import {
   Spin,
   Descriptions,
   Tooltip as AntTooltip,
+  Upload,
+  Image,
 } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -24,10 +26,13 @@ import {
   EditOutlined,
   DeleteOutlined,
   ExclamationCircleOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { mealPlanService, menuItemService } from '@/services';
+import { mealPlanService, menuItemService, uploadService } from '@/services';
 import { MenuItem, CreateMenuItemDto, UpdateMenuItemDto } from '@/types';
+import { DEFAULT_MEAL_PLAN_IMAGE } from '@/constants/images';
+import TableSkeleton from '@/components/TableSkeleton';
 import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
@@ -35,6 +40,8 @@ const { TextArea } = Input;
 const { confirm } = Modal;
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const MAX_IMAGE_SIZE_MB = 5;
+const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 
 const MenuManagementPage = () => {
   const navigate = useNavigate();
@@ -43,6 +50,10 @@ const MenuManagementPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [form] = Form.useForm();
+  const [imagePreview, setImagePreview] = useState<string>(DEFAULT_MEAL_PLAN_IMAGE);
+  const [hasCustomImage, setHasCustomImage] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [uploadedImageKey, setUploadedImageKey] = useState<string | null>(null);
 
   const EllipsisCell = ({ text, className }: { text?: string; className?: string }) => {
     const spanRef = useRef<{ scrollWidth: number; clientWidth: number } | null>(null);
@@ -132,9 +143,15 @@ const MenuManagementPage = () => {
     if (item) {
       setEditingItem(item);
       form.setFieldsValue(item);
+      setImagePreview(item.imageUrl || DEFAULT_MEAL_PLAN_IMAGE);
+      setHasCustomImage(Boolean(item.imageUrl));
+      setUploadedImageKey(null);
     } else {
       setEditingItem(null);
       form.resetFields();
+      setImagePreview(DEFAULT_MEAL_PLAN_IMAGE);
+      setHasCustomImage(false);
+      setUploadedImageKey(null);
     }
     setIsModalOpen(true);
   };
@@ -143,6 +160,9 @@ const MenuManagementPage = () => {
     setIsModalOpen(false);
     setEditingItem(null);
     form.resetFields();
+    setImagePreview(DEFAULT_MEAL_PLAN_IMAGE);
+    setHasCustomImage(false);
+    setUploadedImageKey(null);
   };
 
   const handleSubmit = (values: CreateMenuItemDto | UpdateMenuItemDto) => {
@@ -151,6 +171,47 @@ const MenuManagementPage = () => {
     } else {
       createMutation.mutate({ ...values, mealPlanId: mealPlanId! } as CreateMenuItemDto);
     }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      message.error('Please upload an image file (JPG, PNG, or WEBP).');
+      return Upload.LIST_IGNORE;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      message.error(`Image must be smaller than ${MAX_IMAGE_SIZE_MB}MB.`);
+      return Upload.LIST_IGNORE;
+    }
+
+    try {
+      setImageUploading(true);
+      const result = await uploadService.uploadImage(file, 'menu-items');
+      setImagePreview(result.url);
+      setHasCustomImage(true);
+      setUploadedImageKey(result.key);
+      form.setFieldValue('imageUrl', result.url);
+    } catch {
+      message.error('Image upload failed. Please check your S3 configuration.');
+    } finally {
+      setImageUploading(false);
+    }
+
+    return false;
+  };
+
+  const handleRemoveImage = async () => {
+    if (uploadedImageKey) {
+      try {
+        await uploadService.deleteImage(uploadedImageKey);
+      } catch {
+        message.error('Failed to remove image from storage.');
+      }
+    }
+    setImagePreview(DEFAULT_MEAL_PLAN_IMAGE);
+    setHasCustomImage(false);
+    setUploadedImageKey(null);
+    form.setFieldValue('imageUrl', null);
   };
 
   const handleDelete = (item: MenuItem) => {
@@ -166,6 +227,22 @@ const MenuManagementPage = () => {
 
   // Table columns
   const columns: ColumnsType<MenuItem> = [
+    {
+      title: 'Image',
+      dataIndex: 'imageUrl',
+      key: 'imageUrl',
+      width: 70,
+      render: (url?: string) => (
+        <Image
+          src={url || DEFAULT_MEAL_PLAN_IMAGE}
+          alt="Menu item"
+          width={40}
+          height={40}
+          className="rounded-md object-cover"
+          fallback={DEFAULT_MEAL_PLAN_IMAGE}
+        />
+      ),
+    },
     {
       title: 'Day',
       key: 'day',
@@ -288,13 +365,19 @@ const MenuManagementPage = () => {
           </Button>
         }
       >
-        <Table
-          columns={columns}
-          dataSource={menuItems}
-          rowKey="id"
-          loading={menuItemsLoading}
-          pagination={false}
-        />
+        <div className="table-scrollbar">
+          {menuItemsLoading ? (
+            <TableSkeleton rows={6} />
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={menuItems}
+              rowKey="id"
+              pagination={false}
+              scroll={{ x: 'max-content' }}
+            />
+          )}
+        </div>
       </Card>
 
       {/* Add/Edit Modal */}
@@ -326,7 +409,37 @@ const MenuManagementPage = () => {
             <TextArea rows={2} placeholder="Optional description..." />
           </Form.Item>
 
-          <div className="grid grid-cols-2 gap-4">
+          <Form.Item
+            label="Item Image (optional)"
+            extra={`JPG, PNG, or WEBP. Max ${MAX_IMAGE_SIZE_MB}MB.`}
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                <img
+                  src={imagePreview}
+                  alt="Menu item preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Upload beforeUpload={handleImageUpload} showUploadList={false} accept="image/*">
+                  <Button icon={<UploadOutlined />} loading={imageUploading}>
+                    Upload Image
+                  </Button>
+                </Upload>
+                {hasCustomImage && (
+                  <Button danger onClick={handleRemoveImage} disabled={imageUploading}>
+                    Remove Image
+                  </Button>
+                )}
+              </div>
+            </div>
+            <Form.Item name="imageUrl" noStyle>
+              <Input type="hidden" />
+            </Form.Item>
+          </Form.Item>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Form.Item name="dayOfWeek" label="Day of Week">
               <Select
                 placeholder="Select day"
@@ -340,7 +453,7 @@ const MenuManagementPage = () => {
             </Form.Item>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Form.Item name="calories" label="Calories (kcal)">
               <InputNumber min={0} placeholder="e.g., 450" style={{ width: '100%' }} />
             </Form.Item>

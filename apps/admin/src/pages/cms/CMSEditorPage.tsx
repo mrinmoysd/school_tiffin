@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
-import type { ChangeEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Form, Input, Button, Card, Typography, message, Switch, Spin, Tabs, Row, Col } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cmsService } from '@/services';
 import { CreateCMSPageDto, UpdateCMSPageDto } from '@/types';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const { Title, Text } = Typography;
-const { TextArea } = Input;
 
 const CMSEditorPage = () => {
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ const CMSEditorPage = () => {
   const [form] = Form.useForm();
   const [previewContent, setPreviewContent] = useState('');
   const isEditing = !!slug;
+  const watchedContent = Form.useWatch('content', form);
 
   // Fetch page if editing
   const { data: page, isLoading } = useQuery({
@@ -72,10 +73,11 @@ const CMSEditorPage = () => {
     }
   };
 
-  // Handle content change for preview
-  const handleContentChange = (e: ChangeEvent<globalThis.HTMLTextAreaElement>) => {
-    setPreviewContent(e.target.value);
-  };
+  useEffect(() => {
+    if (typeof watchedContent === 'string') {
+      setPreviewContent(watchedContent);
+    }
+  }, [watchedContent]);
 
   if (isEditing && isLoading) {
     return (
@@ -104,14 +106,26 @@ const CMSEditorPage = () => {
       children: (
         <Form.Item
           name="content"
-          label="Content (HTML/Markdown)"
+          label="Content"
           rules={[{ required: true, message: 'Please enter content' }]}
+          valuePropName="value"
+          getValueFromEvent={(value: string) => value}
         >
-          <TextArea
-            rows={20}
-            placeholder="Enter page content..."
-            onChange={handleContentChange}
-            style={{ fontFamily: 'monospace' }}
+          <ReactQuill
+            theme="snow"
+            placeholder="Write your page content..."
+            modules={{
+              toolbar: [
+                [{ header: [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                ['blockquote', 'code-block'],
+                [{ color: [] }, { background: [] }],
+                [{ align: [] }],
+                ['link', 'image'],
+                ['clean'],
+              ],
+            }}
           />
         </Form.Item>
       ),

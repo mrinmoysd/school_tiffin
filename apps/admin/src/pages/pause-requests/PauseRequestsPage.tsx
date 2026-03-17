@@ -24,6 +24,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { pauseRequestService } from '@/services';
 import { PauseRequest, PauseRequestFilters, PauseRequestStatus } from '@/types';
+import TableSkeleton from '@/components/TableSkeleton';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -285,23 +286,26 @@ const PauseRequestsPage = () => {
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={pauseRequests}
-          rowKey="id"
-          loading={isLoading}
-          tableLayout="fixed"
-          scroll={{ x: 'max-content' }}
-          pagination={{
-            total: pauseRequests?.length,
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: total => `Total ${total} requests`,
-          }}
-          rowClassName={record =>
-            record.status === PauseRequestStatus.PENDING ? 'bg-orange-50' : ''
-          }
-        />
+        {isLoading ? (
+          <TableSkeleton rows={8} />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={pauseRequests}
+            rowKey="id"
+            tableLayout="fixed"
+            scroll={{ x: 'max-content' }}
+            pagination={{
+              total: pauseRequests?.length,
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: total => `Total ${total} requests`,
+            }}
+            rowClassName={record =>
+              record.status === PauseRequestStatus.PENDING ? 'bg-orange-50' : ''
+            }
+          />
+        )}
       </Card>
     </div>
   );

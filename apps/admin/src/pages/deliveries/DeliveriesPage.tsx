@@ -5,6 +5,7 @@ import { DownloadOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminService, schoolService } from '@/services';
 import { DeliveryItem, DeliveryFilters, DeliveryStatus } from '@/types';
+import TableSkeleton from '@/components/TableSkeleton';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -15,6 +16,7 @@ const DeliveriesPage = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [selectedSchool, setSelectedSchool] = useState<string | undefined>();
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
 
   const filters: DeliveryFilters = {
     date: selectedDate.format('YYYY-MM-DD'),
@@ -49,6 +51,7 @@ const DeliveriesPage = () => {
   // Export handler
   const handleExport = async (format: 'csv' | 'pdf') => {
     try {
+      setIsExporting(true);
       const blob = await adminService.exportDeliveries(filters, format);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -59,6 +62,8 @@ const DeliveriesPage = () => {
       message.success('Export started');
     } catch (error) {
       message.error('Export failed');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -177,7 +182,11 @@ const DeliveriesPage = () => {
           <Text type="secondary">Manage daily deliveries</Text>
         </div>
         <Space>
-          <Button icon={<DownloadOutlined />} onClick={() => handleExport('csv')}>
+          <Button
+            icon={<DownloadOutlined />}
+            onClick={() => handleExport('csv')}
+            loading={isExporting}
+          >
             Export CSV
           </Button>
         </Space>
@@ -247,21 +256,24 @@ const DeliveriesPage = () => {
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={deliveries}
-          rowKey="id"
-          loading={isLoading}
-          rowSelection={rowSelection}
-          tableLayout="fixed"
-          scroll={{ x: 'max-content' }}
-          pagination={{
-            total: deliveries?.length,
-            pageSize: 20,
-            showSizeChanger: true,
-            showTotal: total => `Total ${total} deliveries`,
-          }}
-        />
+        {isLoading ? (
+          <TableSkeleton rows={10} />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={deliveries}
+            rowKey="id"
+            rowSelection={rowSelection}
+            tableLayout="fixed"
+            scroll={{ x: 'max-content' }}
+            pagination={{
+              total: deliveries?.length,
+              pageSize: 20,
+              showSizeChanger: true,
+              showTotal: total => `Total ${total} deliveries`,
+            }}
+          />
+        )}
       </Card>
     </div>
   );
