@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Table, Button, Typography, Card, Tag, Space, Modal, message, Tooltip, Switch } from 'antd';
+import { Table, Button, Typography, Card, Tag, Space, App, message, Tooltip, Switch } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
@@ -11,18 +11,24 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cmsService } from '@/services';
 import { CMSPage } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
+import ErrorState from '@/components/ErrorState';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
-const { confirm } = Modal;
-
 const CMSListPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { modal } = App.useApp();
 
   // Fetch CMS pages
-  const { data: pages, isLoading } = useQuery({
+  const {
+    data: pages,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['cmsPages'],
     queryFn: cmsService.getAll,
   });
@@ -54,7 +60,7 @@ const CMSListPage = () => {
 
   // Handle delete
   const handleDelete = (page: CMSPage) => {
-    confirm({
+    modal.confirm({
       title: 'Delete Page',
       icon: <ExclamationCircleOutlined />,
       content: `Are you sure you want to delete "${page.title}"?`,
@@ -176,6 +182,12 @@ const CMSListPage = () => {
       <Card>
         {isLoading ? (
           <TableSkeleton rows={8} />
+        ) : isError ? (
+          <ErrorState
+            title="Unable to load CMS pages"
+            description={(error as Error)?.message}
+            onRetry={refetch}
+          />
         ) : (
           <Table
             columns={columns}

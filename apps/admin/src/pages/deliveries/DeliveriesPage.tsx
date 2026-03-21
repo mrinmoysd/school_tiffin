@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminService, schoolService } from '@/services';
 import { DeliveryItem, DeliveryFilters, DeliveryStatus } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
+import ErrorState from '@/components/ErrorState';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -24,7 +25,13 @@ const DeliveriesPage = () => {
   };
 
   // Fetch deliveries
-  const { data: deliveries, isLoading } = useQuery({
+  const {
+    data: deliveries,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['deliveries', filters],
     queryFn: () => adminService.getDeliveries(filters),
   });
@@ -59,7 +66,7 @@ const DeliveriesPage = () => {
       a.download = `deliveries-${selectedDate.format('YYYY-MM-DD')}.${format}`;
       a.click();
       window.URL.revokeObjectURL(url);
-      message.success('Export started');
+      message.info('Export started');
     } catch (error) {
       message.error('Export failed');
     } finally {
@@ -258,6 +265,12 @@ const DeliveriesPage = () => {
       <Card>
         {isLoading ? (
           <TableSkeleton rows={10} />
+        ) : isError ? (
+          <ErrorState
+            title="Unable to load deliveries"
+            description={(error as Error)?.message}
+            onRetry={refetch}
+          />
         ) : (
           <Table
             columns={columns}

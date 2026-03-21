@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { orderService } from '@/services';
 import { Order, OrderFilters, OrderStatus } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
+import ErrorState from '@/components/ErrorState';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -18,7 +19,13 @@ const OrdersListPage = () => {
   const [isExporting, setIsExporting] = useState(false);
 
   // Fetch orders
-  const { data: orders, isLoading } = useQuery({
+  const {
+    data: orders,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['orders', filters],
     queryFn: () => orderService.getAll(filters),
   });
@@ -34,7 +41,7 @@ const OrdersListPage = () => {
       a.download = `orders-${dayjs().format('YYYY-MM-DD')}.csv`;
       a.click();
       window.URL.revokeObjectURL(url);
-      message.success('Export started');
+      message.info('Export started');
     } catch (error) {
       message.error('Export failed');
     } finally {
@@ -79,9 +86,18 @@ const OrdersListPage = () => {
       key: 'subscription',
       width: 150,
       ellipsis: true,
-      render: (text: string) => (
-        <Text className="text-blue-600 cursor-pointer whitespace-nowrap">{text}</Text>
-      ),
+      render: (text: string, record) =>
+        record.subscriptionId ? (
+          <Button
+            type="link"
+            className="p-0 whitespace-nowrap"
+            onClick={() => navigate(`/subscriptions/${record.subscriptionId}`)}
+          >
+            {text}
+          </Button>
+        ) : (
+          <Text type="secondary">-</Text>
+        ),
     },
     {
       title: <span className="whitespace-nowrap">Amount</span>,
@@ -194,6 +210,12 @@ const OrdersListPage = () => {
       <Card>
         {isLoading ? (
           <TableSkeleton rows={8} />
+        ) : isError ? (
+          <ErrorState
+            title="Unable to load orders"
+            description={(error as Error)?.message}
+            onRetry={refetch}
+          />
         ) : (
           <Table
             columns={columns}

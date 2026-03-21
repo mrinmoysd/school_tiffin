@@ -16,7 +16,6 @@ const api = axios.create({
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = useAuthStore.getState().accessToken;
-    console.log('[Axios] Request:', config.url, 'Token:', token ? 'Present' : 'Missing');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -48,11 +47,17 @@ api.interceptors.response.use(
       if (refreshToken) {
         try {
           // Try to refresh the token
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+          const response = await axios.post<{
+            data: { accessToken?: string; refreshToken?: string };
+          }>(`${API_BASE_URL}/auth/refresh`, {
             refreshToken,
           });
 
-          const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+          const accessToken = response.data?.data?.accessToken;
+          const newRefreshToken = response.data?.data?.refreshToken;
+          if (!accessToken) {
+            throw new Error('Invalid refresh token response');
+          }
 
           // Update tokens in store
           useAuthStore.getState().setTokens(accessToken, newRefreshToken);

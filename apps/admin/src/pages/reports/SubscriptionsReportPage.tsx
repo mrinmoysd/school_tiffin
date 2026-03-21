@@ -3,6 +3,7 @@ import { Typography, Card, DatePicker, Select, Table, Skeleton, Row, Col } from 
 import { useQuery } from '@tanstack/react-query';
 import { adminService, schoolService } from '@/services';
 import { ReportFilters, SchoolSubscriptionItem } from '@/types';
+import ErrorState from '@/components/ErrorState';
 import {
   LineChart,
   Line,
@@ -30,7 +31,13 @@ const SubscriptionsReportPage = () => {
   });
 
   // Fetch subscriptions report
-  const { data: report, isLoading } = useQuery({
+  const {
+    data: report,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['subscriptionsReport', filters],
     queryFn: () => adminService.getSubscriptionsReport(filters),
     enabled: !!filters.startDate && !!filters.endDate,
@@ -144,6 +151,14 @@ const SubscriptionsReportPage = () => {
             <Skeleton active paragraph={{ rows: 8 }} />
           </Card>
         </div>
+      ) : isError ? (
+        <Card>
+          <ErrorState
+            title="Unable to load subscriptions report"
+            description={(error as Error)?.message}
+            onRetry={refetch}
+          />
+        </Card>
       ) : (
         <>
           {/* Trends Chart */}

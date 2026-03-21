@@ -21,6 +21,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { adminService, schoolService } from '@/services';
 import { ReportFilters, SchoolRevenueItem } from '@/types';
+import ErrorState from '@/components/ErrorState';
 import {
   LineChart,
   Line,
@@ -45,7 +46,13 @@ const SalesReportPage = () => {
   const [isExporting, setIsExporting] = useState(false);
 
   // Fetch sales report
-  const { data: report, isLoading } = useQuery({
+  const {
+    data: report,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['salesReport', filters],
     queryFn: () => adminService.getSalesReport(filters),
     enabled: !!filters.startDate && !!filters.endDate,
@@ -68,7 +75,7 @@ const SalesReportPage = () => {
       a.download = `sales-report-${filters.startDate}-${filters.endDate}.csv`;
       a.click();
       window.URL.revokeObjectURL(url);
-      message.success('Export started');
+      message.info('Export started');
     } catch (error) {
       message.error('Export failed');
     } finally {
@@ -195,6 +202,14 @@ const SalesReportPage = () => {
             <Skeleton active paragraph={{ rows: 8 }} />
           </Card>
         </div>
+      ) : isError ? (
+        <Card>
+          <ErrorState
+            title="Unable to load sales report"
+            description={(error as Error)?.message}
+            onRetry={refetch}
+          />
+        </Card>
       ) : (
         <>
           {/* Summary Cards */}

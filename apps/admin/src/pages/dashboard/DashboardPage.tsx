@@ -17,6 +17,7 @@ import { adminService } from '@/services';
 import { useAuthStore } from '@/stores/authStore';
 import { SubscriptionStatus, OrderStatus, RecentActivity } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
+import ErrorState from '@/components/ErrorState';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -59,6 +60,8 @@ const DashboardPage = () => {
   const {
     data: stats,
     isLoading: statsLoading,
+    isError: statsError,
+    error: statsErrorDetails,
     refetch: refetchStats,
   } = useQuery({
     queryKey: ['dashboardStats'],
@@ -71,6 +74,8 @@ const DashboardPage = () => {
   const {
     data: activity,
     isLoading: activityLoading,
+    isError: activityError,
+    error: activityErrorDetails,
     refetch: refetchActivity,
   } = useQuery({
     queryKey: ['dashboardRecentActivity'],
@@ -215,79 +220,91 @@ const DashboardPage = () => {
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <Row gutter={[16, 16]} className="mb-6">
-        <Col xs={24} sm={12} lg={12} xl={6}>
-          <StatsCard
-            title="Active Subscriptions"
-            value={stats?.activeSubscriptions || 0}
-            icon={<CalendarOutlined />}
-            gradient="gradient-green"
-            loading={statsLoading}
+      {statsError ? (
+        <Card className="mb-6">
+          <ErrorState
+            title="Unable to load dashboard stats"
+            description={(statsErrorDetails as Error)?.message}
+            onRetry={refetchStats}
           />
-        </Col>
-        <Col xs={24} sm={12} lg={12} xl={6}>
-          <StatsCard
-            title="Today's Deliveries"
-            value={stats?.todayDeliveries || 0}
-            icon={<CarOutlined />}
-            gradient="gradient-blue"
-            loading={statsLoading}
-          />
-        </Col>
-        <Col xs={24} sm={12} lg={12} xl={6}>
-          <StatsCard
-            title="Monthly Revenue"
-            value={stats ? `₹${((stats.monthlyRevenue || 0) / 100).toLocaleString()}` : '₹0'}
-            icon={<DollarOutlined />}
-            gradient="gradient-orange"
-            loading={statsLoading}
-          />
-        </Col>
-        <Col xs={24} sm={12} lg={12} xl={6}>
-          <StatsCard
-            title="Pending Pause Requests"
-            value={stats?.pendingPauseRequests || 0}
-            icon={<PauseCircleOutlined />}
-            gradient="gradient-purple"
-            loading={statsLoading}
-          />
-        </Col>
-      </Row>
+        </Card>
+      ) : (
+        <>
+          {/* Stats Cards */}
+          <Row gutter={[16, 16]} className="mb-6">
+            <Col xs={24} sm={12} lg={12} xl={6}>
+              <StatsCard
+                title="Active Subscriptions"
+                value={stats?.activeSubscriptions || 0}
+                icon={<CalendarOutlined />}
+                gradient="gradient-green"
+                loading={statsLoading}
+              />
+            </Col>
+            <Col xs={24} sm={12} lg={12} xl={6}>
+              <StatsCard
+                title="Today's Deliveries"
+                value={stats?.todayDeliveries || 0}
+                icon={<CarOutlined />}
+                gradient="gradient-blue"
+                loading={statsLoading}
+              />
+            </Col>
+            <Col xs={24} sm={12} lg={12} xl={6}>
+              <StatsCard
+                title="Monthly Revenue"
+                value={stats ? `₹${((stats.monthlyRevenue || 0) / 100).toLocaleString()}` : '₹0'}
+                icon={<DollarOutlined />}
+                gradient="gradient-orange"
+                loading={statsLoading}
+              />
+            </Col>
+            <Col xs={24} sm={12} lg={12} xl={6}>
+              <StatsCard
+                title="Pending Pause Requests"
+                value={stats?.pendingPauseRequests || 0}
+                icon={<PauseCircleOutlined />}
+                gradient="gradient-purple"
+                loading={statsLoading}
+              />
+            </Col>
+          </Row>
 
-      {/* Secondary Stats */}
-      <Row gutter={[16, 16]} className="mb-6">
-        <Col xs={24} sm={12} lg={8}>
-          <Card className="h-full">
-            <Statistic
-              title="Active Schools"
-              value={stats?.activeSchools || 0}
-              prefix={<BankOutlined className="text-green-500" />}
-              loading={statsLoading}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={8}>
-          <Card className="h-full">
-            <Statistic
-              title="Total Parents"
-              value={stats?.totalParents || 0}
-              prefix={<UserOutlined className="text-blue-500" />}
-              loading={statsLoading}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={8}>
-          <Card className="h-full">
-            <Statistic
-              title="Completed Deliveries Today"
-              value={stats?.completedDeliveriesToday || 0}
-              prefix={<CheckCircleOutlined className="text-green-500" />}
-              loading={statsLoading}
-            />
-          </Card>
-        </Col>
-      </Row>
+          {/* Secondary Stats */}
+          <Row gutter={[16, 16]} className="mb-6">
+            <Col xs={24} sm={12} lg={8}>
+              <Card className="h-full">
+                <Statistic
+                  title="Active Schools"
+                  value={stats?.activeSchools || 0}
+                  prefix={<BankOutlined className="text-green-500" />}
+                  loading={statsLoading}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} lg={8}>
+              <Card className="h-full">
+                <Statistic
+                  title="Total Parents"
+                  value={stats?.totalParents || 0}
+                  prefix={<UserOutlined className="text-blue-500" />}
+                  loading={statsLoading}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} lg={8}>
+              <Card className="h-full">
+                <Statistic
+                  title="Completed Deliveries Today"
+                  value={stats?.completedDeliveriesToday || 0}
+                  prefix={<CheckCircleOutlined className="text-green-500" />}
+                  loading={statsLoading}
+                />
+              </Card>
+            </Col>
+          </Row>
+        </>
+      )}
 
       {/* Recent Activity */}
       <Row gutter={[16, 16]}>
@@ -307,6 +324,12 @@ const DashboardPage = () => {
           >
             {activityLoading ? (
               <TableSkeleton rows={5} />
+            ) : activityError ? (
+              <ErrorState
+                title="Unable to load recent subscriptions"
+                description={(activityErrorDetails as Error)?.message}
+                onRetry={refetchActivity}
+              />
             ) : (
               <Table
                 columns={subscriptionColumns}
@@ -340,6 +363,12 @@ const DashboardPage = () => {
           >
             {activityLoading ? (
               <TableSkeleton rows={5} />
+            ) : activityError ? (
+              <ErrorState
+                title="Unable to load recent orders"
+                description={(activityErrorDetails as Error)?.message}
+                onRetry={refetchActivity}
+              />
             ) : (
               <Table
                 columns={orderColumns}

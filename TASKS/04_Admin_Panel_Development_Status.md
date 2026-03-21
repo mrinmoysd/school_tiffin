@@ -6,7 +6,7 @@ This file lists only the items that are **Partial** or **Pending** from `04_Admi
 | --------------------------------- | ------- | --------------------------------------------------------------------------------------------------------- |
 | 4.12.1 Responsive Design          | Partial | Tablet-first only: min-width 768 applied; mobile not supported; still need tablet cross-page verification |
 | 4.12.2 Loading States & Skeletons | Partial | Skeletons added for major tables and reports; some detail pages still use spinners                        |
-| 4.12.3 Error Handling & Messages  | Partial | Not consistent across all pages                                                                           |
+| 4.12.3 Error Handling & Messages  | Partial | Error states added to major lists/reports/dashboard; remaining detail pages + error scenario testing      |
 | 4.12.4 Accessibility & Keyboard   | Pending | No accessibility pass                                                                                     |
 | 4.13.1 Cross‑Browser Testing      | Pending | Not done                                                                                                  |
 | 4.13.2 Integration Testing        | Pending | Not done                                                                                                  |

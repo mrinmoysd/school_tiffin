@@ -28,6 +28,7 @@ import { mealPlanService, schoolService } from '@/services';
 import { DEFAULT_MEAL_PLAN_IMAGE } from '@/constants/images';
 import { MealPlan, MealPlanFilters, MealPlanType } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
+import ErrorState from '@/components/ErrorState';
 import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
@@ -42,7 +43,13 @@ const MealPlansListPage = () => {
   const [filters, setFilters] = useState<MealPlanFilters>({});
 
   // Fetch meal plans
-  const { data: mealPlans, isLoading } = useQuery({
+  const {
+    data: mealPlans,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['mealPlans', filters],
     queryFn: () => mealPlanService.getAll(filters),
   });
@@ -99,6 +106,21 @@ const MealPlansListPage = () => {
       cancelText: 'Cancel',
       onOk: () => deleteMutation.mutate(mealPlan.id),
     });
+  };
+
+  const handleToggleActive = (record: MealPlan, nextActive: boolean) => {
+    if (!nextActive) {
+      confirm({
+        title: 'Deactivate Meal Plan',
+        icon: <ExclamationCircleOutlined />,
+        content: `Deactivate "${record.name}"? New subscriptions will be blocked until it is reactivated.`,
+        okText: 'Deactivate',
+        okType: 'danger',
+        onOk: () => toggleActiveMutation.mutate({ id: record.id, isActive: nextActive }),
+      });
+      return;
+    }
+    toggleActiveMutation.mutate({ id: record.id, isActive: nextActive });
   };
 
   // Plan type colors
@@ -190,7 +212,7 @@ const MealPlansListPage = () => {
       render: (isActive: boolean, record) => (
         <Switch
           checked={isActive}
-          onChange={checked => toggleActiveMutation.mutate({ id: record.id, isActive: checked })}
+          onChange={checked => handleToggleActive(record, checked)}
           loading={toggleActiveMutation.isPending}
         />
       ),
@@ -299,6 +321,12 @@ const MealPlansListPage = () => {
         <div className="table-scrollbar">
           {isLoading ? (
             <TableSkeleton rows={8} />
+          ) : isError ? (
+            <ErrorState
+              title="Unable to load meal plans"
+              description={(error as Error)?.message}
+              onRetry={refetch}
+            />
           ) : (
             <Table
               columns={columns}

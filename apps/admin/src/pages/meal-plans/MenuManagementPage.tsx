@@ -33,6 +33,7 @@ import { mealPlanService, menuItemService, uploadService } from '@/services';
 import { MenuItem, CreateMenuItemDto, UpdateMenuItemDto } from '@/types';
 import { DEFAULT_MEAL_PLAN_IMAGE } from '@/constants/images';
 import TableSkeleton from '@/components/TableSkeleton';
+import ErrorState from '@/components/ErrorState';
 import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
@@ -87,14 +88,26 @@ const MenuManagementPage = () => {
   };
 
   // Fetch meal plan
-  const { data: mealPlan, isLoading: mealPlanLoading } = useQuery({
+  const {
+    data: mealPlan,
+    isLoading: mealPlanLoading,
+    isError: mealPlanError,
+    error: mealPlanErrorDetails,
+    refetch: refetchMealPlan,
+  } = useQuery({
     queryKey: ['mealPlan', mealPlanId],
     queryFn: () => mealPlanService.getById(mealPlanId!),
     enabled: !!mealPlanId,
   });
 
   // Fetch menu items
-  const { data: menuItems, isLoading: menuItemsLoading } = useQuery({
+  const {
+    data: menuItems,
+    isLoading: menuItemsLoading,
+    isError: menuItemsError,
+    error: menuItemsErrorDetails,
+    refetch: refetchMenuItems,
+  } = useQuery({
     queryKey: ['menuItems', mealPlanId],
     queryFn: () => menuItemService.getByMealPlan(mealPlanId!),
     enabled: !!mealPlanId,
@@ -312,6 +325,18 @@ const MenuManagementPage = () => {
     );
   }
 
+  if (mealPlanError) {
+    return (
+      <div className="max-w-xl mx-auto py-12">
+        <ErrorState
+          title="Unable to load meal plan"
+          description={(mealPlanErrorDetails as Error)?.message}
+          onRetry={refetchMealPlan}
+        />
+      </div>
+    );
+  }
+
   if (!mealPlan) {
     return (
       <div className="text-center py-12">
@@ -368,6 +393,12 @@ const MenuManagementPage = () => {
         <div className="table-scrollbar">
           {menuItemsLoading ? (
             <TableSkeleton rows={6} />
+          ) : menuItemsError ? (
+            <ErrorState
+              title="Unable to load menu items"
+              description={(menuItemsErrorDetails as Error)?.message}
+              onRetry={refetchMenuItems}
+            />
           ) : (
             <Table
               columns={columns}

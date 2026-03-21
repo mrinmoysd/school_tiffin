@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { subscriptionService, schoolService } from '@/services';
 import { Subscription, SubscriptionFilters, SubscriptionStatus } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
+import ErrorState from '@/components/ErrorState';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -17,7 +18,13 @@ const SubscriptionsListPage = () => {
   const [filters, setFilters] = useState<SubscriptionFilters>({});
 
   // Fetch subscriptions
-  const { data: subscriptions, isLoading } = useQuery({
+  const {
+    data: subscriptions,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['subscriptions', filters],
     queryFn: () => subscriptionService.getAll(filters),
   });
@@ -244,6 +251,12 @@ const SubscriptionsListPage = () => {
         <div className="table-scrollbar">
           {isLoading ? (
             <TableSkeleton rows={9} />
+          ) : isError ? (
+            <ErrorState
+              title="Unable to load subscriptions"
+              description={(error as Error)?.message}
+              onRetry={refetch}
+            />
           ) : (
             <Table
               columns={columns}

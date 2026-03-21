@@ -25,6 +25,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { schoolService } from '@/services';
 import { School, SchoolFilters } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
+import ErrorState from '@/components/ErrorState';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -37,7 +38,13 @@ const SchoolsListPage = () => {
   const [filters, setFilters] = useState<SchoolFilters>({});
 
   // Fetch schools
-  const { data: schools, isLoading } = useQuery({
+  const {
+    data: schools,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['schools', filters],
     queryFn: () => schoolService.getAll(filters),
   });
@@ -255,7 +262,13 @@ const SchoolsListPage = () => {
 
       {/* Table */}
       <Card>
-        {isLoading ? (
+        {isError ? (
+          <ErrorState
+            title="Failed to load schools"
+            description={(error as Error)?.message}
+            onRetry={refetch}
+          />
+        ) : isLoading ? (
           <TableSkeleton rows={8} />
         ) : (
           <Table
