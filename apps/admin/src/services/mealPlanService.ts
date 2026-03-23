@@ -1,25 +1,38 @@
 import api from '@/lib/axios';
-import { 
-  ApiResponse, 
-  MealPlan, 
-  CreateMealPlanDto, 
-  UpdateMealPlanDto, 
+import {
+  ApiResponse,
+  MealPlan,
+  CreateMealPlanDto,
+  UpdateMealPlanDto,
   MealPlanFilters,
   MenuItem,
   CreateMenuItemDto,
-  UpdateMenuItemDto
+  UpdateMenuItemDto,
 } from '@/types';
+
+const toQueryString = (
+  params: Record<string, string | number | boolean | null | undefined>,
+): string => {
+  return Object.entries(params)
+    .filter(([, value]) => value !== undefined && value !== null && String(value).length > 0)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+    .join('&');
+};
 
 export const mealPlanService = {
   // Get all meal plans
   getAll: async (filters?: MealPlanFilters): Promise<MealPlan[]> => {
-    const params = new URLSearchParams();
-    if (filters?.schoolId) params.append('schoolId', filters.schoolId);
-    if (filters?.planType) params.append('planType', filters.planType);
-    if (filters?.search) params.append('search', filters.search);
-    if (filters?.isActive !== undefined) params.append('isActive', String(filters.isActive));
-    
-    const response = await api.get<ApiResponse<MealPlan[]>>(`/meal-plans?${params.toString()}`);
+    const query = toQueryString({
+      schoolId: filters?.schoolId,
+      mealPlanTypeId: filters?.mealPlanTypeId,
+      planType: filters?.planType,
+      search: filters?.search,
+      isActive: filters?.isActive,
+    });
+
+    const response = await api.get<ApiResponse<MealPlan[]>>(
+      query ? `/meal-plans?${query}` : '/meal-plans',
+    );
     return response.data.data;
   },
 

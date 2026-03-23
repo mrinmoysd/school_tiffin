@@ -1,4 +1,4 @@
-import { pauseRequestService } from '@/services';
+import { appSettingService, pauseRequestService } from '@/services';
 import { useAuthStore } from '@/stores/authStore';
 import {
   BankOutlined,
@@ -19,14 +19,15 @@ import {
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import type { MenuProps } from 'antd';
-import { Avatar, Badge, Button, Dropdown, Layout, Menu, theme } from 'antd';
-import { useState } from 'react';
+import { Avatar, Badge, Button, Dropdown, Image, Layout, Menu, Modal, theme } from 'antd';
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 const { Header, Sider, Content } = Layout;
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [isAvatarPreviewOpen, setIsAvatarPreviewOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
@@ -45,6 +46,23 @@ const MainLayout = () => {
     enabled: !!accessToken, // Only fetch if we have a token
     retry: 1,
   });
+
+  const { data: brandingSetting } = useQuery({
+    queryKey: ['appSettings', 'branding'],
+    queryFn: appSettingService.getBrandingSetting,
+    retry: 1,
+  });
+
+  const appLogoUrl = brandingSetting?.logoUrl || null;
+
+  useEffect(() => {
+    document.title = 'School Tiffin - Admin Panel';
+
+    const faviconElement = document.querySelector('link[rel~="icon"]');
+    if (faviconElement) {
+      faviconElement.setAttribute('href', appLogoUrl || '/vite.svg');
+    }
+  }, [appLogoUrl]);
 
   // Menu items
   const menuItems: MenuProps['items'] = [
@@ -202,9 +220,17 @@ const MainLayout = () => {
         {/* Logo */}
         <div className="h-16 flex items-center justify-center border-b border-gray-700">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-              <CoffeeOutlined className="text-white text-lg" />
-            </div>
+            {appLogoUrl ? (
+              <img
+                src={appLogoUrl}
+                alt="School Tiffin logo"
+                className="w-8 h-8 rounded-md object-cover bg-white"
+              />
+            ) : (
+              <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                <CoffeeOutlined className="text-white text-lg" />
+              </div>
+            )}
             {!collapsed && <span className="text-white font-semibold text-lg">School Tiffin</span>}
           </div>
         </div>
@@ -260,7 +286,17 @@ const MainLayout = () => {
               trigger={['click']}
             >
               <div className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded-lg transition-colors">
-                <Avatar style={{ backgroundColor: '#16a34a' }} icon={<UserOutlined />} />
+                <Avatar
+                  src={user?.profileImageUrl || undefined}
+                  style={{ backgroundColor: '#16a34a' }}
+                  icon={!user?.profileImageUrl ? <UserOutlined /> : undefined}
+                  className={user?.profileImageUrl ? 'cursor-zoom-in' : ''}
+                  onClick={event => {
+                    if (!user?.profileImageUrl) return;
+                    event?.stopPropagation();
+                    setIsAvatarPreviewOpen(true);
+                  }}
+                />
                 <div className="hidden md:block">
                   <div className="text-sm font-medium">{user?.fullName}</div>
                   <div className="text-xs text-gray-500">{user?.role}</div>
@@ -285,6 +321,23 @@ const MainLayout = () => {
           </div>
         </Content>
       </Layout>
+
+      <Modal
+        open={isAvatarPreviewOpen}
+        footer={null}
+        onCancel={() => setIsAvatarPreviewOpen(false)}
+        centered
+        width={520}
+      >
+        {user?.profileImageUrl && (
+          <Image
+            src={user.profileImageUrl}
+            alt={user.fullName || 'Profile image'}
+            preview={false}
+            className="w-full rounded-lg"
+          />
+        )}
+      </Modal>
     </Layout>
   );
 };

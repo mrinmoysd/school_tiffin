@@ -11,6 +11,12 @@ interface AdminUsersListData {
   };
 }
 
+interface UpdateMyProfileDto {
+  fullName: string;
+  phone?: string;
+  profileImageUrl?: string | null;
+}
+
 export const userService = {
   // Get all users
   getAll: async (
@@ -61,6 +67,12 @@ export const userService = {
   toggleActive: async (id: string): Promise<User> => {
     // Backend toggles status; no payload needed
     const response = await api.patch<ApiResponse<User>>(`/admin/users/${id}/toggle-status`);
+    return response.data.data;
+  },
+
+  // Update current user profile
+  updateMyProfile: async (data: UpdateMyProfileDto): Promise<User> => {
+    const response = await api.patch<ApiResponse<User>>('/users/me', data);
     return response.data.data;
   },
 };

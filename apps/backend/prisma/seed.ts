@@ -1,6 +1,5 @@
 import {
   DeliveryStatus,
-  MealPlanType,
   OrderStatus,
   PauseRequestStatus,
   Prisma,
@@ -64,6 +63,7 @@ async function resetDatabase() {
   await prisma.auditLog.deleteMany();
   await prisma.refreshToken.deleteMany();
   await prisma.fCMToken.deleteMany();
+  await prisma.appSetting.deleteMany();
   await prisma.paymentTransaction.deleteMany();
   await prisma.order.deleteMany();
   await prisma.pauseRequest.deleteMany();
@@ -71,6 +71,7 @@ async function resetDatabase() {
   await prisma.subscription.deleteMany();
   await prisma.menuItem.deleteMany();
   await prisma.mealPlan.deleteMany();
+  await prisma.mealPlanTypeMaster.deleteMany();
   await prisma.student.deleteMany();
   await prisma.cmsPage.deleteMany();
   await prisma.school.deleteMany();
@@ -87,6 +88,32 @@ async function main() {
   if (process.env.SEED_RESET !== 'false') {
     await resetDatabase();
   }
+
+  await prisma.appSetting.upsert({
+    where: { key: 'TAX_PERCENTAGE' },
+    update: {
+      value: '0',
+      description: 'Global tax percentage applied to all orders',
+    },
+    create: {
+      key: 'TAX_PERCENTAGE',
+      value: '0',
+      description: 'Global tax percentage applied to all orders',
+    },
+  });
+
+  await prisma.appSetting.upsert({
+    where: { key: 'APP_LOGO_URL' },
+    update: {
+      value: '',
+      description: 'Global application logo URL used across admin and mobile clients',
+    },
+    create: {
+      key: 'APP_LOGO_URL',
+      value: '',
+      description: 'Global application logo URL used across admin and mobile clients',
+    },
+  });
 
   const passwords = {
     admin: 'Admin@123',
@@ -227,12 +254,60 @@ async function main() {
   });
 
   // 4) Meal Plans
+  const mealPlanTypes = await prisma.$transaction([
+    prisma.mealPlanTypeMaster.upsert({
+      where: { code: 'BREAKFAST' },
+      update: { displayName: 'Breakfast', description: 'Morning meal plans', sortOrder: 10 },
+      create: {
+        code: 'BREAKFAST',
+        displayName: 'Breakfast',
+        description: 'Morning meal plans',
+        sortOrder: 10,
+      },
+    }),
+    prisma.mealPlanTypeMaster.upsert({
+      where: { code: 'LUNCH' },
+      update: { displayName: 'Lunch', description: 'Midday meal plans', sortOrder: 20 },
+      create: {
+        code: 'LUNCH',
+        displayName: 'Lunch',
+        description: 'Midday meal plans',
+        sortOrder: 20,
+      },
+    }),
+    prisma.mealPlanTypeMaster.upsert({
+      where: { code: 'SNACK' },
+      update: { displayName: 'Snack', description: 'Light snack meal plans', sortOrder: 30 },
+      create: {
+        code: 'SNACK',
+        displayName: 'Snack',
+        description: 'Light snack meal plans',
+        sortOrder: 30,
+      },
+    }),
+    prisma.mealPlanTypeMaster.upsert({
+      where: { code: 'COMBO' },
+      update: { displayName: 'Combo', description: 'Combined meal plans', sortOrder: 40 },
+      create: {
+        code: 'COMBO',
+        displayName: 'Combo',
+        description: 'Combined meal plans',
+        sortOrder: 40,
+      },
+    }),
+  ]);
+
+  const mealPlanTypeByCode = mealPlanTypes.reduce<Record<string, string>>((acc, type) => {
+    acc[type.code] = type.id;
+    return acc;
+  }, {});
+
   const mealPlanOne = await prisma.mealPlan.create({
     data: {
       schoolId: schoolOne.id,
       name: 'Standard Lunch Plan',
       description: 'Balanced lunch for weekdays',
-      planType: MealPlanType.LUNCH,
+      mealPlanTypeId: mealPlanTypeByCode.LUNCH,
       durationDays: 30,
       pricePerDay: rupees(10000),
       totalPrice: rupees(300000),
@@ -246,7 +321,7 @@ async function main() {
       schoolId: schoolTwo.id,
       name: 'Premium Combo Plan',
       description: 'Breakfast + lunch combo with fruit',
-      planType: MealPlanType.COMBO,
+      mealPlanTypeId: mealPlanTypeByCode.COMBO,
       durationDays: 20,
       pricePerDay: rupees(12000),
       totalPrice: rupees(240000),

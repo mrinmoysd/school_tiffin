@@ -72,6 +72,8 @@ services:
       dockerfile: apps/backend/Dockerfile.dev
     container_name: schooltiffin-backend
     restart: unless-stopped
+    env_file:
+      - ./apps/backend/.env
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://postgres:76624@postgres:5432/schooltiffin

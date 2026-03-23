@@ -1,23 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
-  IsEnum,
   IsInt,
   IsNumber,
   IsOptional,
   IsString,
+  Matches,
   IsUUID,
   MaxLength,
   Min,
   MinLength,
 } from 'class-validator';
-
-export enum MealPlanType {
-  BREAKFAST = 'BREAKFAST',
-  LUNCH = 'LUNCH',
-  SNACK = 'SNACK',
-  COMBO = 'COMBO',
-}
 
 export class CreateMealPlanDto {
   @ApiProperty({
@@ -49,12 +42,24 @@ export class CreateMealPlanDto {
   imageUrl?: string;
 
   @ApiProperty({
-    description: 'Meal plan type',
-    enum: MealPlanType,
-    example: MealPlanType.LUNCH,
+    description: 'Meal plan type ID from meal_plan_types master table',
+    example: '7a8f2f11-9e11-4a6b-bf0f-a7a93f75a002',
+    required: false,
   })
-  @IsEnum(MealPlanType)
-  planType: MealPlanType;
+  @IsOptional()
+  @IsUUID()
+  mealPlanTypeId?: string;
+
+  @ApiProperty({
+    description:
+      'Legacy meal plan type code (e.g., BREAKFAST). If mealPlanTypeId is missing this is used.',
+    example: 'LUNCH',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @Matches(/^[A-Za-z0-9_\-\s]+$/)
+  planType?: string;
 
   @ApiProperty({
     description: 'Duration in days',

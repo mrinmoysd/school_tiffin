@@ -1,12 +1,185 @@
-import { Button, Card, Descriptions, Typography } from 'antd';
+import { useState } from 'react';
+import {
+  CheckCircleFilled,
+  DeleteOutlined,
+  EditOutlined,
+  UploadOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
+import { useMutation } from '@tanstack/react-query';
+import {
+  Avatar,
+  Button,
+  Card,
+  Descriptions,
+  Form,
+  Image,
+  Input,
+  Modal,
+  Typography,
+  Upload,
+  message,
+} from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { uploadService, userService } from '@/services';
 import { useAuthStore } from '@/stores/authStore';
 
 const { Title, Text } = Typography;
+const MAX_IMAGE_SIZE_MB = 5;
+const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+const BLOCKED_IMAGE_TYPES = ['image/svg+xml'];
+
+interface ProfileFormValues {
+  fullName: string;
+  phone?: string;
+  profileImageUrl?: string | null;
+}
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, setUser } = useAuthStore();
+  const [form] = Form.useForm<ProfileFormValues>();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [initialImageUrl, setInitialImageUrl] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [latestUploadedImageKey, setLatestUploadedImageKey] = useState<string | null>(null);
+
+  const extractS3KeyFromUrl = (url?: string | null): string | null => {
+    if (!url) return null;
+    try {
+      const parsed = new URL(url);
+      return parsed.pathname.replace(/^\/+/, '') || null;
+    } catch {
+      return null;
+    }
+  };
+
+  const updateProfileMutation = useMutation({
+    mutationFn: (values: ProfileFormValues) =>
+      userService.updateMyProfile({
+        fullName: values.fullName.trim(),
+        phone: values.phone?.trim() || undefined,
+        profileImageUrl: values.profileImageUrl ?? null,
+      }),
+    onSuccess: updatedUser => {
+      if (!user) return;
+      const previousImageUrl = user.profileImageUrl || null;
+      const nextImageUrl = updatedUser.profileImageUrl || null;
+
+      setUser({ ...user, ...updatedUser });
+
+      // Best-effort cleanup of previous image object when image changed or removed.
+      if (previousImageUrl && previousImageUrl !== nextImageUrl) {
+        const previousKey = extractS3KeyFromUrl(previousImageUrl);
+        if (previousKey) {
+          void uploadService.deleteImage(previousKey).catch(() => {
+            // Silent cleanup failure to avoid blocking profile update success.
+          });
+        }
+      }
+
+      message.success('Profile updated successfully');
+      setIsEditModalOpen(false);
+      form.resetFields();
+      setInitialImageUrl(null);
+      setImagePreview(null);
+      setLatestUploadedImageKey(null);
+    },
+    onError: (error: Error) => {
+      message.error(error.message);
+    },
+  });
+
+  const handleOpenEditModal = () => {
+    if (!user) return;
+    const currentImage = user.profileImageUrl || null;
+    form.setFieldsValue({
+      fullName: user.fullName || '',
+      phone: user.phoneNumber || '',
+      profileImageUrl: currentImage,
+    });
+    setInitialImageUrl(currentImage);
+    setImagePreview(currentImage);
+    setLatestUploadedImageKey(null);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    const currentFormImage = form.getFieldValue('profileImageUrl');
+    if (latestUploadedImageKey && currentFormImage && currentFormImage !== initialImageUrl) {
+      void uploadService.deleteImage(latestUploadedImageKey).catch(() => {
+        // Ignore cleanup errors when user closes modal without saving.
+      });
+    }
+
+    setIsEditModalOpen(false);
+    form.resetFields();
+    setInitialImageUrl(null);
+    setImagePreview(null);
+    setLatestUploadedImageKey(null);
+  };
+
+  const handleImageUpload = async (file: File) => {
+    const mimeType = (file.type || '').toLowerCase().trim();
+    if (!mimeType.startsWith('image/') || BLOCKED_IMAGE_TYPES.includes(mimeType)) {
+      message.error('Please upload a valid image file (SVG is not supported).');
+      return Upload.LIST_IGNORE;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      message.error(`Image must be smaller than ${MAX_IMAGE_SIZE_MB}MB.`);
+      return Upload.LIST_IGNORE;
+    }
+
+    try {
+      setImageUploading(true);
+      const result = await uploadService.uploadImage(file, 'users');
+
+      // Cleanup temporary image uploaded in this modal session when replacing it.
+      if (latestUploadedImageKey && latestUploadedImageKey !== result.key) {
+        await uploadService.deleteImage(latestUploadedImageKey).catch(() => {
+          // Ignore cleanup errors; latest image still applies.
+        });
+      }
+
+      setLatestUploadedImageKey(result.key);
+      setImagePreview(result.url);
+      form.setFieldValue('profileImageUrl', result.url);
+      message.success('Image uploaded. Click Save Changes to update your profile.');
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Image upload failed. Please try again.';
+      message.error(errorMessage);
+    } finally {
+      setImageUploading(false);
+    }
+
+    return false;
+  };
+
+  const handleRemoveImage = async () => {
+    const currentFormImage = form.getFieldValue('profileImageUrl');
+
+    if (latestUploadedImageKey && currentFormImage && currentFormImage !== initialImageUrl) {
+      await uploadService.deleteImage(latestUploadedImageKey).catch(() => {
+        // Ignore cleanup errors and still allow removing selection from UI.
+      });
+      setLatestUploadedImageKey(null);
+    }
+
+    setImagePreview(null);
+    form.setFieldValue('profileImageUrl', null);
+  };
+
+  const handleUpdateProfile = async () => {
+    try {
+      const values = await form.validateFields();
+      updateProfileMutation.mutate(values);
+    } catch {
+      // Form validation errors are displayed inline by Ant Design
+    }
+  };
 
   if (!user) {
     return (
@@ -26,33 +199,134 @@ const ProfilePage = () => {
 
   return (
     <div>
-      <div className="mb-6">
-        <Title level={2} className="!mb-1">
-          Profile
-        </Title>
-        <Text type="secondary">Your account details</Text>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <Title level={2} className="!mb-1">
+            Profile
+          </Title>
+          <Text type="secondary">Your account details</Text>
+        </div>
+        <Button type="primary" icon={<EditOutlined />} onClick={handleOpenEditModal}>
+          Update Details
+        </Button>
       </div>
 
       <Card>
         <Descriptions bordered column={1} size="middle">
+          <Descriptions.Item label="Profile Image">
+            {user.profileImageUrl ? (
+              <Image
+                src={user.profileImageUrl}
+                width={96}
+                height={96}
+                className="rounded-lg object-cover"
+                preview={{ mask: 'Click to enlarge' }}
+              />
+            ) : (
+              <Avatar size={96} icon={<UserOutlined />} style={{ backgroundColor: '#16a34a' }} />
+            )}
+          </Descriptions.Item>
           <Descriptions.Item label="Full Name">{user.fullName}</Descriptions.Item>
-          <Descriptions.Item label="Email">{user.email}</Descriptions.Item>
+          <Descriptions.Item label="Email">
+            <div className="flex items-center gap-2">
+              <span>{user.email}</span>
+              {user.emailVerified && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-green-300 bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
+                  <CheckCircleFilled />
+                  Verified
+                </span>
+              )}
+            </div>
+          </Descriptions.Item>
           <Descriptions.Item label="Role">{user.role}</Descriptions.Item>
           <Descriptions.Item label="Phone">{user.phoneNumber || 'Not provided'}</Descriptions.Item>
-          <Descriptions.Item label="Status">
-            {user.isActive ? 'Active' : 'Inactive'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Email Verified">
-            {user.emailVerified ? 'Yes' : 'No'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Created At">
-            {new Date(user.createdAt).toLocaleString()}
-          </Descriptions.Item>
           <Descriptions.Item label="Last Login">
             {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : 'Not available'}
           </Descriptions.Item>
         </Descriptions>
       </Card>
+
+      <Modal
+        title="Update Profile Details"
+        open={isEditModalOpen}
+        onCancel={handleCloseEditModal}
+        onOk={handleUpdateProfile}
+        okText="Save Changes"
+        confirmLoading={updateProfileMutation.isPending}
+      >
+        <Form form={form} layout="vertical" requiredMark={false}>
+          <Form.Item label="Profile Image">
+            <div className="flex items-center gap-4">
+              {imagePreview ? (
+                <Image
+                  src={imagePreview}
+                  width={88}
+                  height={88}
+                  className="rounded-lg object-cover"
+                  preview={{ mask: 'View' }}
+                />
+              ) : (
+                <Avatar size={88} icon={<UserOutlined />} style={{ backgroundColor: '#16a34a' }} />
+              )}
+
+              <div className="flex flex-col gap-2">
+                <Upload beforeUpload={handleImageUpload} showUploadList={false} accept="image/*">
+                  <Button icon={<UploadOutlined />} loading={imageUploading}>
+                    Upload Image
+                  </Button>
+                </Upload>
+
+                <Button
+                  icon={<DeleteOutlined />}
+                  danger
+                  onClick={handleRemoveImage}
+                  disabled={!imagePreview}
+                >
+                  Remove Image
+                </Button>
+              </div>
+            </div>
+          </Form.Item>
+
+          <Form.Item name="profileImageUrl" hidden>
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name="fullName"
+            label="Full Name"
+            rules={[
+              { required: true, message: 'Please enter your full name' },
+              { min: 2, message: 'Full name must be at least 2 characters' },
+              { max: 255, message: 'Full name must be 255 characters or less' },
+            ]}
+          >
+            <Input placeholder="Enter full name" />
+          </Form.Item>
+
+          <Form.Item
+            name="phone"
+            label="Phone Number"
+            rules={[
+              {
+                validator: (_, value: string | undefined) => {
+                  const trimmed = value?.trim();
+                  if (!trimmed) return Promise.resolve();
+                  const indianPhoneRegex = /^\+91[6-9]\d{9}$/;
+                  if (!indianPhoneRegex.test(trimmed)) {
+                    return Promise.reject(
+                      new Error('Phone number must be in format +91XXXXXXXXXX'),
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
+          >
+            <Input placeholder="+919876543210" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

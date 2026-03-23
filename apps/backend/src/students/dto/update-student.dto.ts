@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { IsOptional, IsString, IsUUID, IsUrl, MaxLength, MinLength } from 'class-validator';
 
 export class UpdateStudentDto {
   @ApiProperty({
@@ -12,6 +12,26 @@ export class UpdateStudentDto {
   @MinLength(2)
   @MaxLength(255)
   fullName?: string;
+
+  @ApiProperty({
+    description: 'Student profile image URL',
+    example: 'https://bucket.s3.region.amazonaws.com/students/uuid.jpg',
+    required: false,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsUrl()
+  profileImageUrl?: string | null;
+
+  @ApiProperty({
+    description: 'Student image URL (legacy alias for profileImageUrl)',
+    example: 'https://bucket.s3.region.amazonaws.com/students/uuid.jpg',
+    required: false,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsUrl()
+  imageUrl?: string | null;
 
   @ApiProperty({
     description: 'Student grade/class',

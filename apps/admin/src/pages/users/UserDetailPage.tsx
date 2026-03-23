@@ -1,5 +1,17 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Card, Typography, Tag, Table, Spin, Tabs, Switch, message, Avatar } from 'antd';
+import {
+  Button,
+  Card,
+  Typography,
+  Tag,
+  Table,
+  Spin,
+  Tabs,
+  Switch,
+  message,
+  Avatar,
+  Image,
+} from 'antd';
 import {
   ArrowLeftOutlined,
   UserOutlined,
@@ -108,6 +120,25 @@ const UserDetailPage = () => {
 
   // Students columns
   const studentColumns = [
+    {
+      title: <span className="whitespace-nowrap">Image</span>,
+      dataIndex: 'profileImageUrl',
+      key: 'profileImageUrl',
+      width: 90,
+      render: (profileImageUrl?: string | null) =>
+        profileImageUrl ? (
+          <Image
+            src={profileImageUrl}
+            alt="Student"
+            width={44}
+            height={44}
+            className="rounded-full object-cover"
+            preview={{ mask: 'View' }}
+          />
+        ) : (
+          <Avatar size={44} icon={<UserOutlined />} style={{ backgroundColor: '#16a34a' }} />
+        ),
+    },
     {
       title: <span className="whitespace-nowrap">Name</span>,
       dataIndex: 'fullName',
@@ -239,7 +270,7 @@ const UserDetailPage = () => {
             pagination={false}
             size="small"
             tableLayout="fixed"
-            scroll={{ x: 520 }}
+            scroll={{ x: 620 }}
           />
         </div>
       ),

@@ -25,10 +25,13 @@ export class StudentsService {
       throw new BadRequestException('School is not accepting registrations');
     }
 
-    const { schoolId, ...rest } = createStudentDto;
+    const { schoolId, profileImageUrl, imageUrl, ...rest } = createStudentDto;
     const student = await this.prisma.student.create({
       data: {
         ...rest,
+        ...(profileImageUrl !== undefined || imageUrl !== undefined
+          ? { profileImageUrl: profileImageUrl ?? imageUrl }
+          : {}),
         parent: { connect: { id: parentId } },
         ...(schoolId && { school: { connect: { id: schoolId } } }),
       },
@@ -135,12 +138,17 @@ export class StudentsService {
       }
     }
 
-    const { schoolId, ...rest } = updateStudentDto;
+    const { schoolId, profileImageUrl, imageUrl, ...rest } = updateStudentDto;
     const updatedStudent = await this.prisma.student.update({
       where: { id },
       data: {
         ...rest,
-        ...(schoolId !== undefined && { school: schoolId ? { connect: { id: schoolId } } : { disconnect: true } }),
+        ...(profileImageUrl !== undefined || imageUrl !== undefined
+          ? { profileImageUrl: profileImageUrl ?? imageUrl }
+          : {}),
+        ...(schoolId !== undefined && {
+          school: schoolId ? { connect: { id: schoolId } } : { disconnect: true },
+        }),
       },
       include: {
         school: {

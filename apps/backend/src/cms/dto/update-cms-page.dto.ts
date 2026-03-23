@@ -1,4 +1,4 @@
-import { IsString, IsOptional, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsOptional, MinLength, MaxLength, IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateCmsPageDto {
@@ -30,4 +30,12 @@ export class UpdateCmsPageDto {
   @IsString()
   @MaxLength(500)
   metaDescription?: string;
+
+  @ApiProperty({
+    description: 'Publish status',
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  isPublished?: boolean;
 }

@@ -49,6 +49,7 @@ const LoginPage = () => {
           id: data.user.id,
           email: data.user.email,
           fullName: data.user.fullName || '',
+          profileImageUrl: data.user.profileImageUrl || undefined,
           role: data.user.role as UserRole,
           isActive: true,
           emailVerified: true,

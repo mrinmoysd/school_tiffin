@@ -20,6 +20,7 @@ export class UsersService {
         role: true,
         isActive: true,
         phoneVerifiedAt: true,
+        profileImageUrl: true,
         createdAt: true,
         updatedAt: true,
         lastLoginAt: true,
@@ -68,10 +69,25 @@ export class UsersService {
       }
     }
 
+    // Map DTO fields to Prisma user model fields
+    const data: {
+      fullName?: string;
+      email?: string;
+      phoneNumber?: string;
+      profileImageUrl?: string | null;
+    } = {
+      ...(updateUserDto.fullName !== undefined ? { fullName: updateUserDto.fullName } : {}),
+      ...(updateUserDto.email !== undefined ? { email: updateUserDto.email } : {}),
+      ...(updateUserDto.phone !== undefined ? { phoneNumber: updateUserDto.phone } : {}),
+      ...(updateUserDto.profileImageUrl !== undefined
+        ? { profileImageUrl: updateUserDto.profileImageUrl }
+        : {}),
+    };
+
     // Update user
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
-      data: updateUserDto,
+      data,
       select: {
         id: true,
         email: true,
@@ -80,6 +96,7 @@ export class UsersService {
         role: true,
         isActive: true,
         phoneVerifiedAt: true,
+        profileImageUrl: true,
         createdAt: true,
         updatedAt: true,
       },

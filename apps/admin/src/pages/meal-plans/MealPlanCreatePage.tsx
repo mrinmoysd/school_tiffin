@@ -15,8 +15,8 @@ import {
 } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { mealPlanService, schoolService, uploadService } from '@/services';
-import { CreateMealPlanDto, MealPlanType } from '@/types';
+import { mealPlanService, mealPlanTypeService, schoolService, uploadService } from '@/services';
+import { CreateMealPlanDto } from '@/types';
 import { DEFAULT_MEAL_PLAN_IMAGE } from '@/constants/images';
 import { useEffect, useState } from 'react';
 
@@ -62,6 +62,11 @@ const MealPlanCreatePage = () => {
   const { data: schools, isLoading: schoolsLoading } = useQuery({
     queryKey: ['schools'],
     queryFn: () => schoolService.getAll({ isServiceAvailable: true }),
+  });
+
+  const { data: mealPlanTypes, isLoading: mealPlanTypesLoading } = useQuery({
+    queryKey: ['mealPlanTypes', 'active'],
+    queryFn: () => mealPlanTypeService.getAll(true),
   });
 
   const createMutation = useMutation({
@@ -170,15 +175,18 @@ const MealPlanCreatePage = () => {
             </Col>
             <Col xs={24} md={12}>
               <Form.Item
-                name="planType"
+                name="mealPlanTypeId"
                 label="Plan Type"
                 rules={[{ required: true, message: 'Please select plan type' }]}
               >
                 <Select
                   placeholder="Select type"
-                  options={Object.values(MealPlanType).map(type => ({
-                    label: type,
-                    value: type,
+                  loading={mealPlanTypesLoading}
+                  optionFilterProp="label"
+                  showSearch
+                  options={mealPlanTypes?.map(type => ({
+                    label: type.displayName,
+                    value: type.id,
                   }))}
                 />
               </Form.Item>

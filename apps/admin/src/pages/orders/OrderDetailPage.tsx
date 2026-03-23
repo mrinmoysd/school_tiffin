@@ -56,6 +56,9 @@ const OrderDetailPage = () => {
     );
   }
 
+  const taxPercentage =
+    order.amount > 0 ? Number(((order.taxAmount / order.amount) * 100).toFixed(2)) : 0;
+
   // Transaction columns
   const transactionColumns = [
     {
@@ -196,7 +199,7 @@ const OrderDetailPage = () => {
                 <Text>₹{(order.amount / 100).toLocaleString()}</Text>
               </div>
               <div className="flex justify-between">
-                <Text type="secondary">Tax</Text>
+                <Text type="secondary">Tax ({taxPercentage}%)</Text>
                 <Text>₹{(order.taxAmount / 100).toLocaleString()}</Text>
               </div>
               {order.discountAmount > 0 && (

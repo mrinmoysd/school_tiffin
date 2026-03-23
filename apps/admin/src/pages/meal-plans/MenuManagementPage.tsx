@@ -367,7 +367,7 @@ const MenuManagementPage = () => {
         <Descriptions column={{ xs: 1, sm: 2, md: 4 }}>
           <Descriptions.Item label="School">{mealPlan.school?.name}</Descriptions.Item>
           <Descriptions.Item label="Type">
-            <Tag color="blue">{mealPlan.planType}</Tag>
+            <Tag color="blue">{mealPlan.mealPlanType?.displayName || mealPlan.planType}</Tag>
           </Descriptions.Item>
           <Descriptions.Item label="Duration">{mealPlan.durationDays} days</Descriptions.Item>
           <Descriptions.Item label="Price">

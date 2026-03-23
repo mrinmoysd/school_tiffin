@@ -1,6 +1,7 @@
 export { authService } from './authService';
 export { schoolService } from './schoolService';
 export { mealPlanService, menuItemService } from './mealPlanService';
+export { mealPlanTypeService } from './mealPlanTypeService';
 export { subscriptionService } from './subscriptionService';
 export { orderService } from './orderService';
 export { userService } from './userService';
@@ -8,3 +9,4 @@ export { pauseRequestService } from './pauseRequestService';
 export { adminService } from './adminService';
 export { cmsService } from './cmsService';
 export { uploadService } from './uploadService';
+export { appSettingService } from './appSettingService';

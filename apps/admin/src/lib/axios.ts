@@ -15,6 +15,12 @@ const api = axios.create({
 // Request interceptor - add auth token
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // Important: let browser set multipart boundary for FormData uploads.
+    // Keeping default JSON content-type here causes backend to miss uploaded file.
+    if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     const token = useAuthStore.getState().accessToken;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

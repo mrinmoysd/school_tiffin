@@ -18,6 +18,7 @@ export interface AuthResponse {
     id: string;
     email: string;
     fullName: string | null;
+    profileImageUrl?: string | null;
     role: string;
   };
   tokens: {
@@ -73,6 +74,7 @@ export class AuthService {
         id: true,
         email: true,
         fullName: true,
+        profileImageUrl: true,
         role: true,
       },
     });
@@ -97,6 +99,7 @@ export class AuthService {
         id: true,
         email: true,
         fullName: true,
+        profileImageUrl: true,
         role: true,
         passwordHash: true,
         isActive: true,
@@ -326,6 +329,7 @@ export class AuthService {
         id: true,
         email: true,
         fullName: true,
+        profileImageUrl: true,
         role: true,
         isActive: true,
       },
@@ -347,6 +351,7 @@ export class AuthService {
           id: true,
           email: true,
           fullName: true,
+          profileImageUrl: true,
           role: true,
           isActive: true,
         },

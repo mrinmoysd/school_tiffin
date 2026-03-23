@@ -1,7 +1,6 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Cache } from 'cache-manager';
-import { MealPlanType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMealPlanDto, UpdateMealPlanDto } from './dto';
 
@@ -16,6 +15,46 @@ export class MealPlansService {
   private readonly CACHE_KEY_BY_SCHOOL = 'mealplans:school:';
   private readonly CACHE_TTL = 300; // 5 minutes
 
+  private normalizeTypeCode(code: string): string {
+    return code.trim().toUpperCase().replace(/\s+/g, '_');
+  }
+
+  private withLegacyPlanType<T extends { mealPlanType?: { code: string } | null }>(mealPlan: T) {
+    return {
+      ...mealPlan,
+      planType: mealPlan.mealPlanType?.code ?? null,
+    };
+  }
+
+  private async resolveMealPlanTypeId(mealPlanTypeId?: string, planType?: string) {
+    if (mealPlanTypeId) {
+      const mealPlanType = await this.prisma.mealPlanTypeMaster.findUnique({
+        where: { id: mealPlanTypeId, deletedAt: null },
+      });
+
+      if (!mealPlanType) {
+        throw new BadRequestException('Meal plan type not found');
+      }
+
+      return mealPlanType.id;
+    }
+
+    if (planType) {
+      const normalizedCode = this.normalizeTypeCode(planType);
+      const mealPlanType = await this.prisma.mealPlanTypeMaster.findUnique({
+        where: { code: normalizedCode, deletedAt: null },
+      });
+
+      if (!mealPlanType) {
+        throw new BadRequestException('Meal plan type not found');
+      }
+
+      return mealPlanType.id;
+    }
+
+    throw new BadRequestException('Meal plan type is required');
+  }
+
   /**
    * Create a new meal plan (Admin only)
    */
@@ -29,11 +68,14 @@ export class MealPlansService {
       throw new BadRequestException('School not found');
     }
 
-    const { schoolId, ...rest } = createMealPlanDto;
+    const { schoolId, mealPlanTypeId, planType, ...rest } = createMealPlanDto;
+    const resolvedMealPlanTypeId = await this.resolveMealPlanTypeId(mealPlanTypeId, planType);
+
     const mealPlan = await this.prisma.mealPlan.create({
       data: {
         ...rest,
         school: { connect: { id: schoolId } },
+        mealPlanType: { connect: { id: resolvedMealPlanTypeId } },
       },
       include: {
         school: {
@@ -43,13 +85,21 @@ export class MealPlansService {
             code: true,
           },
         },
+        mealPlanType: {
+          select: {
+            id: true,
+            code: true,
+            displayName: true,
+            isActive: true,
+          },
+        },
       },
     });
 
     // Invalidate cache
     await this.cacheManager.del(`${this.CACHE_KEY_BY_SCHOOL}${createMealPlanDto.schoolId}`);
 
-    return mealPlan;
+    return this.withLegacyPlanType(mealPlan);
   }
 
   /**
@@ -57,12 +107,34 @@ export class MealPlansService {
    *
    * - schoolId: filter by school (optional)
    * - isActive: filter by active status (optional)
-   * - planType: filter by meal plan type (optional)
+   * - mealPlanTypeId / planType: filter by meal plan type (optional)
    * - search: case-insensitive search on name (optional)
    */
-  async findAll(schoolId?: string, isActive?: boolean, planType?: MealPlanType, search?: string) {
+  async findAll(
+    schoolId?: string,
+    isActive?: boolean,
+    mealPlanTypeId?: string,
+    planType?: string,
+    search?: string,
+  ) {
+    let resolvedMealPlanTypeId = mealPlanTypeId;
+
+    if (!resolvedMealPlanTypeId && planType) {
+      const normalizedCode = this.normalizeTypeCode(planType);
+      const mealPlanType = await this.prisma.mealPlanTypeMaster.findUnique({
+        where: { code: normalizedCode, deletedAt: null },
+        select: { id: true },
+      });
+
+      if (!mealPlanType) {
+        return [];
+      }
+
+      resolvedMealPlanTypeId = mealPlanType.id;
+    }
+
     const cacheKey = `${this.CACHE_KEY_BY_SCHOOL}${schoolId || 'all'}:${isActive !== undefined ? isActive : 'all'}:${
-      planType || 'all'
+      resolvedMealPlanTypeId || planType || 'all'
     }:${search || 'all'}`;
 
     // Try to get from cache
@@ -76,7 +148,7 @@ export class MealPlansService {
       where: {
         ...(schoolId && { schoolId }),
         ...(isActive !== undefined && { isActive }),
-        ...(planType && { planType }),
+        ...(resolvedMealPlanTypeId && { mealPlanTypeId: resolvedMealPlanTypeId }),
         ...(search && {
           name: {
             contains: search,
@@ -91,6 +163,14 @@ export class MealPlansService {
             id: true,
             name: true,
             code: true,
+          },
+        },
+        mealPlanType: {
+          select: {
+            id: true,
+            code: true,
+            displayName: true,
+            isActive: true,
           },
         },
         menuItems: {
@@ -111,10 +191,12 @@ export class MealPlansService {
       },
     });
 
-    // Store in cache
-    await this.cacheManager.set(cacheKey, mealPlans, this.CACHE_TTL);
+    const response = mealPlans.map(mealPlan => this.withLegacyPlanType(mealPlan));
 
-    return mealPlans;
+    // Store in cache
+    await this.cacheManager.set(cacheKey, response, this.CACHE_TTL);
+
+    return response;
   }
 
   /**
@@ -141,6 +223,14 @@ export class MealPlansService {
             city: true,
           },
         },
+        mealPlanType: {
+          select: {
+            id: true,
+            code: true,
+            displayName: true,
+            isActive: true,
+          },
+        },
         menuItems: {
           where: {
             deletedAt: null,
@@ -165,10 +255,12 @@ export class MealPlansService {
       throw new NotFoundException('Meal plan not found');
     }
 
-    // Store in cache
-    await this.cacheManager.set(cacheKey, mealPlan, this.CACHE_TTL);
+    const response = this.withLegacyPlanType(mealPlan);
 
-    return mealPlan;
+    // Store in cache
+    await this.cacheManager.set(cacheKey, response, this.CACHE_TTL);
+
+    return response;
   }
 
   /**
@@ -183,9 +275,11 @@ export class MealPlansService {
       throw new NotFoundException('Meal plan not found');
     }
 
-    if (updateMealPlanDto.schoolId && updateMealPlanDto.schoolId !== mealPlan.schoolId) {
+    const { schoolId, mealPlanTypeId, planType, ...rest } = updateMealPlanDto;
+
+    if (schoolId && schoolId !== mealPlan.schoolId) {
       const school = await this.prisma.school.findUnique({
-        where: { id: updateMealPlanDto.schoolId },
+        where: { id: schoolId },
       });
 
       if (!school) {
@@ -193,14 +287,46 @@ export class MealPlansService {
       }
     }
 
+    const data: {
+      school?: { connect: { id: string } };
+      mealPlanType?: { connect: { id: string } };
+      name?: string;
+      description?: string;
+      imageUrl?: string | null;
+      durationDays?: number;
+      pricePerDay?: number;
+      totalPrice?: number;
+      currency?: string;
+      isActive?: boolean;
+    } = {
+      ...rest,
+    };
+
+    if (schoolId) {
+      data.school = { connect: { id: schoolId } };
+    }
+
+    if (mealPlanTypeId || planType) {
+      const resolvedMealPlanTypeId = await this.resolveMealPlanTypeId(mealPlanTypeId, planType);
+      data.mealPlanType = { connect: { id: resolvedMealPlanTypeId } };
+    }
+
     const updated = await this.prisma.mealPlan.update({
       where: { id },
-      data: updateMealPlanDto,
+      data,
       include: {
         school: {
           select: {
             id: true,
             name: true,
+          },
+        },
+        mealPlanType: {
+          select: {
+            id: true,
+            code: true,
+            displayName: true,
+            isActive: true,
           },
         },
       },
@@ -209,11 +335,11 @@ export class MealPlansService {
     // Invalidate cache
     await this.cacheManager.del(`${this.CACHE_KEY_PREFIX}${id}`);
     await this.cacheManager.del(`${this.CACHE_KEY_BY_SCHOOL}${mealPlan.schoolId}`);
-    if (updateMealPlanDto.schoolId && updateMealPlanDto.schoolId !== mealPlan.schoolId) {
-      await this.cacheManager.del(`${this.CACHE_KEY_BY_SCHOOL}${updateMealPlanDto.schoolId}`);
+    if (schoolId && schoolId !== mealPlan.schoolId) {
+      await this.cacheManager.del(`${this.CACHE_KEY_BY_SCHOOL}${schoolId}`);
     }
 
-    return updated;
+    return this.withLegacyPlanType(updated);
   }
 
   /**
