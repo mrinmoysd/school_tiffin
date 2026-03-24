@@ -36,6 +36,7 @@ import {
   ResetPasswordScreen,
 } from '../screens/auth';
 import { useAppSelector } from '../store/hooks';
+import { themeColors } from '../theme';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -45,7 +46,7 @@ export const AppNavigator = () => {
   if (bootstrapLoading) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
@@ -181,6 +182,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
 });

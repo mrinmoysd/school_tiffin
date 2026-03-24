@@ -13,6 +13,7 @@ import { RootStackParamList } from '../../navigation/types';
 import { ApiClientError } from '../../api/client/apiClient';
 import { schoolsApi, type SchoolDetails } from '../../api/schools';
 import { mealPlansApi, type MealPlanSummary } from '../../api/meal-plans';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SchoolDetail'>;
 
@@ -62,7 +63,7 @@ export const SchoolDetailScreen = ({ route, navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
@@ -173,7 +174,7 @@ export const SchoolDetailScreen = ({ route, navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   content: {
     padding: 16,
@@ -183,24 +184,24 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
     paddingHorizontal: 24,
   },
   schoolCard: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 14,
   },
   title: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 22,
     fontWeight: '700',
     marginBottom: 8,
   },
   metaText: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 13,
     marginBottom: 4,
   },
@@ -208,7 +209,7 @@ const styles = StyleSheet.create({
     marginTop: 18,
   },
   sectionTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 10,
@@ -216,30 +217,30 @@ const styles = StyleSheet.create({
   emptyCard: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 14,
   },
   helperText: {
-    color: '#64748B',
+    color: themeColors.text.muted,
     fontSize: 14,
   },
   errorText: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 14,
     textAlign: 'center',
     marginBottom: 10,
   },
   retryText: {
-    color: '#0369A1',
+    color: themeColors.intent.infoStrong,
     fontSize: 14,
     fontWeight: '600',
   },
   planCard: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 12,
     marginBottom: 10,
     flexDirection: 'row',
@@ -253,12 +254,12 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 10,
-    backgroundColor: '#E0F2FE',
+    backgroundColor: themeColors.surface.infoSoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
   planImageFallbackText: {
-    color: '#0369A1',
+    color: themeColors.intent.infoStrong,
     fontSize: 22,
     fontWeight: '700',
   },
@@ -267,13 +268,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   planName: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 2,
   },
   planMeta: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 12,
     marginTop: 2,
   },
@@ -289,19 +290,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuButton: {
-    backgroundColor: '#DBEAFE',
+    backgroundColor: themeColors.surface.infoSubtle,
     marginRight: 8,
   },
   menuButtonLabel: {
-    color: '#1D4ED8',
+    color: themeColors.intent.infoStrong,
     fontSize: 13,
     fontWeight: '600',
   },
   subscribeButton: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: themeColors.surface.successSubtle,
   },
   subscribeButtonLabel: {
-    color: '#166534',
+    color: themeColors.text.success,
     fontSize: 13,
     fontWeight: '600',
   },

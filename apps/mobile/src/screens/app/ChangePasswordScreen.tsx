@@ -7,6 +7,7 @@ import { AppButton, FormTextInput } from '../../components/ui';
 import { PASSWORD_STRENGTH_MESSAGE, PASSWORD_STRENGTH_REGEX } from '../../constants/validation';
 import { RootStackParamList } from '../../navigation/types';
 import { authService } from '../../business/auth';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChangePassword'>;
 
@@ -169,7 +170,7 @@ export const ChangePasswordScreen = ({ navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   content: {
     paddingHorizontal: 16,
@@ -179,16 +180,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#0F172A',
+    color: themeColors.text.primary,
     marginBottom: 4,
   },
   subtitle: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 13,
     marginBottom: 14,
   },
   errorText: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 13,
     marginBottom: 10,
   },

@@ -7,6 +7,7 @@ import { EMAIL_REGEX } from '../../constants/validation';
 import { clearAuthErrors, clearAuthMessages, forgotPassword } from '../../store/auth';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ForgotPassword'>;
 
@@ -89,18 +90,18 @@ export const ForgotPasswordScreen = ({ navigation }: Props) => {
 
 const styles = StyleSheet.create({
   error: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     marginBottom: 10,
     fontSize: 13,
   },
   success: {
-    color: '#15803D',
+    color: themeColors.intent.successStrong,
     marginBottom: 10,
     fontSize: 13,
   },
   link: {
     marginTop: 14,
-    color: '#0369A1',
+    color: themeColors.intent.infoStrong,
     textAlign: 'center',
     fontWeight: '500',
     fontSize: 14,

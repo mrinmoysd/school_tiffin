@@ -12,6 +12,7 @@ import {
 import { ApiClientError } from '../../api/client/apiClient';
 import { notificationsApi, type NotificationItem } from '../../api/notifications';
 import { AppButton } from '../../components/ui';
+import { themeColors } from '../../theme';
 
 const formatTimeAgo = (value: string) => {
   const date = new Date(value);
@@ -154,7 +155,7 @@ export const NotificationsScreen = () => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
@@ -221,13 +222,13 @@ export const NotificationsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   content: {
     paddingHorizontal: 16,
@@ -240,50 +241,50 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#0F172A',
+    color: themeColors.text.primary,
   },
   subtitle: {
     marginTop: 6,
     fontSize: 13,
-    color: '#475569',
+    color: themeColors.text.secondary,
   },
   markAllButton: {
     marginTop: 12,
   },
   errorText: {
     marginTop: 8,
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 13,
   },
   emptyCard: {
     marginTop: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: themeColors.neutral.white,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: themeColors.neutral.slate200,
     borderRadius: 12,
     padding: 14,
   },
   emptyTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 4,
   },
   emptySubtitle: {
-    color: '#64748B',
+    color: themeColors.text.muted,
     fontSize: 13,
   },
   itemCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: themeColors.neutral.white,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: themeColors.neutral.slate200,
     borderRadius: 12,
     padding: 14,
     marginBottom: 10,
   },
   itemCardUnread: {
-    borderColor: '#93C5FD',
-    backgroundColor: '#F8FBFF',
+    borderColor: themeColors.border.info,
+    backgroundColor: themeColors.surface.infoAlt,
   },
   itemTopRow: {
     flexDirection: 'row',
@@ -293,7 +294,7 @@ const styles = StyleSheet.create({
   },
   itemTitle: {
     flex: 1,
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 15,
     fontWeight: '700',
     marginRight: 8,
@@ -306,21 +307,21 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 999,
-    backgroundColor: '#2563EB',
+    backgroundColor: themeColors.intent.infoStrong,
     marginRight: 6,
   },
   itemTime: {
-    color: '#64748B',
+    color: themeColors.text.muted,
     fontSize: 12,
   },
   itemBody: {
-    color: '#334155',
+    color: themeColors.text.subtle,
     fontSize: 13,
     lineHeight: 18,
   },
   itemMeta: {
     marginTop: 8,
-    color: '#64748B',
+    color: themeColors.text.muted,
     fontSize: 12,
     fontWeight: '600',
   },

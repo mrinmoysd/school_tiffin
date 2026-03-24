@@ -1,7 +1,7 @@
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Modal,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -9,15 +9,29 @@ import {
   Text,
   View,
 } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppButton } from '../../components/ui';
-import { RootStackParamList } from '../../navigation/types';
-import { useAppSelector } from '../../store/hooks';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi, type Student } from '../../api/students';
 import { subscriptionsApi, type Subscription } from '../../api/subscriptions';
-import { ApiClientError } from '../../api/client/apiClient';
+import { usersApi } from '../../api/users';
+import { RootStackParamList } from '../../navigation/types';
+import { useAppSelector } from '../../store/hooks';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+type BottomNavItem = {
+  label: 'Schools' | 'Orders' | 'Subscription' | 'Profile';
+  route: 'SchoolList' | 'Orders' | 'SubscriptionsList' | 'Profile';
+};
+
+const BOTTOM_NAV_ITEMS: BottomNavItem[] = [
+  { label: 'Schools', route: 'SchoolList' },
+  { label: 'Orders', route: 'Orders' },
+  { label: 'Subscription', route: 'SubscriptionsList' },
+  { label: 'Profile', route: 'Profile' },
+];
+
+const TAB_BAR_BASE_HEIGHT = 58;
 
 const getGreetingName = (fullName: string | null | undefined, email: string | null | undefined) => {
   if (fullName && fullName.trim().length > 0) {
@@ -28,16 +42,71 @@ const getGreetingName = (fullName: string | null | undefined, email: string | nu
     return email.split('@')[0];
   }
 
-  return 'there';
+  return 'User';
+};
+
+const getStudentDisplayName = (fullName: string) => {
+  const normalized = fullName.trim().replace(/\s+/g, ' ');
+
+  if (normalized.length <= 14) {
+    return normalized;
+  }
+
+  const parts = normalized.split(' ');
+  if (parts.length >= 2) {
+    const firstName = parts[0];
+    const surnameInitial = parts[parts.length - 1][0]?.toUpperCase() ?? '';
+    return `${firstName} ${surnameInitial}...`;
+  }
+
+  return `${normalized.slice(0, 10)}...`;
+};
+
+const getCompactLabel = (value: string, maxLength = 16) => {
+  const normalized = value.trim().replace(/\s+/g, ' ');
+
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  const words = normalized.split(' ');
+  let built = '';
+
+  for (const word of words) {
+    const separator = built.length > 0 ? ' ' : '';
+    const fullCandidate = `${built}${separator}${word}`;
+
+    if (fullCandidate.length <= maxLength) {
+      built = fullCandidate;
+      continue;
+    }
+
+    const remainingChars = maxLength - built.length - separator.length - 3;
+    if (remainingChars > 0) {
+      const partialWord = word.slice(0, remainingChars);
+      return `${built}${separator}${partialWord}...`;
+    }
+
+    if (built.length > 0) {
+      return `${built}...`;
+    }
+
+    return `${word.slice(0, Math.max(1, maxLength - 3))}...`;
+  }
+
+  return built;
 };
 
 export const HomeScreen = ({ navigation }: Props) => {
+  const insets = useSafeAreaInsets();
   const user = useAppSelector(state => state.auth.user);
+  const [greetingName, setGreetingName] = useState(() =>
+    getGreetingName(user?.fullName, user?.email),
+  );
 
   const [students, setStudents] = useState<Student[]>([]);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
-  const [studentSelectorVisible, setStudentSelectorVisible] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +150,23 @@ export const HomeScreen = ({ navigation }: Props) => {
     void fetchInitialData();
   }, [loadHomeData]);
 
+  useEffect(() => {
+    setGreetingName(getGreetingName(user?.fullName, user?.email));
+  }, [user?.email, user?.fullName]);
+
+  useEffect(() => {
+    const loadGreetingName = async () => {
+      try {
+        const profile = await usersApi.getCurrentUserProfile();
+        setGreetingName(getGreetingName(profile.fullName, profile.email));
+      } catch {
+        // Keep best available local user name if profile call fails.
+      }
+    };
+
+    void loadGreetingName();
+  }, []);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadHomeData();
@@ -100,156 +186,147 @@ export const HomeScreen = ({ navigation }: Props) => {
     return subscriptions.filter(subscription => subscription.studentId === selectedStudentId);
   }, [selectedStudentId, subscriptions]);
 
-  const greetingName = getGreetingName(user?.fullName, user?.email);
-
   if (initialLoading) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.headerCard}>
-        <Text style={styles.greeting}>Hello, {greetingName}</Text>
-        <Text style={styles.headerHint}>Manage subscriptions and explore meal plans.</Text>
-      </View>
-
-      {students.length > 1 ? (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Select Student</Text>
-          <Pressable style={styles.dropdownButton} onPress={() => setStudentSelectorVisible(true)}>
-            <Text style={styles.dropdownText}>
-              {selectedStudent
-                ? `${selectedStudent.fullName} (Grade ${selectedStudent.grade})`
-                : 'Choose student'}
-            </Text>
-            <Text style={styles.dropdownArrow}>v</Text>
-          </Pressable>
-        </View>
-      ) : null}
-
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Active Subscriptions</Text>
-          <Pressable onPress={() => void onRefresh()}>
-            <Text style={styles.linkText}>Refresh</Text>
-          </Pressable>
+    <View style={styles.screen}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={[
+          styles.contentContainer,
+          { paddingBottom: TAB_BAR_BASE_HEIGHT + insets.bottom + 24 },
+        ]}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.headerCard}>
+          <View style={styles.headerTopRow}>
+            <Text style={styles.welcomeInlineText}>Welcome {greetingName}</Text>
+            <Pressable
+              style={styles.profileIconButton}
+              onPress={() => navigation.navigate('Profile')}
+              accessibilityRole="button"
+              accessibilityLabel="Open profile"
+            >
+              <Text style={styles.profileIconText}>{greetingName[0]}</Text>
+            </Pressable>
+          </View>
         </View>
 
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-        {!error && filteredSubscriptions.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>No active subscriptions</Text>
-            <Text style={styles.emptySubtitle}>
-              {selectedStudent
-                ? `No active plan found for ${selectedStudent.fullName}.`
-                : 'Subscribe to a meal plan to get started.'}
-            </Text>
+        {students.length > 0 ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Students</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.studentsRow}
+            >
+              {students.map(student => (
+                <Pressable
+                  key={student.id}
+                  style={[
+                    styles.studentCard,
+                    selectedStudentId === student.id && styles.studentCardSelected,
+                  ]}
+                  onPress={() => setSelectedStudentId(student.id)}
+                >
+                  <Text style={styles.studentName}>{getStudentDisplayName(student.fullName)}</Text>
+                  <Text style={styles.studentSchool} numberOfLines={1} ellipsizeMode="tail">
+                    {student.school?.name
+                      ? getCompactLabel(student.school.name, 22)
+                      : 'School not set'}
+                  </Text>
+                  <Text style={styles.studentGrade}>Grade {student.grade}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
           </View>
         ) : null}
 
-        {filteredSubscriptions.map(subscription => (
-          <View style={styles.subscriptionCard} key={subscription.id}>
-            <Text style={styles.planName}>{subscription.mealPlan.name}</Text>
-            <Text style={styles.subscriptionMeta}>{subscription.student.fullName}</Text>
-            <Text style={styles.subscriptionMeta}>
-              Deliveries: {subscription.remainingDays}/{subscription.totalDays} remaining
-            </Text>
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Active Subscriptions</Text>
+            <Pressable onPress={() => void onRefresh()}>
+              <Text style={styles.linkText}>Refresh</Text>
+            </Pressable>
+          </View>
 
-            <View style={styles.actionsRow}>
-              <Pressable
-                style={[styles.actionButton, styles.pauseButton]}
-                onPress={() =>
-                  navigation.navigate('PauseRequest', { subscriptionId: subscription.id })
-                }
-              >
-                <Text style={styles.pauseButtonLabel}>Pause</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.actionButton, styles.detailsButton]}
-                onPress={() =>
-                  navigation.navigate('SubscriptionDetail', { subscriptionId: subscription.id })
-                }
-              >
-                <Text style={styles.detailsButtonLabel}>View Details</Text>
-              </Pressable>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+          {!error && filteredSubscriptions.length === 0 ? (
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyTitle}>No active subscriptions</Text>
+              <Text style={styles.emptySubtitle}>
+                {selectedStudent
+                  ? `No active plan found for ${selectedStudent.fullName}.`
+                  : 'Subscribe to a meal plan to get started.'}
+              </Text>
             </View>
-          </View>
-        ))}
+          ) : null}
+
+          {filteredSubscriptions.map(subscription => (
+            <View style={styles.subscriptionCard} key={subscription.id}>
+              <Text style={styles.planName}>{subscription.mealPlan.name}</Text>
+              <Text style={styles.subscriptionMeta}>{subscription.student.fullName}</Text>
+              <Text style={styles.subscriptionMeta}>
+                Deliveries: {subscription.remainingDays}/{subscription.totalDays} remaining
+              </Text>
+
+              <View style={styles.actionsRow}>
+                <Pressable
+                  style={[styles.actionButton, styles.pauseButton]}
+                  onPress={() =>
+                    navigation.navigate('PauseRequest', { subscriptionId: subscription.id })
+                  }
+                >
+                  <Text style={styles.pauseButtonLabel}>Pause</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.actionButton, styles.detailsButton]}
+                  onPress={() =>
+                    navigation.navigate('SubscriptionDetail', { subscriptionId: subscription.id })
+                  }
+                >
+                  <Text style={styles.detailsButtonLabel}>View Details</Text>
+                </Pressable>
+              </View>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+
+      <View style={[styles.bottomBar, { minHeight: TAB_BAR_BASE_HEIGHT + insets.bottom }]}>
+        <View style={styles.bottomBarRow}>
+          {BOTTOM_NAV_ITEMS.map(item => (
+            <Pressable
+              key={item.label}
+              style={styles.bottomTab}
+              onPress={() => navigation.navigate(item.route)}
+            >
+              <Text style={styles.bottomTabLabel}>{item.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+        <View style={{ height: insets.bottom }} />
       </View>
-
-      <AppButton
-        title="Browse Schools"
-        onPress={() => navigation.navigate('SchoolList')}
-        style={styles.primaryAction}
-      />
-      <AppButton
-        title="Profile"
-        onPress={() => navigation.navigate('Profile')}
-        style={styles.primaryAction}
-      />
-      <AppButton
-        title="Notifications"
-        onPress={() => navigation.navigate('Notifications')}
-        style={styles.primaryAction}
-      />
-      <AppButton
-        title="My Orders"
-        onPress={() => navigation.navigate('Orders')}
-        style={styles.primaryAction}
-      />
-      <AppButton
-        title="My Subscriptions"
-        onPress={() => navigation.navigate('SubscriptionsList')}
-        style={styles.primaryAction}
-      />
-
-      <Modal
-        visible={studentSelectorVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setStudentSelectorVisible(false)}
-      >
-        <Pressable style={styles.modalOverlay} onPress={() => setStudentSelectorVisible(false)}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Select Student</Text>
-            {students.map(student => (
-              <Pressable
-                key={student.id}
-                style={[
-                  styles.modalOption,
-                  selectedStudentId === student.id && styles.modalOptionSelected,
-                ]}
-                onPress={() => {
-                  setSelectedStudentId(student.id);
-                  setStudentSelectorVisible(false);
-                }}
-              >
-                <Text style={styles.modalOptionText}>
-                  {student.fullName} (Grade {student.grade})
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </Pressable>
-      </Modal>
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: themeColors.neutral.slate50,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   contentContainer: {
     padding: 16,
@@ -259,25 +336,40 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   headerCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    padding: 16,
+    paddingHorizontal: 4,
+    paddingTop: 6,
     marginBottom: 16,
   },
-  greeting: {
+  headerTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  welcomeInlineText: {
+    flex: 1,
     fontSize: 22,
     fontWeight: '700',
-    color: '#0F172A',
+    color: themeColors.text.primary,
+    marginRight: 12,
   },
-  headerHint: {
-    marginTop: 6,
-    fontSize: 14,
-    color: '#64748B',
+  profileIconButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 20,
+    backgroundColor: themeColors.neutral.white,
+    borderWidth: 1,
+    borderColor: themeColors.neutral.slate300,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileIconText: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: themeColors.text.primary,
   },
   section: {
     marginBottom: 16,
@@ -291,74 +383,88 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#0F172A',
+    color: themeColors.text.primary,
     marginBottom: 10,
   },
   linkText: {
-    color: '#0369A1',
+    color: themeColors.intent.infoStrong,
     fontWeight: '600',
     fontSize: 14,
   },
-  dropdownButton: {
+  studentsRow: {
+    paddingRight: 8,
+  },
+  studentCard: {
+    width: 130,
+    minHeight: 66,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#FFFFFF',
-    minHeight: 48,
-    paddingHorizontal: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    borderColor: themeColors.neutral.slate300,
+    backgroundColor: themeColors.neutral.white,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginRight: 8,
+    justifyContent: 'center',
   },
-  dropdownText: {
-    flex: 1,
-    color: '#0F172A',
-    fontSize: 14,
-    fontWeight: '500',
+  studentCardSelected: {
+    borderColor: themeColors.action.primary,
+    backgroundColor: themeColors.surface.infoSoft,
   },
-  dropdownArrow: {
-    color: '#334155',
-    marginLeft: 8,
+  studentName: {
+    color: themeColors.text.primary,
     fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  studentSchool: {
+    color: themeColors.text.muted,
+    fontSize: 11,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  studentGrade: {
+    color: themeColors.text.secondary,
+    fontSize: 11,
+    fontWeight: '600',
   },
   errorText: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     marginBottom: 10,
     fontSize: 13,
   },
   emptyCard: {
     borderRadius: 12,
     padding: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: themeColors.neutral.white,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: themeColors.neutral.slate200,
   },
   emptyTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontWeight: '600',
     fontSize: 15,
     marginBottom: 4,
   },
   emptySubtitle: {
-    color: '#64748B',
+    color: themeColors.text.muted,
     fontSize: 13,
   },
   subscriptionCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: themeColors.neutral.white,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: themeColors.neutral.slate200,
     padding: 14,
     marginBottom: 10,
   },
   planName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#0F172A',
+    color: themeColors.text.primary,
     marginBottom: 2,
   },
   subscriptionMeta: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 13,
     marginTop: 2,
   },
@@ -374,56 +480,44 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pauseButton: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: themeColors.surface.warningSoft,
     marginRight: 8,
   },
   detailsButton: {
-    backgroundColor: '#DBEAFE',
+    backgroundColor: themeColors.surface.infoSubtle,
   },
   pauseButtonLabel: {
-    color: '#92400E',
+    color: themeColors.text.warning,
     fontWeight: '600',
     fontSize: 13,
   },
   detailsButtonLabel: {
-    color: '#1D4ED8',
+    color: themeColors.intent.infoStrong,
     fontWeight: '600',
     fontSize: 13,
   },
-  primaryAction: {
-    marginTop: 10,
+  bottomBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: themeColors.neutral.white,
+    borderTopWidth: 1,
+    borderTopColor: themeColors.neutral.slate200,
   },
-  modalOverlay: {
+  bottomBarRow: {
+    minHeight: TAB_BAR_BASE_HEIGHT,
+    flexDirection: 'row',
+  },
+  bottomTab: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 4,
   },
-  modalCard: {
-    borderRadius: 14,
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-  },
-  modalTitle: {
-    fontSize: 16,
+  bottomTabLabel: {
+    color: themeColors.text.primary,
+    fontSize: 13,
     fontWeight: '700',
-    color: '#0F172A',
-    marginBottom: 10,
-  },
-  modalOption: {
-    minHeight: 44,
-    borderRadius: 10,
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    backgroundColor: '#F8FAFC',
-    marginBottom: 8,
-  },
-  modalOptionSelected: {
-    backgroundColor: '#E0F2FE',
-  },
-  modalOptionText: {
-    color: '#0F172A',
-    fontSize: 14,
-    fontWeight: '500',
   },
 });

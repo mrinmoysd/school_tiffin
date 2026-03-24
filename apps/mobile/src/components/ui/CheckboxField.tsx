@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { themeColors } from '../../theme';
 
 interface CheckboxFieldProps {
   label: string;
@@ -33,29 +34,29 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#94A3B8',
+    borderColor: themeColors.neutral.slate400,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: themeColors.neutral.white,
   },
   boxChecked: {
-    backgroundColor: '#0EA5E9',
-    borderColor: '#0EA5E9',
+    backgroundColor: themeColors.action.primary,
+    borderColor: themeColors.action.primary,
   },
   tick: {
-    color: '#FFFFFF',
+    color: themeColors.neutral.white,
     fontWeight: '700',
     lineHeight: 16,
   },
   label: {
     fontSize: 14,
-    color: '#334155',
+    color: themeColors.text.subtle,
     flex: 1,
   },
   error: {
     marginTop: 6,
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 12,
   },
 });

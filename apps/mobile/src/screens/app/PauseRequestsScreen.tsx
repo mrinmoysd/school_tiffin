@@ -17,6 +17,7 @@ import {
   type PauseRequestStatus,
 } from '../../api/subscriptions';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PauseRequests'>;
 type FilterKey = 'ALL' | PauseRequestStatus;
@@ -133,7 +134,7 @@ export const PauseRequestsScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
@@ -224,14 +225,14 @@ export const PauseRequestsScreen = ({ navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
     padding: 16,
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   filtersRow: {
     flexDirection: 'row',
@@ -241,27 +242,27 @@ const styles = StyleSheet.create({
   filterChip: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate300,
+    backgroundColor: themeColors.neutral.white,
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginRight: 8,
     marginBottom: 8,
   },
   filterChipActive: {
-    borderColor: '#0EA5E9',
-    backgroundColor: '#E0F2FE',
+    borderColor: themeColors.action.primary,
+    backgroundColor: themeColors.surface.infoSoft,
   },
   filterChipText: {
-    color: '#334155',
+    color: themeColors.text.subtle,
     fontSize: 13,
     fontWeight: '600',
   },
   filterChipTextActive: {
-    color: '#0369A1',
+    color: themeColors.intent.infoStrong,
   },
   errorText: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 13,
     marginBottom: 10,
   },
@@ -272,25 +273,25 @@ const styles = StyleSheet.create({
   emptyCard: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 16,
   },
   emptyTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 4,
   },
   emptySubtitle: {
-    color: '#64748B',
+    color: themeColors.text.muted,
     fontSize: 13,
   },
   card: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 14,
     marginBottom: 10,
   },
@@ -301,7 +302,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   studentName: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 16,
     fontWeight: '700',
     flex: 1,
@@ -313,29 +314,29 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   statusPending: {
-    backgroundColor: '#FFEDD5',
+    backgroundColor: themeColors.surface.warningSubtle,
   },
   statusApproved: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: themeColors.surface.successSubtle,
   },
   statusRejected: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: themeColors.surface.dangerSubtle,
   },
   statusProcessed: {
-    backgroundColor: '#DBEAFE',
+    backgroundColor: themeColors.surface.infoSubtle,
   },
   statusText: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 11,
     fontWeight: '700',
   },
   metaText: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 13,
     marginBottom: 3,
   },
   reasonText: {
-    color: '#334155',
+    color: themeColors.text.subtle,
     fontSize: 13,
     marginTop: 4,
   },
@@ -351,21 +352,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   viewButton: {
-    backgroundColor: '#DBEAFE',
+    backgroundColor: themeColors.surface.infoSubtle,
     flex: 1,
     marginRight: 8,
   },
   cancelButton: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: themeColors.surface.dangerSubtle,
     minWidth: 92,
   },
   viewButtonText: {
-    color: '#1D4ED8',
+    color: themeColors.intent.infoStrong,
     fontSize: 13,
     fontWeight: '700',
   },
   cancelButtonText: {
-    color: '#B91C1C',
+    color: themeColors.text.dangerStrong,
     fontSize: 13,
     fontWeight: '700',
   },

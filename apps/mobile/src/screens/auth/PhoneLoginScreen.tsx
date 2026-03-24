@@ -7,6 +7,7 @@ import { INDIAN_PHONE_REGEX } from '../../constants/validation';
 import { clearAuthErrors, sendOtp } from '../../store/auth';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PhoneLogin'>;
 
@@ -91,18 +92,18 @@ export const PhoneLoginScreen = ({ route, navigation }: Props) => {
 const styles = StyleSheet.create({
   codeHint: {
     fontSize: 13,
-    color: '#475569',
+    color: themeColors.text.secondary,
     marginTop: -8,
     marginBottom: 12,
   },
   error: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     marginBottom: 10,
     fontSize: 13,
   },
   link: {
     marginTop: 14,
-    color: '#0369A1',
+    color: themeColors.intent.infoStrong,
     fontSize: 14,
     fontWeight: '500',
     textAlign: 'center',

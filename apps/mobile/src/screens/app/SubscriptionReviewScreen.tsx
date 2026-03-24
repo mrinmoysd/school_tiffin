@@ -8,6 +8,7 @@ import { mealPlansApi, type MealPlanDetails } from '../../api/meal-plans';
 import { schoolsApi, type SchoolDetails } from '../../api/schools';
 import { subscriptionsApi } from '../../api/subscriptions';
 import { ApiClientError } from '../../api/client/apiClient';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SubscriptionReview'>;
 
@@ -168,7 +169,7 @@ export const SubscriptionReviewScreen = ({ route, navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
@@ -215,7 +216,7 @@ export const SubscriptionReviewScreen = ({ route, navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   content: {
     padding: 16,
@@ -225,11 +226,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
     paddingHorizontal: 24,
   },
   title: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 22,
     fontWeight: '700',
     marginBottom: 12,
@@ -237,24 +238,24 @@ const styles = StyleSheet.create({
   summaryCard: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 14,
     marginBottom: 12,
   },
   summaryLine: {
-    color: '#334155',
+    color: themeColors.text.subtle,
     fontSize: 14,
     marginBottom: 4,
   },
   summaryTotal: {
     marginTop: 6,
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 16,
     fontWeight: '700',
   },
   errorText: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 13,
     marginBottom: 10,
   },

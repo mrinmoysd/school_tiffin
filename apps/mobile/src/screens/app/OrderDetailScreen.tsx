@@ -5,6 +5,7 @@ import { ApiClientError } from '../../api/client/apiClient';
 import { ordersApi, type OrderDetail } from '../../api/orders';
 import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'OrderDetail'>;
 
@@ -87,7 +88,7 @@ export const OrderDetailScreen = ({ route }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
@@ -191,7 +192,7 @@ export const OrderDetailScreen = ({ route }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   content: {
     paddingHorizontal: 16,
@@ -207,67 +208,67 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#0F172A',
+    color: themeColors.text.primary,
     marginBottom: 12,
   },
   card: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 14,
     marginBottom: 10,
   },
   cardTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 6,
   },
   line: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 4,
   },
   muted: {
-    color: '#334155',
+    color: themeColors.text.subtle,
     fontSize: 13,
     marginBottom: 8,
   },
   transactionsSection: {
     marginTop: 6,
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
+    borderTopColor: themeColors.neutral.slate200,
     paddingTop: 8,
   },
   transactionsTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 13,
     fontWeight: '700',
     marginBottom: 8,
   },
   transactionItem: {
     borderRadius: 10,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: themeColors.neutral.slate200,
     padding: 10,
     marginBottom: 8,
   },
   transactionLine: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 13,
     fontWeight: '600',
     marginBottom: 2,
   },
   transactionMeta: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 12,
     marginBottom: 2,
   },
   errorText: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 13,
     marginBottom: 10,
   },

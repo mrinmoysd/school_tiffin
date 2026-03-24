@@ -6,6 +6,7 @@ import { AppButton, AuthLayout, FormTextInput } from '../../components/ui';
 import { clearAuthErrors, sendOtp, setOtpExpiry, verifyOtp } from '../../store/auth';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'OtpVerification'>;
 
@@ -156,11 +157,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   timerLabel: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 14,
   },
   timerValue: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '700',
   },
@@ -169,13 +170,13 @@ const styles = StyleSheet.create({
   },
   link: {
     marginTop: 14,
-    color: '#0369A1',
+    color: themeColors.intent.infoStrong,
     textAlign: 'center',
     fontWeight: '500',
     fontSize: 14,
   },
   error: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     marginBottom: 10,
     fontSize: 13,
   },

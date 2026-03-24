@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
+import { themeColors } from '../../theme';
 
 interface FormTextInputProps extends TextInputProps {
   label: string;
@@ -10,7 +11,7 @@ export const FormTextInput = ({ label, error, ...props }: FormTextInputProps) =>
   <View style={styles.wrapper}>
     <Text style={styles.label}>{label}</Text>
     <TextInput
-      placeholderTextColor="#94A3B8"
+      placeholderTextColor={themeColors.neutral.slate400}
       style={[styles.input, error ? styles.inputError : undefined]}
       {...props}
     />
@@ -24,26 +25,26 @@ const styles = StyleSheet.create({
   },
   label: {
     marginBottom: 6,
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '500',
   },
   input: {
     height: 48,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderColor: themeColors.neutral.slate300,
     borderRadius: 12,
     paddingHorizontal: 12,
     fontSize: 16,
-    color: '#0F172A',
-    backgroundColor: '#FFFFFF',
+    color: themeColors.text.primary,
+    backgroundColor: themeColors.neutral.white,
   },
   inputError: {
-    borderColor: '#DC2626',
+    borderColor: themeColors.intent.danger,
   },
   error: {
     marginTop: 6,
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 12,
   },
 });

@@ -14,6 +14,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { mealPlansApi, type MealPlanDetails, type MealPlanMenuItem } from '../../api/meal-plans';
 import { ApiClientError } from '../../api/client/apiClient';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MealPlanDetail'>;
 
@@ -137,7 +138,7 @@ export const MealPlanDetailScreen = ({ route, navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
@@ -254,7 +255,7 @@ export const MealPlanDetailScreen = ({ route, navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   content: {
     padding: 16,
@@ -264,37 +265,37 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
     paddingHorizontal: 24,
   },
   title: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 22,
     fontWeight: '700',
   },
   description: {
     marginTop: 8,
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 14,
   },
   summaryCard: {
     marginTop: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 12,
   },
   metaText: {
     marginTop: 6,
-    color: '#334155',
+    color: themeColors.text.subtle,
     fontSize: 14,
   },
   section: {
     marginTop: 18,
   },
   sectionTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 17,
     fontWeight: '700',
     marginBottom: 10,
@@ -307,7 +308,7 @@ const styles = StyleSheet.create({
     height: 190,
     borderRadius: 12,
     marginRight: 8,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: themeColors.neutral.slate200,
   },
   dotsRow: {
     flexDirection: 'row',
@@ -318,60 +319,60 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#CBD5E1',
+    backgroundColor: themeColors.neutral.slate300,
     marginHorizontal: 4,
   },
   dotActive: {
-    backgroundColor: '#0EA5E9',
+    backgroundColor: themeColors.action.primary,
   },
   groupCard: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 12,
     marginBottom: 10,
   },
   groupTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 8,
   },
   menuItemCard: {
     borderRadius: 10,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
     padding: 10,
     marginBottom: 8,
   },
   menuTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 4,
   },
   menuText: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 13,
   },
   menuMeta: {
     marginTop: 4,
-    color: '#64748B',
+    color: themeColors.text.muted,
     fontSize: 12,
   },
   helperText: {
-    color: '#64748B',
+    color: themeColors.text.muted,
     fontSize: 14,
     textAlign: 'center',
   },
   errorText: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 14,
     textAlign: 'center',
     marginBottom: 10,
   },
   retryText: {
-    color: '#0369A1',
+    color: themeColors.intent.infoStrong,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -379,7 +380,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     minHeight: 48,
     borderRadius: 12,
-    backgroundColor: '#0EA5E9',
+    backgroundColor: themeColors.action.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -387,7 +388,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   subscribeNowLabel: {
-    color: '#FFFFFF',
+    color: themeColors.neutral.white,
     fontSize: 16,
     fontWeight: '700',
   },

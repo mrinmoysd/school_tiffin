@@ -4,6 +4,7 @@ import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-n
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DateSelection'>;
 
@@ -98,20 +99,20 @@ export const DateSelectionScreen = ({ route, navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   content: {
     padding: 16,
     paddingBottom: 24,
   },
   title: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 22,
     fontWeight: '700',
   },
   subtitle: {
     marginTop: 6,
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 14,
     marginBottom: 12,
   },
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     marginBottom: 6,
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -128,20 +129,20 @@ const styles = StyleSheet.create({
     minHeight: 48,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate300,
+    backgroundColor: themeColors.neutral.white,
     paddingHorizontal: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   dropdownText: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 15,
     flex: 1,
   },
   dropdownArrow: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 13,
     marginLeft: 8,
   },

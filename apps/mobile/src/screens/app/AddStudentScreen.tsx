@@ -17,6 +17,7 @@ import { schoolsApi, type School } from '../../api/schools';
 import { studentsApi } from '../../api/students';
 import { AppButton, FormTextInput } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddStudent'>;
 
@@ -203,7 +204,7 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
   if (screenLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
@@ -442,7 +443,7 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   content: {
     padding: 16,
@@ -452,17 +453,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   title: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 22,
     fontWeight: '700',
   },
   subtitle: {
     marginTop: 6,
     marginBottom: 12,
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 14,
   },
   fieldWrapper: {
@@ -470,7 +471,7 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     marginBottom: 6,
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -478,26 +479,26 @@ const styles = StyleSheet.create({
     minHeight: 48,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate300,
+    backgroundColor: themeColors.neutral.white,
     paddingHorizontal: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   dropdownText: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 15,
     flex: 1,
   },
   dropdownArrow: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 13,
     marginLeft: 8,
   },
   fieldError: {
     marginTop: 6,
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 12,
   },
   multilineInput: {
@@ -507,13 +508,13 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    backgroundColor: themeColors.overlay.scrim,
     justifyContent: 'center',
     paddingHorizontal: 20,
   },
   modalCard: {
     borderRadius: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: themeColors.neutral.white,
     padding: 14,
     maxHeight: '70%',
     width: '100%',
@@ -524,7 +525,7 @@ const styles = StyleSheet.create({
     minHeight: 250,
   },
   modalTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 10,
@@ -538,18 +539,18 @@ const styles = StyleSheet.create({
   modalOption: {
     minHeight: 42,
     borderRadius: 10,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
     justifyContent: 'center',
     paddingHorizontal: 12,
     marginBottom: 8,
   },
   modalOptionText: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '500',
   },
   submitError: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 13,
     marginBottom: 10,
   },

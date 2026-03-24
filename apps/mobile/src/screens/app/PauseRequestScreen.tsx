@@ -19,6 +19,7 @@ import {
 } from '../../api/subscriptions';
 import { AppButton, FormTextInput } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PauseRequest'>;
 type PickerField = 'startDate' | 'endDate' | null;
@@ -257,7 +258,7 @@ export const PauseRequestScreen = ({ route, navigation }: Props) => {
   if (screenLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
@@ -380,7 +381,7 @@ export const PauseRequestScreen = ({ route, navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   content: {
     padding: 16,
@@ -391,42 +392,42 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   title: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 22,
     fontWeight: '700',
   },
   subtitle: {
     marginTop: 6,
     marginBottom: 12,
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 14,
   },
   infoCard: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 14,
     marginBottom: 14,
   },
   infoLabel: {
-    color: '#64748B',
+    color: themeColors.text.muted,
     fontSize: 12,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
   infoValue: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 16,
     fontWeight: '700',
     marginTop: 2,
     marginBottom: 4,
   },
   infoMuted: {
-    color: '#334155',
+    color: themeColors.text.subtle,
     fontSize: 13,
     marginTop: 2,
   },
@@ -435,7 +436,7 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     marginBottom: 6,
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -443,20 +444,20 @@ const styles = StyleSheet.create({
     minHeight: 48,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate300,
+    backgroundColor: themeColors.neutral.white,
     paddingHorizontal: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   dateFieldText: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 15,
     flex: 1,
   },
   dateFieldArrow: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 13,
     marginLeft: 8,
   },
@@ -468,24 +469,24 @@ const styles = StyleSheet.create({
   previewCard: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#BAE6FD',
-    backgroundColor: '#F0F9FF',
+    borderColor: themeColors.border.infoLight,
+    backgroundColor: themeColors.surface.infoSofter,
     padding: 14,
     marginBottom: 12,
   },
   previewTitle: {
-    color: '#0C4A6E',
+    color: themeColors.text.infoDark,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 6,
   },
   previewText: {
-    color: '#075985',
+    color: themeColors.text.infoDeeper,
     fontSize: 13,
     marginBottom: 4,
   },
   errorText: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 13,
     marginBottom: 10,
   },

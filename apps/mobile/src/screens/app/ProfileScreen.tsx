@@ -9,6 +9,7 @@ import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { logout } from '../../store/auth';
 import { useAppDispatch } from '../../store/hooks';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
 
@@ -117,7 +118,7 @@ export const ProfileScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
@@ -184,6 +185,12 @@ export const ProfileScreen = ({ navigation }: Props) => {
         style={styles.secondaryButton}
       />
       <AppButton
+        title="Notifications"
+        onPress={() => navigation.navigate('Notifications')}
+        variant="secondary"
+        style={styles.secondaryButton}
+      />
+      <AppButton
         title="Refresh"
         onPress={() => void onRefresh()}
         loading={refreshing}
@@ -203,7 +210,7 @@ export const ProfileScreen = ({ navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   content: {
     paddingHorizontal: 16,
@@ -215,36 +222,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#0F172A',
+    color: themeColors.text.primary,
     marginBottom: 12,
   },
   card: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 14,
     marginBottom: 10,
   },
   cardTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 8,
   },
   line: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 4,
   },
   muted: {
-    color: '#334155',
+    color: themeColors.text.subtle,
     fontSize: 13,
     marginBottom: 6,
   },
@@ -260,18 +267,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   badgeSuccess: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: themeColors.surface.successSubtle,
   },
   badgeMuted: {
-    backgroundColor: '#E2E8F0',
+    backgroundColor: themeColors.neutral.slate200,
   },
   badgeText: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 12,
     fontWeight: '700',
   },
   errorText: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 13,
     marginBottom: 10,
   },
@@ -280,6 +287,6 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     marginTop: 10,
-    backgroundColor: '#DC2626',
+    backgroundColor: themeColors.intent.danger,
   },
 });

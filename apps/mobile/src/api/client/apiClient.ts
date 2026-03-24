@@ -53,6 +53,28 @@ interface ApiRequestInit extends RequestInit {
   requiresAuth?: boolean;
 }
 
+let unauthorizedHandler: (() => void) | null = null;
+let handlingUnauthorized = false;
+
+export const setUnauthorizedHandler = (handler: (() => void) | null): void => {
+  unauthorizedHandler = handler;
+};
+
+const handleUnauthorized = async (): Promise<void> => {
+  if (handlingUnauthorized) {
+    return;
+  }
+
+  handlingUnauthorized = true;
+
+  try {
+    await tokenStorage.clearTokens();
+    unauthorizedHandler?.();
+  } finally {
+    handlingUnauthorized = false;
+  }
+};
+
 export const apiRequest = async <T>(endpoint: string, init: ApiRequestInit = {}): Promise<T> => {
   const { requiresAuth = false, ...requestInit } = init;
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
@@ -60,6 +82,7 @@ export const apiRequest = async <T>(endpoint: string, init: ApiRequestInit = {})
   const tokens = requiresAuth ? await tokenStorage.getTokens() : null;
 
   if (requiresAuth && !tokens?.accessToken) {
+    await handleUnauthorized();
     throw new ApiClientError('Authentication required. Please login again.', 401);
   }
 
@@ -86,6 +109,10 @@ export const apiRequest = async <T>(endpoint: string, init: ApiRequestInit = {})
   const payload = canParseJson ? await response.json() : null;
 
   if (!response.ok) {
+    if (response.status === 401 && requiresAuth) {
+      await handleUnauthorized();
+    }
+
     const message = getErrorMessage(payload) ?? `Request failed with status ${response.status}`;
     throw new ApiClientError(message, response.status, payload);
   }

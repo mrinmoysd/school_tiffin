@@ -12,6 +12,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ApiClientError } from '../../api/client/apiClient';
 import { subscriptionsApi, type Subscription } from '../../api/subscriptions';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SubscriptionsList'>;
 
@@ -97,7 +98,7 @@ export const SubscriptionsListScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
@@ -194,19 +195,19 @@ export const SubscriptionsListScreen = ({ navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
     padding: 16,
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   tabsRow: {
     flexDirection: 'row',
     borderRadius: 12,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: themeColors.neutral.slate200,
     padding: 4,
     marginBottom: 12,
   },
@@ -214,14 +215,14 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginBottom: 10,
     borderRadius: 999,
-    backgroundColor: '#E0F2FE',
+    backgroundColor: themeColors.surface.infoSoft,
     borderWidth: 1,
-    borderColor: '#7DD3FC',
+    borderColor: themeColors.border.infoSoft,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   pauseRequestsLinkText: {
-    color: '#0369A1',
+    color: themeColors.intent.infoStrong,
     fontSize: 13,
     fontWeight: '700',
   },
@@ -233,17 +234,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabButtonActive: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: themeColors.neutral.white,
   },
   tabText: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontWeight: '600',
   },
   tabTextActive: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
   },
   errorText: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 13,
     marginBottom: 10,
   },
@@ -254,25 +255,25 @@ const styles = StyleSheet.create({
   emptyCard: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 16,
   },
   emptyTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 4,
   },
   emptySubtitle: {
-    color: '#64748B',
+    color: themeColors.text.muted,
     fontSize: 13,
   },
   card: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 14,
     marginBottom: 10,
   },
@@ -283,7 +284,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   planName: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 16,
     fontWeight: '700',
     flex: 1,
@@ -295,27 +296,27 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   statusActive: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: themeColors.surface.successSubtle,
   },
   statusPaused: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: themeColors.surface.warningSoft,
   },
   statusCompleted: {
-    backgroundColor: '#DBEAFE',
+    backgroundColor: themeColors.surface.infoSubtle,
   },
   statusPending: {
-    backgroundColor: '#FFEDD5',
+    backgroundColor: themeColors.surface.warningSubtle,
   },
   statusCancelled: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: themeColors.neutral.slate100,
   },
   statusText: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 11,
     fontWeight: '700',
   },
   metaText: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 13,
     marginBottom: 3,
   },
@@ -331,19 +332,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   viewButton: {
-    backgroundColor: '#DBEAFE',
+    backgroundColor: themeColors.surface.infoSubtle,
     marginRight: 8,
   },
   pauseButton: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: themeColors.surface.warningSoft,
   },
   viewButtonText: {
-    color: '#1D4ED8',
+    color: themeColors.intent.infoStrong,
     fontSize: 13,
     fontWeight: '700',
   },
   pauseButtonText: {
-    color: '#92400E',
+    color: themeColors.text.warning,
     fontSize: 13,
     fontWeight: '700',
   },

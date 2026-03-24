@@ -6,6 +6,7 @@ import { paymentsApi } from '../../api/payments';
 import { ApiClientError } from '../../api/client/apiClient';
 import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Payment'>;
 
@@ -61,7 +62,7 @@ export const PaymentScreen = ({ route, navigation }: Props) => {
         description: `Subscription ${paymentIntent.orderNumber}`,
         order_id: paymentIntent.razorpayOrderId,
         theme: {
-          color: '#0EA5E9',
+          color: themeColors.action.primary,
         },
       });
 
@@ -122,12 +123,12 @@ export const PaymentScreen = ({ route, navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
   title: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 22,
     fontWeight: '700',
     marginBottom: 12,
@@ -136,29 +137,29 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 14,
     marginBottom: 12,
   },
   label: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 12,
     marginTop: 2,
   },
   value: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 8,
   },
   successText: {
-    color: '#15803D',
+    color: themeColors.intent.successStrong,
     fontSize: 14,
     marginBottom: 10,
   },
   errorText: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 13,
     marginBottom: 10,
   },

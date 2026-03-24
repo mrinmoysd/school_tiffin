@@ -7,6 +7,7 @@ import { PASSWORD_STRENGTH_MESSAGE, PASSWORD_STRENGTH_REGEX } from '../../consta
 import { clearAuthErrors, clearAuthMessages, resetPassword } from '../../store/auth';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ResetPassword'>;
 
@@ -128,18 +129,18 @@ export const ResetPasswordScreen = ({ route, navigation }: Props) => {
 
 const styles = StyleSheet.create({
   error: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     marginBottom: 10,
     fontSize: 13,
   },
   success: {
-    color: '#15803D',
+    color: themeColors.intent.successStrong,
     marginBottom: 10,
     fontSize: 13,
   },
   link: {
     marginTop: 14,
-    color: '#0369A1',
+    color: themeColors.intent.infoStrong,
     textAlign: 'center',
     fontWeight: '500',
     fontSize: 14,

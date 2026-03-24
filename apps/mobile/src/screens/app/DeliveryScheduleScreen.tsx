@@ -12,6 +12,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ApiClientError } from '../../api/client/apiClient';
 import { subscriptionsApi, type SubscriptionScheduleDay } from '../../api/subscriptions';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DeliverySchedule'>;
 
@@ -40,13 +41,13 @@ const formatDate = (value: string) =>
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'DELIVERED':
-      return '#16A34A';
+      return themeColors.intent.success;
     case 'PAUSED':
-      return '#F59E0B';
+      return themeColors.intent.warning;
     case 'SCHEDULED':
-      return '#2563EB';
+      return themeColors.intent.infoStrong;
     default:
-      return '#94A3B8';
+      return themeColors.neutral.slate400;
   }
 };
 
@@ -125,7 +126,7 @@ export const DeliveryScheduleScreen = ({ route }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
@@ -198,15 +199,15 @@ export const DeliveryScheduleScreen = ({ route }: Props) => {
       <View style={styles.legendCard}>
         <Text style={styles.legendTitle}>Legend</Text>
         <View style={styles.legendRow}>
-          <View style={[styles.legendDot, { backgroundColor: '#2563EB' }]} />
+          <View style={[styles.legendDot, { backgroundColor: themeColors.intent.infoStrong }]} />
           <Text style={styles.legendText}>Scheduled</Text>
         </View>
         <View style={styles.legendRow}>
-          <View style={[styles.legendDot, { backgroundColor: '#16A34A' }]} />
+          <View style={[styles.legendDot, { backgroundColor: themeColors.intent.success }]} />
           <Text style={styles.legendText}>Delivered</Text>
         </View>
         <View style={styles.legendRow}>
-          <View style={[styles.legendDot, { backgroundColor: '#F59E0B' }]} />
+          <View style={[styles.legendDot, { backgroundColor: themeColors.intent.warning }]} />
           <Text style={styles.legendText}>Paused</Text>
         </View>
       </View>
@@ -227,7 +228,7 @@ export const DeliveryScheduleScreen = ({ route }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   content: {
     padding: 16,
@@ -237,16 +238,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   title: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 22,
     fontWeight: '700',
     marginBottom: 10,
   },
   errorText: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 13,
     marginBottom: 10,
   },
@@ -260,25 +261,25 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 10,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: themeColors.neutral.slate200,
     alignItems: 'center',
     justifyContent: 'center',
   },
   monthNavLabel: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontWeight: '700',
     fontSize: 16,
   },
   monthLabel: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 16,
     fontWeight: '700',
   },
   calendarCard: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 10,
     marginBottom: 10,
   },
@@ -289,7 +290,7 @@ const styles = StyleSheet.create({
   weekHeaderText: {
     flex: 1,
     textAlign: 'center',
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -305,14 +306,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   dayCellSelected: {
-    backgroundColor: '#E0F2FE',
+    backgroundColor: themeColors.surface.infoSoft,
   },
   dayText: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 13,
   },
   dayTextMuted: {
-    color: '#94A3B8',
+    color: themeColors.neutral.slate400,
   },
   dayDot: {
     width: 7,
@@ -323,13 +324,13 @@ const styles = StyleSheet.create({
   legendCard: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 12,
     marginBottom: 10,
   },
   legendTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 8,
@@ -346,24 +347,24 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   legendText: {
-    color: '#334155',
+    color: themeColors.text.subtle,
     fontSize: 13,
   },
   detailsCard: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 12,
   },
   detailsTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 8,
   },
   detailText: {
-    color: '#334155',
+    color: themeColors.text.subtle,
     fontSize: 13,
     marginBottom: 6,
   },

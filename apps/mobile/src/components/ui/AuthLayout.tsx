@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { themeColors } from '../../theme';
 
 interface AuthLayoutProps extends PropsWithChildren {
   title: string;
@@ -42,7 +43,7 @@ export const AuthLayout = ({ title, subtitle, children }: AuthLayoutProps) => (
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   flex: {
     flex: 1,
@@ -59,19 +60,19 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#0F172A',
+    color: themeColors.text.primary,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#475569',
+    color: themeColors.text.secondary,
   },
   formWrapper: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: themeColors.neutral.white,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: themeColors.neutral.slate200,
   },
 });

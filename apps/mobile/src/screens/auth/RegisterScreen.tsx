@@ -12,6 +12,7 @@ import {
 import { clearAuthErrors, register } from '../../store/auth';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
@@ -203,7 +204,7 @@ export const RegisterScreen = ({ navigation }: Props) => {
 
 const styles = StyleSheet.create({
   error: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     marginBottom: 10,
     fontSize: 13,
   },
@@ -214,11 +215,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerText: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 14,
   },
   footerLink: {
-    color: '#0369A1',
+    color: themeColors.intent.infoStrong,
     fontSize: 14,
     fontWeight: '600',
   },

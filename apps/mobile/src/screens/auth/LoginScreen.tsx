@@ -7,6 +7,7 @@ import { EMAIL_REGEX } from '../../constants/validation';
 import { clearAuthErrors, login } from '../../store/auth';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -116,20 +117,20 @@ export const LoginScreen = ({ navigation }: Props) => {
 
 const styles = StyleSheet.create({
   link: {
-    color: '#0369A1',
+    color: themeColors.intent.infoStrong,
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 12,
   },
   secondaryLink: {
-    color: '#0369A1',
+    color: themeColors.intent.infoStrong,
     fontSize: 14,
     textAlign: 'center',
     marginTop: 16,
     fontWeight: '500',
   },
   error: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     marginBottom: 10,
     fontSize: 13,
   },
@@ -140,11 +141,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerText: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 14,
   },
   footerLink: {
-    color: '#0369A1',
+    color: themeColors.intent.infoStrong,
     fontSize: 14,
     fontWeight: '600',
   },

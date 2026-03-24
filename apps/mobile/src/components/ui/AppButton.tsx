@@ -1,5 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
+import { themeColors } from '../../theme';
 
 interface AppButtonProps {
   title: string;
@@ -33,7 +34,9 @@ export const AppButton = ({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#FFFFFF' : '#0F172A'} />
+        <ActivityIndicator
+          color={variant === 'primary' ? themeColors.neutral.white : themeColors.text.primary}
+        />
       ) : (
         <Text
           style={[
@@ -57,10 +60,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   primaryButton: {
-    backgroundColor: '#0EA5E9',
+    backgroundColor: themeColors.action.primary,
   },
   secondaryButton: {
-    backgroundColor: '#E2E8F0',
+    backgroundColor: themeColors.neutral.slate200,
   },
   disabledButton: {
     opacity: 0.6,
@@ -73,9 +76,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   primaryLabel: {
-    color: '#FFFFFF',
+    color: themeColors.neutral.white,
   },
   secondaryLabel: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
   },
 });

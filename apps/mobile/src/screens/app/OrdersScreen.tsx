@@ -13,6 +13,7 @@ import {
 import { ApiClientError } from '../../api/client/apiClient';
 import { ordersApi, type OrderListItem, type OrderStatus } from '../../api/orders';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Orders'>;
 type OrderFilter = 'ALL' | OrderStatus;
@@ -129,7 +130,7 @@ export const OrdersScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
@@ -222,21 +223,21 @@ export const OrdersScreen = ({ navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
     padding: 16,
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   filterButton: {
     minHeight: 46,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate300,
+    backgroundColor: themeColors.neutral.white,
     paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -244,17 +245,17 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   filterButtonLabel: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '500',
   },
   filterButtonArrow: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 13,
     marginLeft: 8,
   },
   errorText: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 13,
     marginBottom: 10,
   },
@@ -265,25 +266,25 @@ const styles = StyleSheet.create({
   emptyCard: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 16,
   },
   emptyTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 4,
   },
   emptySubtitle: {
-    color: '#64748B',
+    color: themeColors.text.muted,
     fontSize: 13,
   },
   card: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 14,
     marginBottom: 10,
   },
@@ -294,7 +295,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   orderNumber: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 16,
     fontWeight: '700',
     flex: 1,
@@ -306,30 +307,30 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   statusPending: {
-    backgroundColor: '#FFEDD5',
+    backgroundColor: themeColors.surface.warningSubtle,
   },
   statusProcessing: {
-    backgroundColor: '#E0F2FE',
+    backgroundColor: themeColors.surface.infoSoft,
   },
   statusPaid: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: themeColors.surface.successSubtle,
   },
   statusFailed: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: themeColors.surface.dangerSubtle,
   },
   statusRefunded: {
-    backgroundColor: '#EDE9FE',
+    backgroundColor: themeColors.surface.violetSubtle,
   },
   statusCancelled: {
-    backgroundColor: '#E2E8F0',
+    backgroundColor: themeColors.neutral.slate200,
   },
   statusText: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 11,
     fontWeight: '700',
   },
   metaText: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 13,
     marginBottom: 3,
   },
@@ -337,28 +338,28 @@ const styles = StyleSheet.create({
     marginTop: 4,
     alignSelf: 'center',
     borderRadius: 999,
-    backgroundColor: '#DBEAFE',
+    backgroundColor: themeColors.surface.infoSubtle,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
   loadMoreText: {
-    color: '#1D4ED8',
+    color: themeColors.intent.infoStrong,
     fontSize: 13,
     fontWeight: '700',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    backgroundColor: themeColors.overlay.scrim,
     justifyContent: 'center',
     paddingHorizontal: 20,
   },
   modalCard: {
     borderRadius: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: themeColors.neutral.white,
     padding: 14,
   },
   modalTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 10,
@@ -366,16 +367,16 @@ const styles = StyleSheet.create({
   modalOption: {
     minHeight: 42,
     borderRadius: 10,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
     justifyContent: 'center',
     paddingHorizontal: 12,
     marginBottom: 8,
   },
   modalOptionSelected: {
-    backgroundColor: '#E0F2FE',
+    backgroundColor: themeColors.surface.infoSoft,
   },
   modalOptionText: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '500',
   },

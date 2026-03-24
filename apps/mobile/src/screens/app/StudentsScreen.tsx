@@ -16,6 +16,7 @@ import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi, type Student } from '../../api/students';
 import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Students'>;
 
@@ -115,7 +116,7 @@ export const StudentsScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
@@ -208,13 +209,13 @@ export const StudentsScreen = ({ navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   content: {
     paddingHorizontal: 16,
@@ -227,11 +228,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#0F172A',
+    color: themeColors.text.primary,
   },
   subtitle: {
     marginTop: 6,
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 13,
   },
   addButton: {
@@ -239,48 +240,48 @@ const styles = StyleSheet.create({
   },
   swipeHint: {
     marginTop: 10,
-    color: '#64748B',
+    color: themeColors.text.muted,
     fontSize: 12,
   },
   errorText: {
     marginTop: 8,
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 13,
   },
   emptyCard: {
     marginTop: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: themeColors.neutral.white,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: themeColors.neutral.slate200,
     borderRadius: 12,
     padding: 14,
   },
   emptyTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 4,
   },
   emptySubtitle: {
-    color: '#64748B',
+    color: themeColors.text.muted,
     fontSize: 13,
   },
   studentCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: themeColors.neutral.white,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: themeColors.neutral.slate200,
     padding: 14,
     marginBottom: 10,
   },
   studentName: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 4,
   },
   studentMeta: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 13,
     marginBottom: 4,
   },
@@ -296,19 +297,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   inlineEdit: {
-    backgroundColor: '#DBEAFE',
+    backgroundColor: themeColors.surface.infoSubtle,
     marginRight: 8,
   },
   inlineDelete: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: themeColors.surface.dangerSubtle,
   },
   inlineEditText: {
-    color: '#1D4ED8',
+    color: themeColors.intent.infoStrong,
     fontSize: 13,
     fontWeight: '700',
   },
   inlineDeleteText: {
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 13,
     fontWeight: '700',
   },
@@ -325,13 +326,13 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   swipeEditAction: {
-    backgroundColor: '#1D4ED8',
+    backgroundColor: themeColors.intent.infoStrong,
   },
   swipeDeleteAction: {
-    backgroundColor: '#DC2626',
+    backgroundColor: themeColors.intent.danger,
   },
   swipeActionText: {
-    color: '#FFFFFF',
+    color: themeColors.neutral.white,
     fontSize: 13,
     fontWeight: '700',
   },

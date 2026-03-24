@@ -15,6 +15,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { schoolsApi, type School } from '../../api/schools';
 import { ApiClientError } from '../../api/client/apiClient';
+import { themeColors } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SchoolList'>;
 
@@ -197,7 +198,7 @@ export const SchoolListScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={themeColors.action.primary} />
       </View>
     );
   }
@@ -240,8 +241,13 @@ export const SchoolListScreen = ({ navigation }: Props) => {
               <Switch
                 value={serviceAvailableOnly}
                 onValueChange={setServiceAvailableOnly}
-                trackColor={{ false: '#CBD5E1', true: '#7DD3FC' }}
-                thumbColor={serviceAvailableOnly ? '#0284C7' : '#FFFFFF'}
+                trackColor={{
+                  false: themeColors.neutral.slate300,
+                  true: themeColors.border.infoSoft,
+                }}
+                thumbColor={
+                  serviceAvailableOnly ? themeColors.intent.info : themeColors.neutral.white
+                }
               />
             </View>
 
@@ -258,7 +264,7 @@ export const SchoolListScreen = ({ navigation }: Props) => {
         ListFooterComponent={
           visibleCount < filteredSchools.length ? (
             <View style={styles.footerLoader}>
-              <ActivityIndicator color="#0EA5E9" />
+              <ActivityIndicator color={themeColors.action.primary} />
             </View>
           ) : null
         }
@@ -295,13 +301,13 @@ export const SchoolListScreen = ({ navigation }: Props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
   },
   listContent: {
     padding: 16,
@@ -313,18 +319,18 @@ const styles = StyleSheet.create({
   screenTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#0F172A',
+    color: themeColors.text.primary,
     marginBottom: 12,
   },
   searchInput: {
     height: 46,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate300,
+    backgroundColor: themeColors.neutral.white,
     paddingHorizontal: 12,
     marginBottom: 10,
-    color: '#0F172A',
+    color: themeColors.text.primary,
   },
   filterRow: {
     marginBottom: 10,
@@ -333,28 +339,28 @@ const styles = StyleSheet.create({
     minHeight: 44,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate300,
+    backgroundColor: themeColors.neutral.white,
     paddingHorizontal: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   cityDropdownText: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '500',
   },
   cityDropdownArrow: {
-    color: '#334155',
+    color: themeColors.text.subtle,
     fontSize: 13,
   },
   toggleRow: {
     minHeight: 44,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate300,
+    backgroundColor: themeColors.neutral.white,
     paddingHorizontal: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -362,38 +368,38 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   toggleLabel: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '500',
   },
   errorText: {
     marginTop: 4,
-    color: '#DC2626',
+    color: themeColors.intent.danger,
     fontSize: 13,
   },
   emptyState: {
     marginTop: 6,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 14,
   },
   emptyTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 15,
     fontWeight: '600',
     marginBottom: 4,
   },
   emptySubtitle: {
-    color: '#64748B',
+    color: themeColors.text.muted,
     fontSize: 13,
   },
   card: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    borderColor: themeColors.neutral.slate200,
+    backgroundColor: themeColors.neutral.white,
     padding: 12,
     flexDirection: 'row',
     marginBottom: 10,
@@ -407,12 +413,12 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 10,
-    backgroundColor: '#E0F2FE',
+    backgroundColor: themeColors.surface.infoSoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
   thumbnailText: {
-    color: '#0369A1',
+    color: themeColors.intent.infoStrong,
     fontWeight: '700',
     fontSize: 20,
   },
@@ -428,7 +434,7 @@ const styles = StyleSheet.create({
   },
   schoolName: {
     flex: 1,
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 15,
     fontWeight: '700',
     marginRight: 8,
@@ -439,28 +445,28 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   availableBadge: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: themeColors.surface.successSubtle,
   },
   unavailableBadge: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: themeColors.surface.dangerSubtle,
   },
   badgeText: {
     fontSize: 11,
     fontWeight: '600',
   },
   availableBadgeText: {
-    color: '#166534',
+    color: themeColors.text.success,
   },
   unavailableBadgeText: {
-    color: '#991B1B',
+    color: themeColors.text.danger,
   },
   locationText: {
-    color: '#475569',
+    color: themeColors.text.secondary,
     fontSize: 13,
     marginBottom: 3,
   },
   operatingDaysText: {
-    color: '#64748B',
+    color: themeColors.text.muted,
     fontSize: 12,
   },
   footerLoader: {
@@ -469,18 +475,18 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    backgroundColor: themeColors.overlay.scrim,
     justifyContent: 'center',
     paddingHorizontal: 20,
   },
   modalCard: {
     borderRadius: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: themeColors.neutral.white,
     padding: 14,
     maxHeight: '70%',
   },
   modalTitle: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 10,
@@ -488,13 +494,13 @@ const styles = StyleSheet.create({
   modalOption: {
     minHeight: 42,
     borderRadius: 10,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: themeColors.neutral.slate50,
     justifyContent: 'center',
     paddingHorizontal: 12,
     marginBottom: 8,
   },
   modalOptionText: {
-    color: '#0F172A',
+    color: themeColors.text.primary,
     fontSize: 14,
     fontWeight: '500',
   },
