@@ -1,9 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
 import { Spin } from 'antd';
-import MainLayout from './layouts/MainLayout';
-import AuthLayout from './layouts/AuthLayout';
+import { Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import PrivateRoute from './components/PrivateRoute';
+import AuthLayout from './layouts/AuthLayout';
+import MainLayout from './layouts/MainLayout';
 
 // Lazy load pages for better performance
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -38,7 +38,161 @@ const PageLoader = () => (
   </div>
 );
 
+type HorizontalScrollHost = {
+  scrollWidth: number;
+  clientWidth: number;
+  scrollLeft: number;
+};
+
+const asHorizontalScrollHost = (value: unknown): HorizontalScrollHost | null => {
+  if (!value || typeof value !== 'object') return null;
+
+  if (!('scrollWidth' in value) || !('clientWidth' in value) || !('scrollLeft' in value)) {
+    return null;
+  }
+
+  const candidate = value as {
+    scrollWidth?: unknown;
+    clientWidth?: unknown;
+    scrollLeft?: unknown;
+  };
+
+  if (
+    typeof candidate.scrollWidth !== 'number' ||
+    typeof candidate.clientWidth !== 'number' ||
+    typeof candidate.scrollLeft !== 'number'
+  ) {
+    return null;
+  }
+
+  return value as HorizontalScrollHost;
+};
+
+const findHorizontalScrollHost = (eventTarget: unknown): HorizontalScrollHost | null => {
+  if (
+    !eventTarget ||
+    typeof eventTarget !== 'object' ||
+    !('closest' in eventTarget) ||
+    typeof (eventTarget as { closest?: unknown }).closest !== 'function'
+  ) {
+    return null;
+  }
+
+  const closestScrollable = (eventTarget as { closest: (selector: string) => unknown }).closest(
+    '.ant-table-content, .ant-table-body, .table-scrollbar',
+  );
+  return asHorizontalScrollHost(closestScrollable);
+};
+
+type WheelLikeEvent = {
+  target?: unknown;
+  deltaX?: unknown;
+  deltaY?: unknown;
+  preventDefault?: () => void;
+};
+
+type SmoothScrollState = {
+  target: number;
+  current: number;
+  rafId: number | null;
+};
+
+const HORIZONTAL_SCROLL_EASING = 0.14;
+const HORIZONTAL_SCROLL_STOP_THRESHOLD = 0.2;
+const HORIZONTAL_SCROLL_WHEEL_SCALE = 0.75;
+const HORIZONTAL_SCROLL_MAX_WHEEL_DELTA = 72;
+
+const smoothScrollStates = new WeakMap<object, SmoothScrollState>();
+
 function App() {
+  useEffect(() => {
+    const animateToTarget = (scrollHost: HorizontalScrollHost) => {
+      const key = scrollHost as object;
+      const state = smoothScrollStates.get(key);
+      if (!state) return;
+
+      const maxScrollLeft = Math.max(scrollHost.scrollWidth - scrollHost.clientWidth, 0);
+      state.target = Math.min(Math.max(state.target, 0), maxScrollLeft);
+      state.current += (state.target - state.current) * HORIZONTAL_SCROLL_EASING;
+
+      if (Math.abs(state.target - state.current) < HORIZONTAL_SCROLL_STOP_THRESHOLD) {
+        state.current = state.target;
+      }
+
+      scrollHost.scrollLeft = state.current;
+
+      if (Math.abs(state.target - state.current) < HORIZONTAL_SCROLL_STOP_THRESHOLD) {
+        state.rafId = null;
+        return;
+      }
+
+      state.rafId = window.requestAnimationFrame(() => {
+        animateToTarget(scrollHost);
+      });
+    };
+
+    const handleWheel = (event: unknown) => {
+      if (!event || typeof event !== 'object') return;
+
+      const wheelLike = event as WheelLikeEvent;
+      if (
+        typeof wheelLike.deltaX !== 'number' ||
+        typeof wheelLike.deltaY !== 'number' ||
+        typeof wheelLike.preventDefault !== 'function'
+      ) {
+        return;
+      }
+
+      const scrollHost = findHorizontalScrollHost(wheelLike.target);
+      if (!scrollHost) return;
+
+      const hasHorizontalOverflow = scrollHost.scrollWidth - scrollHost.clientWidth > 1;
+      if (!hasHorizontalOverflow) return;
+
+      const delta =
+        Math.abs(wheelLike.deltaX) > Math.abs(wheelLike.deltaY)
+          ? wheelLike.deltaX
+          : wheelLike.deltaY;
+      if (delta === 0) return;
+
+      const key = scrollHost as unknown as object;
+      const existingState = smoothScrollStates.get(key);
+      const state = existingState || {
+        target: scrollHost.scrollLeft,
+        current: scrollHost.scrollLeft,
+        rafId: null,
+      };
+
+      const maxScrollLeft = Math.max(scrollHost.scrollWidth - scrollHost.clientWidth, 0);
+      const limitedDelta =
+        Math.sign(delta) * Math.min(Math.abs(delta), HORIZONTAL_SCROLL_MAX_WHEEL_DELTA);
+      const adjustedDelta = limitedDelta * HORIZONTAL_SCROLL_WHEEL_SCALE;
+      state.target = Math.min(Math.max(state.target + adjustedDelta, 0), maxScrollLeft);
+
+      if (!existingState) {
+        smoothScrollStates.set(key, state);
+      }
+
+      if (state.rafId === null) {
+        state.current = scrollHost.scrollLeft;
+        state.rafId = window.requestAnimationFrame(() => {
+          animateToTarget(scrollHost);
+        });
+      }
+
+      wheelLike.preventDefault();
+    };
+
+    const wheelListener = (event: unknown) => {
+      handleWheel(event);
+    };
+
+    document.addEventListener('wheel', wheelListener, { passive: false });
+    return () => {
+      document.removeEventListener('wheel', wheelListener);
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <Suspense fallback={<PageLoader />}>
