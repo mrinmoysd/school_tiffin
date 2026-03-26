@@ -45,16 +45,6 @@ const ProfilePage = () => {
   const [imageUploading, setImageUploading] = useState(false);
   const [latestUploadedImageKey, setLatestUploadedImageKey] = useState<string | null>(null);
 
-  const extractS3KeyFromUrl = (url?: string | null): string | null => {
-    if (!url) return null;
-    try {
-      const parsed = new URL(url);
-      return parsed.pathname.replace(/^\/+/, '') || null;
-    } catch {
-      return null;
-    }
-  };
-
   const updateProfileMutation = useMutation({
     mutationFn: (values: ProfileFormValues) =>
       userService.updateMyProfile({
@@ -71,7 +61,7 @@ const ProfilePage = () => {
 
       // Best-effort cleanup of previous image object when image changed or removed.
       if (previousImageUrl && previousImageUrl !== nextImageUrl) {
-        const previousKey = extractS3KeyFromUrl(previousImageUrl);
+        const previousKey = uploadService.extractStorageKey(previousImageUrl);
         if (previousKey) {
           void uploadService.deleteImage(previousKey).catch(() => {
             // Silent cleanup failure to avoid blocking profile update success.
@@ -220,7 +210,7 @@ const ProfilePage = () => {
                 width={96}
                 height={96}
                 className="rounded-lg object-cover"
-                preview={{ mask: 'Click to enlarge' }}
+                preview={{ mask: null }}
               />
             ) : (
               <Avatar size={96} icon={<UserOutlined />} style={{ backgroundColor: '#16a34a' }} />

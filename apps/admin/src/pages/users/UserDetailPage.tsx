@@ -336,7 +336,12 @@ const UserDetailPage = () => {
         {/* Profile Card */}
         <Card>
           <div className="text-center mb-6">
-            <Avatar size={80} icon={<UserOutlined />} style={{ backgroundColor: '#16a34a' }} />
+            <Avatar
+              size={80}
+              src={user.profileImageUrl || undefined}
+              icon={!user.profileImageUrl ? <UserOutlined /> : undefined}
+              style={{ backgroundColor: '#16a34a' }}
+            />
             <Title level={4} className="!mt-4 !mb-1">
               {user.fullName}
             </Title>

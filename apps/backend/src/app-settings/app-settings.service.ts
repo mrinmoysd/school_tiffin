@@ -5,6 +5,7 @@ import {
   DEFAULT_TAX_PERCENTAGE,
   TAX_PERCENTAGE_SETTING_KEY,
 } from './app-settings.constants';
+import { normalizeImageReferencePath } from '../uploads/upload-storage.util';
 
 @Injectable()
 export class AppSettingsService {
@@ -23,9 +24,7 @@ export class AppSettingsService {
   }
 
   private sanitizeLogoUrl(rawValue: string | null | undefined): string | null {
-    if (typeof rawValue !== 'string') return null;
-    const trimmed = rawValue.trim();
-    return trimmed.length > 0 ? trimmed : null;
+    return normalizeImageReferencePath(rawValue);
   }
 
   async getTaxSetting() {

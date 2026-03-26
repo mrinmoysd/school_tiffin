@@ -26,18 +26,6 @@ import type { ColumnsType } from 'antd/es/table';
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
-const extractStorageKeyFromUrl = (fileUrl?: string | null): string | null => {
-  if (!fileUrl) return null;
-
-  try {
-    const parsed = new URL(fileUrl);
-    const key = decodeURIComponent(parsed.pathname.replace(/^\/+/, ''));
-    return key || null;
-  } catch {
-    return null;
-  }
-};
-
 const SettingsPage = () => {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -136,7 +124,7 @@ const SettingsPage = () => {
       const updatedBranding = await appSettingService.updateBrandingSetting(uploadResult.url);
 
       if (previousLogoUrl && previousLogoUrl !== uploadResult.url) {
-        const previousKey = extractStorageKeyFromUrl(previousLogoUrl);
+        const previousKey = uploadService.extractStorageKey(previousLogoUrl);
         if (previousKey) {
           try {
             await uploadService.deleteImage(previousKey);
@@ -162,7 +150,7 @@ const SettingsPage = () => {
       const previousLogoUrl = brandingSetting?.logoUrl ?? null;
       const updatedBranding = await appSettingService.updateBrandingSetting(null);
 
-      const previousKey = extractStorageKeyFromUrl(previousLogoUrl);
+      const previousKey = uploadService.extractStorageKey(previousLogoUrl);
       if (previousKey) {
         try {
           await uploadService.deleteImage(previousKey);

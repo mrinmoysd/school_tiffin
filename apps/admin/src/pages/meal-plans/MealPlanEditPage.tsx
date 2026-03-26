@@ -135,7 +135,7 @@ const MealPlanEditPage = () => {
       setUploadedImageKey(result.key);
       form.setFieldValue('imageUrl', result.url);
     } catch {
-      message.error('Image upload failed. Please check your S3 configuration.');
+      message.error('Image upload failed. Please check server upload storage settings.');
     } finally {
       setImageUploading(false);
     }

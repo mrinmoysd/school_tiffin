@@ -2,6 +2,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
+import { normalizeImageReferencePath } from '../uploads/upload-storage.util';
 import { CreateMealPlanDto, UpdateMealPlanDto } from './dto';
 
 @Injectable()
@@ -70,10 +71,15 @@ export class MealPlansService {
 
     const { schoolId, mealPlanTypeId, planType, ...rest } = createMealPlanDto;
     const resolvedMealPlanTypeId = await this.resolveMealPlanTypeId(mealPlanTypeId, planType);
+    const normalizedImageUrl =
+      createMealPlanDto.imageUrl === undefined
+        ? undefined
+        : normalizeImageReferencePath(createMealPlanDto.imageUrl);
 
     const mealPlan = await this.prisma.mealPlan.create({
       data: {
         ...rest,
+        ...(createMealPlanDto.imageUrl !== undefined ? { imageUrl: normalizedImageUrl } : {}),
         school: { connect: { id: schoolId } },
         mealPlanType: { connect: { id: resolvedMealPlanTypeId } },
       },
@@ -301,6 +307,10 @@ export class MealPlansService {
     } = {
       ...rest,
     };
+
+    if (updateMealPlanDto.imageUrl !== undefined) {
+      data.imageUrl = normalizeImageReferencePath(updateMealPlanDto.imageUrl);
+    }
 
     if (schoolId) {
       data.school = { connect: { id: schoolId } };

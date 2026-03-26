@@ -62,8 +62,13 @@ const LoginPage = () => {
       message.success(`Welcome back, ${data.user.fullName || 'Admin'}!`);
       navigate(from, { replace: true });
     },
-    onError: () => {
-      message.error('The username or password you entered is incorrect. Please try again.');
+    onError: (error: Error) => {
+      const backendMessage = error?.message?.trim() || '';
+      if (/invalid credentials|username or password/i.test(backendMessage)) {
+        message.error('The username or password you entered is incorrect. Please try again.');
+      } else {
+        message.error(backendMessage || 'Unable to sign in right now. Please try again.');
+      }
       passwordRef.current?.input?.select();
     },
   });

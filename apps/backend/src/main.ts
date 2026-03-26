@@ -1,17 +1,20 @@
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
+import { existsSync, mkdirSync } from 'fs';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { validateEnv } from './config/env.validation';
+import { getUploadsRootPath } from './uploads/upload-storage.util';
 
 async function bootstrap() {
   // Validate environment variables first
   validateEnv();
 
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true, // Buffer logs until logger is ready
   });
 
@@ -39,6 +42,13 @@ async function bootstrap() {
     origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3001'],
     credentials: true,
   });
+
+  // Ensure local uploads directory exists and expose it as static assets.
+  const uploadsRootPath = getUploadsRootPath();
+  if (!existsSync(uploadsRootPath)) {
+    mkdirSync(uploadsRootPath, { recursive: true });
+  }
+  app.useStaticAssets(uploadsRootPath, { prefix: '/uploads' });
 
   // Global validation pipe (enhanced with sanitization)
   app.useGlobalPipes(

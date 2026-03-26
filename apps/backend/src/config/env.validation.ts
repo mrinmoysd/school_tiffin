@@ -46,6 +46,9 @@ const envSchema = z.object({
 
   // CORS
   ALLOWED_ORIGINS: z.string().transform(val => val.split(',')),
+
+  // Local uploads
+  UPLOAD_DIR: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

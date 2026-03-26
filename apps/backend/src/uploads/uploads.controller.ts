@@ -8,9 +8,18 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
+import type { Express } from 'express';
 import { UploadsService } from './uploads.service';
-import { Roles, UserRole } from '../common/decorators';
+import { CurrentUser, Roles, UserRole } from '../common/decorators';
+import { sanitizeUploadFolder } from './upload-storage.util';
 
 @ApiTags('Uploads')
 @ApiBearerAuth()
@@ -20,14 +29,16 @@ export class UploadsController {
   constructor(private readonly uploadsService: UploadsService) {}
 
   /**
-   * Upload image (Admin only)
+   * Upload image (Admin/Parent)
    */
   @Post('image')
+  @Roles(UserRole.ADMIN, UserRole.PARENT)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
-    summary: '[Admin] Upload image',
-    description: 'Upload an image to AWS S3. Allowed types: JPEG, PNG, WebP. Max size: 5MB.',
+    summary: '[Admin/Parent] Upload image',
+    description:
+      'Upload an image to the server file system. Allowed types: JPEG, PNG, WebP. Max size: 5MB. Parents are restricted to profile folders.',
   })
   @ApiBody({
     schema: {
@@ -40,7 +51,7 @@ export class UploadsController {
         },
         folder: {
           type: 'string',
-          description: 'S3 folder (optional)',
+          description: 'Storage folder (optional)',
           example: 'meal-plans',
         },
       },
@@ -54,8 +65,8 @@ export class UploadsController {
         success: true,
         statusCode: 201,
         data: {
-          url: 'https://bucket.s3.region.amazonaws.com/images/uuid.jpg',
-          key: 'images/uuid.jpg',
+          url: '/uploads/meal-plans/3de8f7fd-53e7-4f6c-96fb-f7b84762bf6d.jpg',
+          key: 'meal-plans/3de8f7fd-53e7-4f6c-96fb-f7b84762bf6d.jpg',
           originalName: 'meal.jpg',
           mimeType: 'image/jpeg',
           size: 245678,
@@ -64,16 +75,23 @@ export class UploadsController {
     },
   })
   @ApiResponse({ status: 400, description: 'Invalid file type or size' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin or Parent access required' })
   async uploadImage(
     @UploadedFile() file: Express.Multer.File,
     @Body('folder') folder?: string,
+    @CurrentUser('role') role?: string,
+    @CurrentUser('sub') userId?: string,
   ) {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
 
-    return this.uploadsService.uploadImage(file, folder || 'images');
+    const uploadFolder =
+      role === UserRole.PARENT
+        ? this.resolveParentUploadFolder(folder, userId)
+        : folder || 'images';
+
+    return this.uploadsService.uploadImage(file, uploadFolder);
   }
 
   /**
@@ -82,7 +100,7 @@ export class UploadsController {
   @Delete('image')
   @ApiOperation({
     summary: '[Admin] Delete image',
-    description: 'Delete an image from AWS S3 by providing its key.',
+    description: 'Delete an image from server storage by providing key/path/url.',
   })
   @ApiBody({
     schema: {
@@ -90,8 +108,8 @@ export class UploadsController {
       properties: {
         key: {
           type: 'string',
-          description: 'S3 object key',
-          example: 'images/uuid.jpg',
+          description: 'Storage key/path/url',
+          example: 'meal-plans/3de8f7fd-53e7-4f6c-96fb-f7b84762bf6d.jpg',
         },
       },
     },
@@ -103,5 +121,20 @@ export class UploadsController {
     }
 
     return this.uploadsService.deleteImage(key);
+  }
+
+  private resolveParentUploadFolder(folder: string | undefined, userId?: string): string {
+    if (!userId) {
+      throw new BadRequestException('User context missing for upload');
+    }
+
+    const normalizedFolder = sanitizeUploadFolder(folder || 'users');
+    const topLevelFolder = normalizedFolder.split('/')[0];
+
+    if (topLevelFolder !== 'users' && topLevelFolder !== 'students') {
+      throw new BadRequestException('Parents can upload images only to users or students folders');
+    }
+
+    return `parents/${userId}/${topLevelFolder}`;
   }
 }

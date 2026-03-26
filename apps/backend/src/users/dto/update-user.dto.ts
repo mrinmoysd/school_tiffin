@@ -1,12 +1,4 @@
-import {
-  IsEmail,
-  IsString,
-  IsOptional,
-  IsUrl,
-  MinLength,
-  MaxLength,
-  Matches,
-} from 'class-validator';
+import { IsEmail, IsString, IsOptional, MinLength, MaxLength, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateUserDto {
@@ -43,12 +35,13 @@ export class UpdateUserDto {
   phone?: string;
 
   @ApiProperty({
-    description: 'User profile image URL',
-    example: 'https://bucket.s3.region.amazonaws.com/users/uuid.jpg',
+    description: 'User profile image path reference',
+    example: '/uploads/users/uuid.jpg',
     required: false,
     nullable: true,
   })
   @IsOptional()
-  @IsUrl()
+  @IsString()
+  @MaxLength(2048)
   profileImageUrl?: string | null;
 }
