@@ -16,7 +16,7 @@ export class AuthController {
    */
   @Public()
   @Post('register')
-  @Throttle({ default: { limit: 3, ttl: 3600000 } }) // 3 requests per hour
+  @Throttle({ default: { limit: 100, ttl: 3600 } }) // 3 requests per hour
   @ApiOperation({
     summary: 'Register a new user',
     description:
