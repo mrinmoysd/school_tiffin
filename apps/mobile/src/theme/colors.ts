@@ -1,4 +1,4 @@
-export const themeColors = {
+export const lightThemeColors = {
   brand: {
     green500: '#22C55E',
     green600: '#16A34A',
@@ -61,3 +61,74 @@ export const themeColors = {
     scrim: 'rgba(15, 23, 42, 0.45)',
   },
 } as const;
+
+type DeepStringRecord<T> = {
+  [K in keyof T]: T[K] extends object ? DeepStringRecord<T[K]> : string;
+};
+
+export type AppThemeColors = DeepStringRecord<typeof lightThemeColors>;
+
+export const darkThemeColors: AppThemeColors = {
+  brand: {
+    green500: '#34D399',
+    green600: '#22C55E',
+    green700: '#16A34A',
+    blue500: '#60A5FA',
+    blue700: '#3B82F6',
+  },
+  neutral: {
+    white: '#0F172A',
+    slate50: '#020617',
+    slate100: '#0F172A',
+    slate200: '#1E293B',
+    slate300: '#334155',
+    slate400: '#64748B',
+  },
+  action: {
+    primary: '#22C55E',
+    primaryPressed: '#16A34A',
+  },
+  intent: {
+    success: '#22C55E',
+    successStrong: '#16A34A',
+    info: '#60A5FA',
+    infoStrong: '#3B82F6',
+    warning: '#FBBF24',
+    danger: '#F87171',
+  },
+  surface: {
+    infoAlt: '#0B1220',
+    infoSofter: '#172554',
+    infoSoft: '#1E3A8A',
+    infoSubtle: '#1E40AF',
+    successSubtle: '#14532D',
+    warningSoft: '#78350F',
+    warningSubtle: '#7C2D12',
+    dangerSoft: '#7F1D1D',
+    dangerSubtle: '#991B1B',
+    violetSubtle: '#4C1D95',
+  },
+  border: {
+    infoAccent: '#38BDF8',
+    infoSoft: '#3B82F6',
+    info: '#2563EB',
+    infoLight: '#1D4ED8',
+    danger: '#7F1D1D',
+  },
+  text: {
+    primary: '#F8FAFC',
+    secondary: '#CBD5E1',
+    muted: '#94A3B8',
+    subtle: '#E2E8F0',
+    success: '#86EFAC',
+    warning: '#FCD34D',
+    danger: '#FCA5A5',
+    dangerStrong: '#F87171',
+    infoDark: '#BFDBFE',
+    infoDeeper: '#93C5FD',
+  },
+  overlay: {
+    scrim: 'rgba(2, 6, 23, 0.7)',
+  },
+} as const;
+export const themeColors: AppThemeColors = lightThemeColors;

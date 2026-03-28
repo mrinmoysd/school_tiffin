@@ -1,15 +1,24 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi } from '../../api/students';
 import { usersApi, type UserProfile } from '../../api/users';
 import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { logout } from '../../store/auth';
+import { setThemePreference } from '../../store/theme';
 import { useAppDispatch } from '../../store/hooks';
-import { themeColors } from '../../theme';
+import { ThemePreference, useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
 
@@ -40,6 +49,8 @@ const getVerificationStatus = (profile: UserProfile | null) => ({
 
 export const ProfileScreen = ({ navigation }: Props) => {
   const dispatch = useAppDispatch();
+  const { colors, preference } = useAppTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const hasFocusedOnceRef = useRef(false);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -115,10 +126,16 @@ export const ProfileScreen = ({ navigation }: Props) => {
     ]);
   };
 
+  const themeOptions: { key: ThemePreference; label: string }[] = [
+    { key: 'light', label: 'Light' },
+    { key: 'dark', label: 'Dark' },
+    { key: 'system', label: 'System Default' },
+  ];
+
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -169,6 +186,28 @@ export const ProfileScreen = ({ navigation }: Props) => {
         <Text style={styles.line}>Total Students: {studentsCount}</Text>
       </View>
 
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Theme</Text>
+        <View style={styles.themeOptionsRow}>
+          {themeOptions.map(option => (
+            <Pressable
+              key={option.key}
+              onPress={() => dispatch(setThemePreference(option.key))}
+              style={[styles.themeOption, preference === option.key && styles.themeOptionSelected]}
+            >
+              <Text
+                style={[
+                  styles.themeOptionText,
+                  preference === option.key && styles.themeOptionTextSelected,
+                ]}
+              >
+                {option.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
       <AppButton title="Edit Profile" onPress={() => navigation.navigate('EditProfile')} />
@@ -207,86 +246,113 @@ export const ProfileScreen = ({ navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  content: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingBottom: 28,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: themeColors.text.primary,
-    marginBottom: 12,
-  },
-  card: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-    marginBottom: 10,
-  },
-  cardTitle: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  line: {
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  muted: {
-    color: themeColors.text.subtle,
-    fontSize: 13,
-    marginBottom: 6,
-  },
-  badgesRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  badge: {
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  badgeSuccess: {
-    backgroundColor: themeColors.surface.successSubtle,
-  },
-  badgeMuted: {
-    backgroundColor: themeColors.neutral.slate200,
-  },
-  badgeText: {
-    color: themeColors.text.primary,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  errorText: {
-    color: themeColors.intent.danger,
-    fontSize: 13,
-    marginBottom: 10,
-  },
-  secondaryButton: {
-    marginTop: 10,
-  },
-  logoutButton: {
-    marginTop: 10,
-    backgroundColor: themeColors.intent.danger,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    content: {
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      paddingBottom: 28,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      backgroundColor: colors.neutral.slate50,
+    },
+    title: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: colors.text.primary,
+      marginBottom: 12,
+    },
+    card: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+      marginBottom: 10,
+    },
+    cardTitle: {
+      color: colors.text.primary,
+      fontSize: 15,
+      fontWeight: '700',
+      marginBottom: 8,
+    },
+    line: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '600',
+      marginBottom: 4,
+    },
+    muted: {
+      color: colors.text.subtle,
+      fontSize: 13,
+      marginBottom: 6,
+    },
+    badgesRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+    },
+    badge: {
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      marginRight: 8,
+      marginBottom: 8,
+    },
+    badgeSuccess: {
+      backgroundColor: colors.surface.successSubtle,
+    },
+    badgeMuted: {
+      backgroundColor: colors.neutral.slate200,
+    },
+    badgeText: {
+      color: colors.text.primary,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    themeOptionsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+    },
+    themeOption: {
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      backgroundColor: colors.neutral.slate50,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      marginRight: 8,
+      marginBottom: 8,
+    },
+    themeOptionSelected: {
+      borderColor: colors.action.primary,
+      backgroundColor: colors.surface.infoSoft,
+    },
+    themeOptionText: {
+      color: colors.text.primary,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    themeOptionTextSelected: {
+      color: colors.text.primary,
+    },
+    errorText: {
+      color: colors.intent.danger,
+      fontSize: 13,
+      marginBottom: 10,
+    },
+    secondaryButton: {
+      marginTop: 10,
+    },
+    logoutButton: {
+      marginTop: 10,
+      backgroundColor: colors.intent.danger,
+    },
+  });

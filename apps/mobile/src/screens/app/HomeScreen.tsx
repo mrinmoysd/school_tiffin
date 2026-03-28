@@ -16,7 +16,7 @@ import { subscriptionsApi, type Subscription } from '../../api/subscriptions';
 import { usersApi } from '../../api/users';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppSelector } from '../../store/hooks';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 type BottomNavItem = {
@@ -99,6 +99,8 @@ const getCompactLabel = (value: string, maxLength = 16) => {
 
 export const HomeScreen = ({ navigation }: Props) => {
   const insets = useSafeAreaInsets();
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const user = useAppSelector(state => state.auth.user);
   const [greetingName, setGreetingName] = useState(() =>
     getGreetingName(user?.fullName, user?.email),
@@ -122,14 +124,20 @@ export const HomeScreen = ({ navigation }: Props) => {
       setStudents(studentsResponse);
       setSubscriptions(subscriptionsResponse);
 
-      if (studentsResponse.length === 0) {
-        setSelectedStudentId(null);
-      } else if (
-        !selectedStudentId ||
-        !studentsResponse.some(student => student.id === selectedStudentId)
-      ) {
-        setSelectedStudentId(studentsResponse[0].id);
-      }
+      setSelectedStudentId(currentSelectedStudentId => {
+        if (studentsResponse.length === 0) {
+          return null;
+        }
+
+        if (
+          !currentSelectedStudentId ||
+          !studentsResponse.some(student => student.id === currentSelectedStudentId)
+        ) {
+          return studentsResponse[0].id;
+        }
+
+        return currentSelectedStudentId;
+      });
     } catch (requestError) {
       if (requestError instanceof ApiClientError) {
         setError(requestError.message);
@@ -138,7 +146,7 @@ export const HomeScreen = ({ navigation }: Props) => {
 
       setError('Unable to load home data right now. Please try again.');
     }
-  }, [selectedStudentId]);
+  }, []);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -180,16 +188,25 @@ export const HomeScreen = ({ navigation }: Props) => {
 
   const filteredSubscriptions = useMemo(() => {
     if (!selectedStudentId) {
-      return subscriptions;
+      return [];
     }
 
     return subscriptions.filter(subscription => subscription.studentId === selectedStudentId);
   }, [selectedStudentId, subscriptions]);
 
+  const handleCreateSubscription = useCallback(() => {
+    if (selectedStudent?.school?.id) {
+      navigation.navigate('SchoolDetail', { schoolId: selectedStudent.school.id });
+      return;
+    }
+
+    navigation.navigate('SchoolList');
+  }, [navigation, selectedStudent]);
+
   if (initialLoading) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -214,14 +231,36 @@ export const HomeScreen = ({ navigation }: Props) => {
               accessibilityRole="button"
               accessibilityLabel="Open profile"
             >
-              <Text style={styles.profileIconText}>{greetingName[0]}</Text>
+              <Text style={styles.profileIconText}>{greetingName.charAt(0)}</Text>
             </Pressable>
           </View>
         </View>
 
-        {students.length > 0 ? (
-          <View style={styles.section}>
+        <View style={styles.section}>
+          <View style={styles.mainSectionHeader}>
             <Text style={styles.sectionTitle}>Students</Text>
+            <Pressable
+              style={styles.addButton}
+              onPress={() =>
+                navigation.navigate('AddStudent', {
+                  mealPlanId: undefined,
+                  schoolId: undefined,
+                  studentId: undefined,
+                })
+              }
+              accessibilityRole="button"
+              accessibilityLabel="Add student"
+            >
+              <Text style={styles.addButtonText}>+</Text>
+            </Pressable>
+          </View>
+
+          {students.length === 0 ? (
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyTitle}>No students added yet</Text>
+              <Text style={styles.emptySubtitle}>Tap + to add a student first.</Text>
+            </View>
+          ) : (
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -246,58 +285,64 @@ export const HomeScreen = ({ navigation }: Props) => {
                 </Pressable>
               ))}
             </ScrollView>
-          </View>
-        ) : null}
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Active Subscriptions</Text>
-            <Pressable onPress={() => void onRefresh()}>
-              <Text style={styles.linkText}>Refresh</Text>
-            </Pressable>
-          </View>
-
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-          {!error && filteredSubscriptions.length === 0 ? (
-            <View style={styles.emptyCard}>
-              <Text style={styles.emptyTitle}>No active subscriptions</Text>
-              <Text style={styles.emptySubtitle}>
-                {selectedStudent
-                  ? `No active plan found for ${selectedStudent.fullName}.`
-                  : 'Subscribe to a meal plan to get started.'}
-              </Text>
+          )}
+          <View style={styles.subSection}>
+            <View style={styles.subSectionHeader}>
+              <Text style={styles.subSectionTitle}>Subscriptions</Text>
+              <Pressable
+                style={styles.addButton}
+                onPress={handleCreateSubscription}
+                accessibilityRole="button"
+                accessibilityLabel="Create subscription"
+              >
+                <Text style={styles.addButtonText}>+</Text>
+              </Pressable>
             </View>
-          ) : null}
 
-          {filteredSubscriptions.map(subscription => (
-            <View style={styles.subscriptionCard} key={subscription.id}>
-              <Text style={styles.planName}>{subscription.mealPlan.name}</Text>
-              <Text style={styles.subscriptionMeta}>{subscription.student.fullName}</Text>
-              <Text style={styles.subscriptionMeta}>
-                Deliveries: {subscription.remainingDays}/{subscription.totalDays} remaining
-              </Text>
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-              <View style={styles.actionsRow}>
-                <Pressable
-                  style={[styles.actionButton, styles.pauseButton]}
-                  onPress={() =>
-                    navigation.navigate('PauseRequest', { subscriptionId: subscription.id })
-                  }
-                >
-                  <Text style={styles.pauseButtonLabel}>Pause</Text>
-                </Pressable>
-                <Pressable
-                  style={[styles.actionButton, styles.detailsButton]}
-                  onPress={() =>
-                    navigation.navigate('SubscriptionDetail', { subscriptionId: subscription.id })
-                  }
-                >
-                  <Text style={styles.detailsButtonLabel}>View Details</Text>
-                </Pressable>
+            {!error && filteredSubscriptions.length === 0 ? (
+              <View style={styles.emptyCard}>
+                <Text style={styles.emptyTitle}>No active subscriptions</Text>
+                <Text style={styles.emptySubtitle}>
+                  {selectedStudent
+                    ? `No active plan found for ${selectedStudent.fullName}.`
+                    : 'Subscribe to a meal plan to get started.'}
+                </Text>
               </View>
-            </View>
-          ))}
+            ) : null}
+
+            {filteredSubscriptions.map(subscription => (
+              <View style={styles.subscriptionCard} key={subscription.id}>
+                <Text style={styles.planName}>{subscription.mealPlan.name}</Text>
+                <Text style={styles.subscriptionMeta}>{subscription.student.fullName}</Text>
+                <Text style={styles.subscriptionMeta}>
+                  Deliveries: {subscription.remainingDays}/{subscription.totalDays} remaining
+                </Text>
+
+                <View style={styles.actionsRow}>
+                  <Pressable
+                    style={[styles.actionButton, styles.pauseButton]}
+                    onPress={() =>
+                      navigation.navigate('PauseRequest', { subscriptionId: subscription.id })
+                    }
+                  >
+                    <Text style={styles.pauseButtonLabel}>Pause</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.actionButton, styles.detailsButton]}
+                    onPress={() =>
+                      navigation.navigate('SubscriptionDetail', {
+                        subscriptionId: subscription.id,
+                      })
+                    }
+                  >
+                    <Text style={styles.detailsButtonLabel}>View Details</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ))}
+          </View>
         </View>
       </ScrollView>
 
@@ -319,205 +364,234 @@ export const HomeScreen = ({ navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  contentContainer: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  headerCard: {
-    paddingHorizontal: 4,
-    paddingTop: 6,
-    marginBottom: 16,
-  },
-  headerTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  welcomeInlineText: {
-    flex: 1,
-    fontSize: 22,
-    fontWeight: '700',
-    color: themeColors.text.primary,
-    marginRight: 12,
-  },
-  profileIconButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 20,
-    backgroundColor: themeColors.neutral.white,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate300,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  profileIconText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: themeColors.text.primary,
-  },
-  section: {
-    marginBottom: 16,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: themeColors.text.primary,
-    marginBottom: 10,
-  },
-  linkText: {
-    color: themeColors.intent.infoStrong,
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  studentsRow: {
-    paddingRight: 8,
-  },
-  studentCard: {
-    width: 130,
-    minHeight: 66,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate300,
-    backgroundColor: themeColors.neutral.white,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    marginRight: 8,
-    justifyContent: 'center',
-  },
-  studentCardSelected: {
-    borderColor: themeColors.action.primary,
-    backgroundColor: themeColors.surface.infoSoft,
-  },
-  studentName: {
-    color: themeColors.text.primary,
-    fontSize: 13,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  studentSchool: {
-    color: themeColors.text.muted,
-    fontSize: 11,
-    fontWeight: '500',
-    marginBottom: 2,
-  },
-  studentGrade: {
-    color: themeColors.text.secondary,
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  errorText: {
-    color: themeColors.intent.danger,
-    marginBottom: 10,
-    fontSize: 13,
-  },
-  emptyCard: {
-    borderRadius: 12,
-    padding: 14,
-    backgroundColor: themeColors.neutral.white,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-  },
-  emptyTitle: {
-    color: themeColors.text.primary,
-    fontWeight: '600',
-    fontSize: 15,
-    marginBottom: 4,
-  },
-  emptySubtitle: {
-    color: themeColors.text.muted,
-    fontSize: 13,
-  },
-  subscriptionCard: {
-    backgroundColor: themeColors.neutral.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    padding: 14,
-    marginBottom: 10,
-  },
-  planName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: themeColors.text.primary,
-    marginBottom: 2,
-  },
-  subscriptionMeta: {
-    color: themeColors.text.secondary,
-    fontSize: 13,
-    marginTop: 2,
-  },
-  actionsRow: {
-    marginTop: 12,
-    flexDirection: 'row',
-  },
-  actionButton: {
-    height: 38,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flex: 1,
-  },
-  pauseButton: {
-    backgroundColor: themeColors.surface.warningSoft,
-    marginRight: 8,
-  },
-  detailsButton: {
-    backgroundColor: themeColors.surface.infoSubtle,
-  },
-  pauseButtonLabel: {
-    color: themeColors.text.warning,
-    fontWeight: '600',
-    fontSize: 13,
-  },
-  detailsButtonLabel: {
-    color: themeColors.intent.infoStrong,
-    fontWeight: '600',
-    fontSize: 13,
-  },
-  bottomBar: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: themeColors.neutral.white,
-    borderTopWidth: 1,
-    borderTopColor: themeColors.neutral.slate200,
-  },
-  bottomBarRow: {
-    minHeight: TAB_BAR_BASE_HEIGHT,
-    flexDirection: 'row',
-  },
-  bottomTab: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  bottomTabLabel: {
-    color: themeColors.text.primary,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    contentContainer: {
+      padding: 16,
+      paddingBottom: 32,
+    },
+    loaderContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.neutral.slate50,
+    },
+    headerCard: {
+      paddingHorizontal: 4,
+      paddingTop: 6,
+      marginBottom: 16,
+    },
+    headerTopRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 6,
+    },
+    welcomeInlineText: {
+      flex: 1,
+      fontSize: 22,
+      fontWeight: '700',
+      color: colors.text.primary,
+      marginRight: 12,
+    },
+    profileIconButton: {
+      width: 60,
+      height: 60,
+      borderRadius: 20,
+      backgroundColor: colors.neutral.white,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    profileIconText: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: colors.text.primary,
+    },
+    section: {
+      marginBottom: 16,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: colors.text.primary,
+    },
+    mainSectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    subSection: {
+      marginTop: 14,
+      paddingTop: 12,
+      borderTopWidth: 1,
+      borderTopColor: colors.neutral.slate200,
+    },
+    subSectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    subSectionTitle: {
+      color: colors.text.primary,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    addButton: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      backgroundColor: colors.neutral.white,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    addButtonText: {
+      color: colors.text.primary,
+      fontSize: 18,
+      fontWeight: '700',
+      lineHeight: 20,
+      marginTop: -1,
+    },
+    studentsRow: {
+      paddingRight: 8,
+    },
+    studentCard: {
+      width: 130,
+      minHeight: 66,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+      marginRight: 8,
+      justifyContent: 'center',
+    },
+    studentCardSelected: {
+      borderColor: colors.action.primary,
+      backgroundColor: colors.surface.infoSoft,
+    },
+    studentName: {
+      color: colors.text.primary,
+      fontSize: 13,
+      fontWeight: '700',
+      marginBottom: 2,
+    },
+    studentSchool: {
+      color: colors.text.muted,
+      fontSize: 11,
+      fontWeight: '500',
+      marginBottom: 2,
+    },
+    studentGrade: {
+      color: colors.text.secondary,
+      fontSize: 11,
+      fontWeight: '600',
+    },
+    errorText: {
+      color: colors.intent.danger,
+      marginBottom: 10,
+      fontSize: 13,
+    },
+    emptyCard: {
+      borderRadius: 12,
+      padding: 14,
+      backgroundColor: colors.neutral.white,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+    },
+    emptyTitle: {
+      color: colors.text.primary,
+      fontWeight: '600',
+      fontSize: 15,
+      marginBottom: 4,
+    },
+    emptySubtitle: {
+      color: colors.text.muted,
+      fontSize: 13,
+    },
+    subscriptionCard: {
+      backgroundColor: colors.neutral.white,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      padding: 14,
+      marginBottom: 10,
+    },
+    planName: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: colors.text.primary,
+      marginBottom: 2,
+    },
+    subscriptionMeta: {
+      color: colors.text.secondary,
+      fontSize: 13,
+      marginTop: 2,
+    },
+    actionsRow: {
+      marginTop: 12,
+      flexDirection: 'row',
+    },
+    actionButton: {
+      height: 38,
+      borderRadius: 10,
+      justifyContent: 'center',
+      alignItems: 'center',
+      flex: 1,
+    },
+    pauseButton: {
+      backgroundColor: colors.surface.warningSoft,
+      marginRight: 8,
+    },
+    detailsButton: {
+      backgroundColor: colors.surface.infoSubtle,
+    },
+    pauseButtonLabel: {
+      color: colors.text.warning,
+      fontWeight: '600',
+      fontSize: 13,
+    },
+    detailsButtonLabel: {
+      color: colors.intent.infoStrong,
+      fontWeight: '600',
+      fontSize: 13,
+    },
+    bottomBar: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: colors.neutral.white,
+      borderTopWidth: 1,
+      borderTopColor: colors.neutral.slate200,
+    },
+    bottomBarRow: {
+      minHeight: TAB_BAR_BASE_HEIGHT,
+      flexDirection: 'row',
+    },
+    bottomTab: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 4,
+    },
+    bottomTabLabel: {
+      color: colors.text.primary,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+  });

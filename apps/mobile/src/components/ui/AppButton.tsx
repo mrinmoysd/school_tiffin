@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 interface AppButtonProps {
   title: string;
@@ -19,6 +19,8 @@ export const AppButton = ({
   variant = 'primary',
   style,
 }: AppButtonProps) => {
+  const { colors } = useAppTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const isDisabled = loading || disabled;
 
   return (
@@ -35,7 +37,7 @@ export const AppButton = ({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' ? themeColors.neutral.white : themeColors.text.primary}
+          color={variant === 'primary' ? colors.neutral.white : colors.text.primary}
         />
       ) : (
         <Text
@@ -51,34 +53,35 @@ export const AppButton = ({
   );
 };
 
-const styles = StyleSheet.create({
-  button: {
-    height: 48,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  primaryButton: {
-    backgroundColor: themeColors.action.primary,
-  },
-  secondaryButton: {
-    backgroundColor: themeColors.neutral.slate200,
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  primaryLabel: {
-    color: themeColors.neutral.white,
-  },
-  secondaryLabel: {
-    color: themeColors.text.primary,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    button: {
+      height: 48,
+      borderRadius: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+    },
+    primaryButton: {
+      backgroundColor: colors.action.primary,
+    },
+    secondaryButton: {
+      backgroundColor: colors.neutral.slate200,
+    },
+    disabledButton: {
+      opacity: 0.6,
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+    label: {
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    primaryLabel: {
+      color: colors.neutral.white,
+    },
+    secondaryLabel: {
+      color: colors.text.primary,
+    },
+  });

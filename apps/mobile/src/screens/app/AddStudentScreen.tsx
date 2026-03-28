@@ -100,7 +100,8 @@ const normalizeGradeValue = (grade: string | number | null) => {
 };
 
 export const AddStudentScreen = ({ route, navigation }: Props) => {
-  const isEditMode = Boolean(route.params.studentId);
+  const params = route.params ?? {};
+  const isEditMode = Boolean(params.studentId);
   const [schools, setSchools] = useState<School[]>([]);
   const [screenLoading, setScreenLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -115,7 +116,7 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
       fullName: '',
       dateOfBirth: '',
       grade: '',
-      schoolId: route.params.schoolId ?? '',
+      schoolId: params.schoolId ?? '',
       allergies: '',
       dietaryPreferences: '',
     },
@@ -136,13 +137,13 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
       const schoolsResponse = await schoolsApi.getSchools();
       setSchools(schoolsResponse);
 
-      if (isEditMode && route.params.studentId) {
-        const student = await studentsApi.getStudentById(route.params.studentId);
+      if (isEditMode && params.studentId) {
+        const student = await studentsApi.getStudentById(params.studentId);
         setValue('fullName', student.fullName ?? '');
         setValue('grade', normalizeGradeValue(student.grade));
-        setValue('schoolId', student.school?.id ?? route.params.schoolId ?? '');
+        setValue('schoolId', student.school?.id ?? params.schoolId ?? '');
       } else {
-        setValue('schoolId', route.params.schoolId ?? '');
+        setValue('schoolId', params.schoolId ?? '');
       }
     } catch (requestError) {
       if (requestError instanceof ApiClientError) {
@@ -153,7 +154,7 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
     } finally {
       setScreenLoading(false);
     }
-  }, [isEditMode, route.params.schoolId, route.params.studentId, setValue]);
+  }, [isEditMode, params.schoolId, params.studentId, setValue]);
 
   useEffect(() => {
     void loadData();
@@ -170,8 +171,8 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
         schoolId: values.schoolId,
       };
 
-      if (isEditMode && route.params.studentId) {
-        await studentsApi.updateStudent(route.params.studentId, payload);
+      if (isEditMode && params.studentId) {
+        await studentsApi.updateStudent(params.studentId, payload);
       } else {
         await studentsApi.createStudent(payload);
       }
@@ -181,10 +182,10 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
         return;
       }
 
-      if (route.params.mealPlanId && route.params.schoolId) {
+      if (params.mealPlanId && params.schoolId) {
         navigation.navigate('SelectStudent', {
-          mealPlanId: route.params.mealPlanId,
-          schoolId: route.params.schoolId,
+          mealPlanId: params.mealPlanId,
+          schoolId: params.schoolId,
         });
         return;
       }

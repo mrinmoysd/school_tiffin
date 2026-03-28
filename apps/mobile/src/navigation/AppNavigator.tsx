@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { linking } from './linking';
 import { RootStackParamList } from './types';
@@ -36,24 +36,59 @@ import {
   ResetPasswordScreen,
 } from '../screens/auth';
 import { useAppSelector } from '../store/hooks';
-import { themeColors } from '../theme';
+import { useAppTheme } from '../theme';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const AppNavigator = () => {
   const { isAuthenticated, bootstrapLoading } = useAppSelector(state => state.auth);
+  const { resolvedTheme, colors } = useAppTheme();
+
+  const navigationTheme =
+    resolvedTheme === 'dark'
+      ? {
+          ...DarkTheme,
+          colors: {
+            ...DarkTheme.colors,
+            primary: colors.action.primary,
+            background: colors.neutral.slate50,
+            card: colors.neutral.white,
+            text: colors.text.primary,
+            border: colors.neutral.slate200,
+            notification: colors.intent.info,
+          },
+        }
+      : {
+          ...DefaultTheme,
+          colors: {
+            ...DefaultTheme.colors,
+            primary: colors.action.primary,
+            background: colors.neutral.slate50,
+            card: colors.neutral.white,
+            text: colors.text.primary,
+            border: colors.neutral.slate200,
+            notification: colors.intent.info,
+          },
+        };
 
   if (bootstrapLoading) {
     return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+      <View style={[styles.loaderContainer, { backgroundColor: colors.neutral.slate50 }]}>
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
 
   return (
-    <NavigationContainer linking={linking}>
-      <Stack.Navigator>
+    <NavigationContainer linking={linking} theme={navigationTheme}>
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: { backgroundColor: colors.neutral.white },
+          headerTintColor: colors.text.primary,
+          headerTitleStyle: { color: colors.text.primary },
+          contentStyle: { backgroundColor: colors.neutral.slate50 },
+        }}
+      >
         {isAuthenticated ? (
           <>
             <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
@@ -182,6 +217,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: themeColors.neutral.slate50,
   },
 });
