@@ -1,5 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { normalizeImageReferencePath } from '../uploads/upload-storage.util';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -20,6 +21,7 @@ export class UsersService {
         role: true,
         isActive: true,
         phoneVerifiedAt: true,
+        profileImageUrl: true,
         createdAt: true,
         updatedAt: true,
         lastLoginAt: true,
@@ -68,10 +70,30 @@ export class UsersService {
       }
     }
 
+    // Map DTO fields to Prisma user model fields
+    const normalizedProfileImagePath =
+      updateUserDto.profileImageUrl === undefined
+        ? undefined
+        : normalizeImageReferencePath(updateUserDto.profileImageUrl);
+
+    const data: {
+      fullName?: string;
+      email?: string;
+      phoneNumber?: string;
+      profileImageUrl?: string | null;
+    } = {
+      ...(updateUserDto.fullName !== undefined ? { fullName: updateUserDto.fullName } : {}),
+      ...(updateUserDto.email !== undefined ? { email: updateUserDto.email } : {}),
+      ...(updateUserDto.phone !== undefined ? { phoneNumber: updateUserDto.phone } : {}),
+      ...(updateUserDto.profileImageUrl !== undefined
+        ? { profileImageUrl: normalizedProfileImagePath }
+        : {}),
+    };
+
     // Update user
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
-      data: updateUserDto,
+      data,
       select: {
         id: true,
         email: true,
@@ -80,6 +102,7 @@ export class UsersService {
         role: true,
         isActive: true,
         phoneVerifiedAt: true,
+        profileImageUrl: true,
         createdAt: true,
         updatedAt: true,
       },

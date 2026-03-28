@@ -192,13 +192,16 @@ const SubscriptionDetailPage = () => {
         </span>
       ),
       children: (
-        <Table
-          columns={scheduleColumns}
-          dataSource={schedule}
-          rowKey="id"
-          pagination={{ pageSize: 10 }}
-          size="small"
-        />
+        <div className="table-scrollbar">
+          <Table
+            columns={scheduleColumns}
+            dataSource={schedule}
+            rowKey="id"
+            pagination={{ pageSize: 10 }}
+            size="small"
+            scroll={{ x: 'max-content' }}
+          />
+        </div>
       ),
     },
     {
@@ -212,14 +215,17 @@ const SubscriptionDetailPage = () => {
         </span>
       ),
       children: (
-        <Table
-          columns={pauseColumns}
-          dataSource={subscription.pauseRequests}
-          rowKey="id"
-          pagination={false}
-          size="small"
-          locale={{ emptyText: 'No pause requests' }}
-        />
+        <div className="table-scrollbar">
+          <Table
+            columns={pauseColumns}
+            dataSource={subscription.pauseRequests}
+            rowKey="id"
+            pagination={false}
+            size="small"
+            locale={{ emptyText: 'No pause requests' }}
+            scroll={{ x: 'max-content' }}
+          />
+        </div>
       ),
     },
   ];

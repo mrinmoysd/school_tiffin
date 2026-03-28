@@ -14,6 +14,28 @@ export class UpdateStudentDto {
   fullName?: string;
 
   @ApiProperty({
+    description: 'Student profile image URL or upload path',
+    example: '/uploads/parents/uuid/students/student.jpg',
+    required: false,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  profileImageUrl?: string | null;
+
+  @ApiProperty({
+    description: 'Student image URL/path (legacy alias for profileImageUrl)',
+    example: '/uploads/parents/uuid/students/student.jpg',
+    required: false,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  imageUrl?: string | null;
+
+  @ApiProperty({
     description: 'Student grade/class',
     example: '6',
     required: false,

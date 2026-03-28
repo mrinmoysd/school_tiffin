@@ -26,6 +26,7 @@ export interface LoginResponse {
     id: string;
     email: string;
     fullName: string | null;
+    profileImageUrl?: string | null;
     role: string;
   };
   tokens: {
@@ -39,6 +40,7 @@ export interface User {
   email: string;
   phoneNumber?: string;
   fullName: string;
+  profileImageUrl?: string | null;
   role: UserRole;
   isActive: boolean;
   emailVerified: boolean;
@@ -88,19 +90,24 @@ export interface UpdateSchoolDto extends Partial<CreateSchoolDto> {
 }
 
 // Meal Plan Types
-export enum MealPlanType {
-  BREAKFAST = 'BREAKFAST',
-  LUNCH = 'LUNCH',
-  SNACK = 'SNACK',
-  COMBO = 'COMBO',
+export interface MealPlanTypeMaster {
+  id: string;
+  code: string;
+  displayName: string;
+  description?: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface MealPlan {
   id: string;
   schoolId: string;
+  mealPlanTypeId: string;
   name: string;
   description?: string;
-  planType: MealPlanType;
+  planType: string;
   durationDays: number;
   pricePerDay: number;
   totalPrice: number;
@@ -110,22 +117,49 @@ export interface MealPlan {
   createdAt: string;
   updatedAt: string;
   school?: School;
+  mealPlanType?: MealPlanTypeMaster;
   menuItems?: MenuItem[];
 }
 
 export interface CreateMealPlanDto {
   schoolId: string;
+  mealPlanTypeId: string;
   name: string;
   description?: string;
-  planType: MealPlanType;
+  planType?: string;
   durationDays: number;
   pricePerDay: number;
   totalPrice: number;
   currency?: string;
   isActive?: boolean;
+  imageUrl?: string | null;
 }
 
 export interface UpdateMealPlanDto extends Partial<CreateMealPlanDto> {}
+
+export interface CreateMealPlanTypeDto {
+  code: string;
+  displayName: string;
+  description?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+}
+
+export interface UpdateMealPlanTypeDto extends Partial<CreateMealPlanTypeDto> {}
+
+export interface TaxSetting {
+  key: string;
+  taxPercentage: number;
+  updatedAt: string;
+  description?: string;
+}
+
+export interface BrandingSetting {
+  key: string;
+  logoUrl: string | null;
+  updatedAt: string;
+  description?: string;
+}
 
 // Menu Item Types
 export interface MenuItem {
@@ -161,6 +195,7 @@ export interface Student {
   id: string;
   parentId: string;
   fullName: string;
+  profileImageUrl?: string | null;
   dateOfBirth?: string;
   grade?: string;
   section?: string;
@@ -418,7 +453,8 @@ export interface SchoolFilters {
 
 export interface MealPlanFilters {
   schoolId?: string;
-  planType?: MealPlanType;
+  mealPlanTypeId?: string;
+  planType?: string;
   search?: string;
   isActive?: boolean;
 }

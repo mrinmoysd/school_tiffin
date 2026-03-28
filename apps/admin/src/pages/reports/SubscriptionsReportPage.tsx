@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Typography, Card, DatePicker, Select, Table, Spin, Row, Col } from 'antd';
+import { Typography, Card, DatePicker, Select, Table, Skeleton, Row, Col } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { adminService, schoolService } from '@/services';
 import { ReportFilters, SchoolSubscriptionItem } from '@/types';
+import ErrorState from '@/components/ErrorState';
 import {
   LineChart,
   Line,
@@ -30,7 +31,13 @@ const SubscriptionsReportPage = () => {
   });
 
   // Fetch subscriptions report
-  const { data: report, isLoading } = useQuery({
+  const {
+    data: report,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['subscriptionsReport', filters],
     queryFn: () => adminService.getSubscriptionsReport(filters),
     enabled: !!filters.startDate && !!filters.endDate,
@@ -136,9 +143,22 @@ const SubscriptionsReportPage = () => {
       </Card>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Spin size="large" />
+        <div className="space-y-6">
+          <Card title="Subscription Trends" className="mb-6">
+            <Skeleton active paragraph={{ rows: 8 }} />
+          </Card>
+          <Card title="Active Subscriptions by School">
+            <Skeleton active paragraph={{ rows: 8 }} />
+          </Card>
         </div>
+      ) : isError ? (
+        <Card>
+          <ErrorState
+            title="Unable to load subscriptions report"
+            description={(error as Error)?.message}
+            onRetry={refetch}
+          />
+        </Card>
       ) : (
         <>
           {/* Trends Chart */}
@@ -181,13 +201,16 @@ const SubscriptionsReportPage = () => {
           <Card title="Active Subscriptions by School">
             <Row gutter={24}>
               <Col xs={24} lg={12}>
-                <Table
-                  columns={schoolColumns}
-                  dataSource={report?.activeBySchool}
-                  rowKey="schoolId"
-                  pagination={false}
-                  size="small"
-                />
+                <div className="table-scrollbar">
+                  <Table
+                    columns={schoolColumns}
+                    dataSource={report?.activeBySchool}
+                    rowKey="schoolId"
+                    pagination={false}
+                    size="small"
+                    scroll={{ x: 'max-content' }}
+                  />
+                </div>
               </Col>
               <Col xs={24} lg={12}>
                 <div style={{ height: 300 }}>

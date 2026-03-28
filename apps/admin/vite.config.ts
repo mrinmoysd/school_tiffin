@@ -15,7 +15,11 @@ export default defineConfig({
       '/api/v1': {
         target: 'http://localhost:3000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''), // /api/v1/auth -> /v1/auth
+        rewrite: path => path.replace(/^\/api/, ''), // /api/v1/auth -> /v1/auth
+      },
+      '/uploads': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
       },
     },
   },

@@ -5,6 +5,8 @@ import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { subscriptionService, schoolService } from '@/services';
 import { Subscription, SubscriptionFilters, SubscriptionStatus } from '@/types';
+import TableSkeleton from '@/components/TableSkeleton';
+import ErrorState from '@/components/ErrorState';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -16,7 +18,13 @@ const SubscriptionsListPage = () => {
   const [filters, setFilters] = useState<SubscriptionFilters>({});
 
   // Fetch subscriptions
-  const { data: subscriptions, isLoading } = useQuery({
+  const {
+    data: subscriptions,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['subscriptions', filters],
     queryFn: () => subscriptionService.getAll(filters),
   });
@@ -241,24 +249,33 @@ const SubscriptionsListPage = () => {
       {/* Table */}
       <Card>
         <div className="table-scrollbar">
-          <Table
-            columns={columns}
-            dataSource={subscriptions}
-            rowKey="id"
-            loading={isLoading}
-            tableLayout="fixed"
-            scroll={{ x: 1200 }}
-            pagination={{
-              total: subscriptions?.length,
-              pageSize: 10,
-              showSizeChanger: true,
-              showTotal: total => `Total ${total} subscriptions`,
-            }}
-            onRow={record => ({
-              onClick: () => navigate(`/subscriptions/${record.id}`),
-              className: 'cursor-pointer hover:bg-gray-50',
-            })}
-          />
+          {isLoading ? (
+            <TableSkeleton rows={9} />
+          ) : isError ? (
+            <ErrorState
+              title="Unable to load subscriptions"
+              description={(error as Error)?.message}
+              onRetry={refetch}
+            />
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={subscriptions}
+              rowKey="id"
+              tableLayout="fixed"
+              scroll={{ x: 1200 }}
+              pagination={{
+                total: subscriptions?.length,
+                pageSize: 10,
+                showSizeChanger: true,
+                showTotal: total => `Total ${total} subscriptions`,
+              }}
+              onRow={record => ({
+                onClick: () => navigate(`/subscriptions/${record.id}`),
+                className: 'cursor-pointer hover:bg-gray-50',
+              })}
+            />
+          )}
         </div>
       </Card>
     </div>

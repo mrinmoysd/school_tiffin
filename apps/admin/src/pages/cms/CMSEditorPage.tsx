@@ -1,21 +1,19 @@
-import { useEffect, useState } from 'react';
-import type { ChangeEvent } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Form, Input, Button, Card, Typography, message, Switch, Spin, Tabs, Row, Col } from 'antd';
-import { ArrowLeftOutlined, SaveOutlined, EyeOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Card, Typography, message, Switch, Spin, Row, Col } from 'antd';
+import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cmsService } from '@/services';
 import { CreateCMSPageDto, UpdateCMSPageDto } from '@/types';
+import VisualPageBuilder from '@/components/cms/VisualPageBuilder';
 
 const { Title, Text } = Typography;
-const { TextArea } = Input;
 
 const CMSEditorPage = () => {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
-  const [previewContent, setPreviewContent] = useState('');
   const isEditing = !!slug;
 
   // Fetch page if editing
@@ -29,7 +27,6 @@ const CMSEditorPage = () => {
   useEffect(() => {
     if (page) {
       form.setFieldsValue(page);
-      setPreviewContent(page.content);
     }
   }, [page, form]);
 
@@ -72,11 +69,6 @@ const CMSEditorPage = () => {
     }
   };
 
-  // Handle content change for preview
-  const handleContentChange = (e: ChangeEvent<globalThis.HTMLTextAreaElement>) => {
-    setPreviewContent(e.target.value);
-  };
-
   if (isEditing && isLoading) {
     return (
       <div className="flex items-center justify-center min-h-96">
@@ -96,40 +88,6 @@ const CMSEditorPage = () => {
       </div>
     );
   }
-
-  const tabItems = [
-    {
-      key: 'edit',
-      label: 'Edit',
-      children: (
-        <Form.Item
-          name="content"
-          label="Content (HTML/Markdown)"
-          rules={[{ required: true, message: 'Please enter content' }]}
-        >
-          <TextArea
-            rows={20}
-            placeholder="Enter page content..."
-            onChange={handleContentChange}
-            style={{ fontFamily: 'monospace' }}
-          />
-        </Form.Item>
-      ),
-    },
-    {
-      key: 'preview',
-      label: (
-        <span>
-          <EyeOutlined /> Preview
-        </span>
-      ),
-      children: (
-        <Card className="min-h-96">
-          <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: previewContent }} />
-        </Card>
-      ),
-    },
-  ];
 
   return (
     <div>
@@ -181,7 +139,13 @@ const CMSEditorPage = () => {
             </Col>
           </Row>
 
-          <Tabs items={tabItems} />
+          <Form.Item
+            name="content"
+            label="Page Builder"
+            rules={[{ required: true, message: 'Please add content using the visual builder' }]}
+          >
+            <VisualPageBuilder />
+          </Form.Item>
 
           {isEditing && (
             <Form.Item name="isPublished" label="Published" valuePropName="checked">

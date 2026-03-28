@@ -24,8 +24,11 @@ import {
   ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { mealPlanService, schoolService } from '@/services';
-import { MealPlan, MealPlanFilters, MealPlanType } from '@/types';
+import { mealPlanService, mealPlanTypeService, schoolService } from '@/services';
+import { DEFAULT_MEAL_PLAN_IMAGE } from '@/constants/images';
+import { MealPlan, MealPlanFilters } from '@/types';
+import TableSkeleton from '@/components/TableSkeleton';
+import ErrorState from '@/components/ErrorState';
 import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
@@ -34,13 +37,27 @@ const { confirm } = Modal;
 const formatRupees = (amount: number) =>
   (amount / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+const TYPE_TAG_COLORS = ['orange', 'green', 'blue', 'magenta', 'cyan', 'purple', 'gold', 'lime'];
+
+const getTypeTagColor = (value?: string) => {
+  if (!value) return 'default';
+  const hash = value.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return TYPE_TAG_COLORS[hash % TYPE_TAG_COLORS.length];
+};
+
 const MealPlansListPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<MealPlanFilters>({});
 
   // Fetch meal plans
-  const { data: mealPlans, isLoading } = useQuery({
+  const {
+    data: mealPlans,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['mealPlans', filters],
     queryFn: () => mealPlanService.getAll(filters),
   });
@@ -49,6 +66,11 @@ const MealPlansListPage = () => {
   const { data: schools } = useQuery({
     queryKey: ['schools'],
     queryFn: () => schoolService.getAll(),
+  });
+
+  const { data: mealPlanTypes } = useQuery({
+    queryKey: ['mealPlanTypes', 'all'],
+    queryFn: () => mealPlanTypeService.getAll(),
   });
 
   // Toggle active mutation
@@ -99,12 +121,19 @@ const MealPlansListPage = () => {
     });
   };
 
-  // Plan type colors
-  const planTypeColors: Record<MealPlanType, string> = {
-    [MealPlanType.BREAKFAST]: 'orange',
-    [MealPlanType.LUNCH]: 'green',
-    [MealPlanType.SNACK]: 'purple',
-    [MealPlanType.COMBO]: 'blue',
+  const handleToggleActive = (record: MealPlan, nextActive: boolean) => {
+    if (!nextActive) {
+      confirm({
+        title: 'Deactivate Meal Plan',
+        icon: <ExclamationCircleOutlined />,
+        content: `Deactivate "${record.name}"? New subscriptions will be blocked until it is reactivated.`,
+        okText: 'Deactivate',
+        okType: 'danger',
+        onOk: () => toggleActiveMutation.mutate({ id: record.id, isActive: nextActive }),
+      });
+      return;
+    }
+    toggleActiveMutation.mutate({ id: record.id, isActive: nextActive });
   };
 
   // Table columns
@@ -114,23 +143,16 @@ const MealPlansListPage = () => {
       dataIndex: 'imageUrl',
       key: 'imageUrl',
       width: 80,
-      render: (url: string) =>
-        url ? (
-          <Image
-            src={url}
-            alt="Meal plan"
-            width={50}
-            height={50}
-            className="rounded-lg object-cover"
-            fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/+F9PQAJpAN4pokyXwAAAABJRU5ErkJggg=="
-          />
-        ) : (
-          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-            <Text type="secondary" className="text-xs">
-              No img
-            </Text>
-          </div>
-        ),
+      render: (url: string) => (
+        <Image
+          src={url || DEFAULT_MEAL_PLAN_IMAGE}
+          alt="Meal plan"
+          width={50}
+          height={50}
+          className="rounded-lg object-cover"
+          fallback={DEFAULT_MEAL_PLAN_IMAGE}
+        />
+      ),
     },
     {
       title: <span className="whitespace-nowrap">Meal Plan</span>,
@@ -159,12 +181,14 @@ const MealPlansListPage = () => {
     },
     {
       title: <span className="whitespace-nowrap">Type</span>,
-      dataIndex: 'planType',
+      dataIndex: ['mealPlanType', 'displayName'],
       key: 'planType',
       width: 130,
-      render: (type: MealPlanType) => (
+      render: (_, record) => (
         <span className="whitespace-nowrap">
-          <Tag color={planTypeColors[type]}>{type}</Tag>
+          <Tag color={getTypeTagColor(record.planType)}>
+            {record.mealPlanType?.displayName || record.planType || '-'}
+          </Tag>
         </span>
       ),
     },
@@ -195,7 +219,7 @@ const MealPlansListPage = () => {
       render: (isActive: boolean, record) => (
         <Switch
           checked={isActive}
-          onChange={checked => toggleActiveMutation.mutate({ id: record.id, isActive: checked })}
+          onChange={checked => handleToggleActive(record, checked)}
           loading={toggleActiveMutation.isPending}
         />
       ),
@@ -276,13 +300,13 @@ const MealPlansListPage = () => {
           />
           <Select
             placeholder="Filter by type"
-            value={filters.planType}
-            onChange={value => setFilters({ ...filters, planType: value })}
+            value={filters.mealPlanTypeId}
+            onChange={value => setFilters({ ...filters, mealPlanTypeId: value })}
             className="w-full sm:w-40"
             allowClear
-            options={Object.values(MealPlanType).map(type => ({
-              label: type,
-              value: type,
+            options={mealPlanTypes?.map(type => ({
+              label: type.displayName,
+              value: type.id,
             }))}
           />
           <Select
@@ -302,20 +326,29 @@ const MealPlansListPage = () => {
       {/* Table */}
       <Card>
         <div className="table-scrollbar">
-          <Table
-            columns={columns}
-            dataSource={mealPlans}
-            rowKey="id"
-            loading={isLoading}
-            tableLayout="fixed"
-            scroll={{ x: 960 }}
-            pagination={{
-              total: mealPlans?.length,
-              pageSize: 10,
-              showSizeChanger: true,
-              showTotal: total => `Total ${total} meal plans`,
-            }}
-          />
+          {isLoading ? (
+            <TableSkeleton rows={8} />
+          ) : isError ? (
+            <ErrorState
+              title="Unable to load meal plans"
+              description={(error as Error)?.message}
+              onRetry={refetch}
+            />
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={mealPlans}
+              rowKey="id"
+              tableLayout="fixed"
+              scroll={{ x: 960 }}
+              pagination={{
+                total: mealPlans?.length,
+                pageSize: 10,
+                showSizeChanger: true,
+                showTotal: total => `Total ${total} meal plans`,
+              }}
+            />
+          )}
         </div>
       </Card>
     </div>

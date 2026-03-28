@@ -37,7 +37,9 @@ export function escapeHtml(text: string): string {
  * Sanitize object recursively
  */
 export function sanitizeObject<T>(obj: T): T {
-  return sanitizeObjectWithOptions(obj, {}) as T;
+  return sanitizeObjectWithOptions(obj, {
+    preserveRawHtmlKeys: new Set(['imageUrl', 'profileImageUrl', 'logoUrl', 'folder', 'key']),
+  }) as T;
 }
 
 function sanitizeObjectWithOptions(obj: unknown, options: SanitizeOptions = {}): unknown {

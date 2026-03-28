@@ -33,4 +33,15 @@ export class UpdateUserDto {
     message: 'Invalid Indian phone number format. Must be in format: +91XXXXXXXXXX',
   })
   phone?: string;
+
+  @ApiProperty({
+    description: 'User profile image path reference',
+    example: '/uploads/users/uuid.jpg',
+    required: false,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  profileImageUrl?: string | null;
 }

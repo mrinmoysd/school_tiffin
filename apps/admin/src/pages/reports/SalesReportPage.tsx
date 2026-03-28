@@ -9,7 +9,7 @@ import {
   Statistic,
   Row,
   Col,
-  Spin,
+  Skeleton,
   message,
 } from 'antd';
 import {
@@ -21,6 +21,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { adminService, schoolService } from '@/services';
 import { ReportFilters, SchoolRevenueItem } from '@/types';
+import ErrorState from '@/components/ErrorState';
 import {
   LineChart,
   Line,
@@ -42,9 +43,16 @@ const SalesReportPage = () => {
     startDate: dayjs().subtract(30, 'day').format('YYYY-MM-DD'),
     endDate: dayjs().format('YYYY-MM-DD'),
   });
+  const [isExporting, setIsExporting] = useState(false);
 
   // Fetch sales report
-  const { data: report, isLoading } = useQuery({
+  const {
+    data: report,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['salesReport', filters],
     queryFn: () => adminService.getSalesReport(filters),
     enabled: !!filters.startDate && !!filters.endDate,
@@ -59,6 +67,7 @@ const SalesReportPage = () => {
   // Export handler
   const handleExport = async () => {
     try {
+      setIsExporting(true);
       const blob = await adminService.exportSalesReport(filters);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -66,9 +75,11 @@ const SalesReportPage = () => {
       a.download = `sales-report-${filters.startDate}-${filters.endDate}.csv`;
       a.click();
       window.URL.revokeObjectURL(url);
-      message.success('Export started');
+      message.info('Export started');
     } catch (error) {
       message.error('Export failed');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -122,7 +133,7 @@ const SalesReportPage = () => {
           </Title>
           <Text type="secondary">Revenue and subscription analytics</Text>
         </div>
-        <Button icon={<DownloadOutlined />} onClick={handleExport}>
+        <Button icon={<DownloadOutlined />} onClick={handleExport} loading={isExporting}>
           Export CSV
         </Button>
       </div>
@@ -166,9 +177,39 @@ const SalesReportPage = () => {
       </Card>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Spin size="large" />
+        <div className="space-y-6">
+          <Row gutter={[16, 16]} className="mb-6">
+            <Col xs={24} sm={8}>
+              <Card>
+                <Skeleton active paragraph={{ rows: 2 }} />
+              </Card>
+            </Col>
+            <Col xs={24} sm={8}>
+              <Card>
+                <Skeleton active paragraph={{ rows: 2 }} />
+              </Card>
+            </Col>
+            <Col xs={24} sm={8}>
+              <Card>
+                <Skeleton active paragraph={{ rows: 2 }} />
+              </Card>
+            </Col>
+          </Row>
+          <Card title="Revenue Over Time" className="mb-6">
+            <Skeleton active paragraph={{ rows: 8 }} />
+          </Card>
+          <Card title="Revenue by School">
+            <Skeleton active paragraph={{ rows: 8 }} />
+          </Card>
         </div>
+      ) : isError ? (
+        <Card>
+          <ErrorState
+            title="Unable to load sales report"
+            description={(error as Error)?.message}
+            onRetry={refetch}
+          />
+        </Card>
       ) : (
         <>
           {/* Summary Cards */}
@@ -233,13 +274,16 @@ const SalesReportPage = () => {
           <Card title="Revenue by School">
             <Row gutter={24}>
               <Col xs={24} lg={12}>
-                <Table
-                  columns={schoolColumns}
-                  dataSource={report?.schoolBreakdown}
-                  rowKey="schoolId"
-                  pagination={false}
-                  size="small"
-                />
+                <div className="table-scrollbar">
+                  <Table
+                    columns={schoolColumns}
+                    dataSource={report?.schoolBreakdown}
+                    rowKey="schoolId"
+                    pagination={false}
+                    size="small"
+                    scroll={{ x: 'max-content' }}
+                  />
+                </div>
               </Col>
               <Col xs={24} lg={12}>
                 <div style={{ height: 300 }}>

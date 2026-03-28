@@ -35,6 +35,7 @@ export class CmsService {
         title,
         content,
         isPublished: isPublished || false,
+        publishedAt: isPublished ? new Date() : null,
         version: 1,
       },
     });
@@ -119,10 +120,17 @@ export class CmsService {
       throw new NotFoundException('Page not found');
     }
 
+    const publishStatusChanged = typeof updateCmsPageDto.isPublished === 'boolean';
+
     const updated = await this.prisma.cmsPage.update({
       where: { slug },
       data: {
         ...updateCmsPageDto,
+        publishedAt: publishStatusChanged
+          ? updateCmsPageDto.isPublished
+            ? page.publishedAt || new Date()
+            : null
+          : page.publishedAt,
         version: page.version + 1,
       },
     });

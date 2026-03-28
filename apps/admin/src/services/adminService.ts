@@ -55,6 +55,7 @@ interface SalesReportResponse {
     id: string;
     orderNumber: string;
     amount: number;
+    finalAmount: number;
     paidAt: string;
     subscription: {
       subscriptionNumber: string;
@@ -94,7 +95,7 @@ function generateDailyRevenue(
     if (order.paidAt) {
       const dateKey = new Date(order.paidAt).toISOString().split('T')[0];
       if (dailyMap[dateKey]) {
-        dailyMap[dateKey].revenue += order.amount;
+        dailyMap[dateKey].revenue += order.finalAmount;
         dailyMap[dateKey].subscriptions += 1;
       }
     }
@@ -110,6 +111,15 @@ function generateDailyRevenue(
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
+const toQueryString = (
+  params: Record<string, string | number | boolean | null | undefined>,
+): string => {
+  return Object.entries(params)
+    .filter(([, value]) => value !== undefined && value !== null && String(value).length > 0)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+    .join('&');
+};
+
 export const adminService = {
   // Dashboard
   getDashboard: async (): Promise<DashboardStats> => {
@@ -124,14 +134,13 @@ export const adminService = {
 
   // Deliveries - transforms backend grouped response to flat array
   getDeliveries: async (filters: DeliveryFilters): Promise<DeliveryItem[]> => {
-    const params = new URLSearchParams();
-    params.append('date', filters.date);
-    if (filters.schoolId) params.append('schoolId', filters.schoolId);
-    if (filters.status) params.append('status', filters.status);
+    const query = toQueryString({
+      date: filters.date,
+      schoolId: filters.schoolId,
+      status: filters.status,
+    });
 
-    const response = await api.get<ApiResponse<DeliveriesResponse>>(
-      `/admin/deliveries?${params.toString()}`,
-    );
+    const response = await api.get<ApiResponse<DeliveriesResponse>>(`/admin/deliveries?${query}`);
     const data = response.data.data;
 
     // Transform grouped data to flat array
@@ -169,13 +178,14 @@ export const adminService = {
 
   // Reports - transforms backend response to frontend format
   getSalesReport: async (filters: ReportFilters): Promise<SalesReport> => {
-    const params = new URLSearchParams();
-    params.append('startDate', filters.startDate);
-    params.append('endDate', filters.endDate);
-    if (filters.schoolId) params.append('schoolId', filters.schoolId);
+    const query = toQueryString({
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+      schoolId: filters.schoolId,
+    });
 
     const response = await api.get<ApiResponse<SalesReportResponse>>(
-      `/admin/reports/sales?${params.toString()}`,
+      `/admin/reports/sales?${query}`,
     );
     const data = response.data.data;
 
@@ -204,12 +214,13 @@ export const adminService = {
   },
 
   getSubscriptionsReport: async (filters: ReportFilters): Promise<SubscriptionsReport> => {
-    const params = new URLSearchParams();
-    if (filters.schoolId) params.append('schoolId', filters.schoolId);
+    const query = toQueryString({
+      schoolId: filters.schoolId,
+    });
 
     // Make the API call (backend returns limited data for now)
     await api.get<ApiResponse<SubscriptionReportResponse>>(
-      `/admin/reports/subscriptions?${params.toString()}`,
+      query ? `/admin/reports/subscriptions?${query}` : '/admin/reports/subscriptions',
     );
 
     // Transform backend response to frontend format
@@ -221,24 +232,26 @@ export const adminService = {
   },
 
   exportDeliveries: async (filters: DeliveryFilters, format: 'csv' | 'pdf'): Promise<Blob> => {
-    const params = new URLSearchParams();
-    params.append('date', filters.date);
-    if (filters.schoolId) params.append('schoolId', filters.schoolId);
-    params.append('format', format);
+    const query = toQueryString({
+      date: filters.date,
+      schoolId: filters.schoolId,
+      format,
+    });
 
-    const response = await api.get(`/admin/deliveries/export?${params.toString()}`, {
+    const response = await api.get(`/admin/deliveries/export?${query}`, {
       responseType: 'blob',
     });
     return response.data;
   },
 
   exportSalesReport: async (filters: ReportFilters): Promise<Blob> => {
-    const params = new URLSearchParams();
-    params.append('startDate', filters.startDate);
-    params.append('endDate', filters.endDate);
-    if (filters.schoolId) params.append('schoolId', filters.schoolId);
+    const query = toQueryString({
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+      schoolId: filters.schoolId,
+    });
 
-    const response = await api.get(`/admin/reports/sales/export?${params.toString()}`, {
+    const response = await api.get(`/admin/reports/sales/export?${query}`, {
       responseType: 'blob',
     });
     return response.data;

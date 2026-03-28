@@ -58,7 +58,7 @@ export class PaymentsService {
 
     // Create Razorpay order
     const razorpayOrder = await this.razorpayService.createOrder(
-      Number(order.amount),
+      Number(order.finalAmount),
       order.currency,
       order.orderNumber,
     );
@@ -129,7 +129,7 @@ export class PaymentsService {
     }
 
     // Process payment with transaction
-    const result = await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async tx => {
       // Update order status
       const updatedOrder = await tx.order.update({
         where: { id: order.id },
@@ -146,7 +146,7 @@ export class PaymentsService {
           transactionId: `txn_${Date.now()}_${order.id.substring(0, 8)}`,
           paymentGateway: 'razorpay',
           gatewayTransactionId: razorpayPaymentId,
-          amount: order.amount,
+          amount: order.finalAmount,
           currency: order.currency,
           status: TransactionStatus.SUCCESS,
           gatewayResponse: {
@@ -180,12 +180,11 @@ export class PaymentsService {
   /**
    * Handle webhook (background job will process)
    */
-  async handleWebhook(payload: any, signature: string) {
+  async handleWebhook(payload: unknown, signature: string) {
+    const serializedPayload = typeof payload === 'string' ? payload : JSON.stringify(payload);
+
     // Verify webhook signature
-    const isValid = this.razorpayService.verifyWebhookSignature(
-      JSON.stringify(payload),
-      signature,
-    );
+    const isValid = this.razorpayService.verifyWebhookSignature(serializedPayload, signature);
 
     if (!isValid) {
       throw new BadRequestException('Invalid webhook signature');

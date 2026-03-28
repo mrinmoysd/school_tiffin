@@ -15,8 +15,13 @@ const api = axios.create({
 // Request interceptor - add auth token
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // Important: let browser set multipart boundary for FormData uploads.
+    // Keeping default JSON content-type here causes backend to miss uploaded file.
+    if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     const token = useAuthStore.getState().accessToken;
-    console.log('[Axios] Request:', config.url, 'Token:', token ? 'Present' : 'Missing');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -48,11 +53,17 @@ api.interceptors.response.use(
       if (refreshToken) {
         try {
           // Try to refresh the token
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+          const response = await axios.post<{
+            data: { accessToken?: string; refreshToken?: string };
+          }>(`${API_BASE_URL}/auth/refresh`, {
             refreshToken,
           });
 
-          const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+          const accessToken = response.data?.data?.accessToken;
+          const newRefreshToken = response.data?.data?.refreshToken;
+          if (!accessToken) {
+            throw new Error('Invalid refresh token response');
+          }
 
           // Update tokens in store
           useAuthStore.getState().setTokens(accessToken, newRefreshToken);

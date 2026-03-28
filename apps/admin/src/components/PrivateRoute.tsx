@@ -2,24 +2,19 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { UserRole } from '@/types';
 import { Spin } from 'antd';
-import { useEffect, useState } from 'react';
 
 const PrivateRoute = () => {
-  const { isAuthenticated, user, accessToken } = useAuthStore();
+  const { isAuthenticated, user, accessToken, hasHydrated } = useAuthStore(state => ({
+    isAuthenticated: state.isAuthenticated,
+    user: state.user,
+    accessToken: state.accessToken,
+    hasHydrated: state.hasHydrated,
+  }));
   const location = useLocation();
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  // Wait for Zustand to hydrate from localStorage
-  useEffect(() => {
-    // Small delay to ensure store is hydrated
-    const timer = setTimeout(() => {
-      setIsHydrated(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
+  const hasToken = typeof accessToken === 'string' && accessToken.trim().length > 0;
 
   // Show loading while hydrating
-  if (!isHydrated) {
+  if (!hasHydrated) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spin size="large" tip="Loading..." />
@@ -27,10 +22,8 @@ const PrivateRoute = () => {
     );
   }
 
-  console.log('[PrivateRoute] isAuthenticated:', isAuthenticated, 'accessToken:', accessToken ? 'Present' : 'Missing');
-
   // Check if user is authenticated
-  if (!isAuthenticated || !accessToken) {
+  if (!isAuthenticated || !hasToken) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

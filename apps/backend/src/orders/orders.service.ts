@@ -1,11 +1,20 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { OrderStatus } from '@prisma/client';
+import { AppSettingsService } from '../app-settings/app-settings.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private appSettingsService: AppSettingsService,
+  ) {}
 
   /**
    * Generate unique order number
@@ -51,10 +60,16 @@ export class OrdersService {
       throw new BadRequestException('Subscription is not pending payment');
     }
 
-    // Verify amount matches subscription total
-    if (amount !== Number(subscription.totalPrice)) {
+    const subtotalAmount = Number(subscription.totalPrice);
+
+    // Verify amount matches subscription subtotal
+    if (amount !== subtotalAmount) {
       throw new BadRequestException('Amount does not match subscription total price');
     }
+
+    const taxPercentage = await this.appSettingsService.getTaxPercentage();
+    const taxAmount = Math.round((subtotalAmount * taxPercentage) / 100);
+    const finalAmount = subtotalAmount + taxAmount;
 
     const orderNumber = this.generateOrderNumber();
 
@@ -63,8 +78,9 @@ export class OrdersService {
         orderNumber,
         subscription: { connect: { id: subscriptionId } },
         parent: { connect: { id: parentId } },
-        amount,
-        finalAmount: amount,
+        amount: subtotalAmount,
+        taxAmount,
+        finalAmount,
         currency,
         notes,
         status: OrderStatus.PENDING,
@@ -142,7 +158,7 @@ export class OrdersService {
       select: { id: true },
     });
 
-    const subscriptionIds = subscriptions.map((s) => s.id);
+    const subscriptionIds = subscriptions.map(s => s.id);
 
     const orders = await this.prisma.order.findMany({
       where: {

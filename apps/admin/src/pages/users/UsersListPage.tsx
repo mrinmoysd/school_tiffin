@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Input, Select, Typography, Card, Tag, Switch, Button, message } from 'antd';
+import { Table, Input, Select, Typography, Card, Tag, Switch, Button, message, Modal } from 'antd';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userService } from '@/services';
 import { User, UserFilters, UserRole } from '@/types';
+import TableSkeleton from '@/components/TableSkeleton';
+import ErrorState from '@/components/ErrorState';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
+const { confirm } = Modal;
 
 const UsersListPage = () => {
   const navigate = useNavigate();
@@ -19,7 +22,7 @@ const UsersListPage = () => {
 
   // Fetch users
   const skip = (page - 1) * pageSize;
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['users', filters, page, pageSize],
     queryFn: () => userService.getAll(filters, skip, pageSize),
   });
@@ -45,6 +48,20 @@ const UsersListPage = () => {
   };
 
   // Table columns
+  const handleToggleActive = (record: User, nextActive: boolean) => {
+    if (!nextActive) {
+      confirm({
+        title: 'Deactivate User',
+        content: `Deactivate ${record.fullName}? They will no longer be able to access the admin portal.`,
+        okText: 'Deactivate',
+        okType: 'danger',
+        onOk: () => toggleActiveMutation.mutate({ id: record.id }),
+      });
+      return;
+    }
+    toggleActiveMutation.mutate({ id: record.id });
+  };
+
   const columns: ColumnsType<User> = [
     {
       title: <span className="whitespace-nowrap">Name</span>,
@@ -103,7 +120,7 @@ const UsersListPage = () => {
       render: (isActive: boolean, record) => (
         <Switch
           checked={isActive}
-          onChange={() => toggleActiveMutation.mutate({ id: record.id })}
+          onChange={checked => handleToggleActive(record, checked)}
           loading={toggleActiveMutation.isPending}
         />
       ),
@@ -183,28 +200,37 @@ const UsersListPage = () => {
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={data?.users}
-          rowKey="id"
-          loading={isLoading}
-          tableLayout="fixed"
-          scroll={{ x: 'max-content' }}
-          pagination={{
-            current: page,
-            pageSize,
-            total: data?.pagination.total,
-            showSizeChanger: true,
-            onChange: (nextPage, nextPageSize) => {
-              setPage(nextPage);
-              if (nextPageSize && nextPageSize !== pageSize) {
-                setPageSize(nextPageSize);
-                setPage(1);
-              }
-            },
-            showTotal: total => `Total ${total} users`,
-          }}
-        />
+        {isLoading ? (
+          <TableSkeleton rows={8} />
+        ) : isError ? (
+          <ErrorState
+            title="Unable to load users"
+            description={(error as Error)?.message}
+            onRetry={refetch}
+          />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={data?.users}
+            rowKey="id"
+            tableLayout="fixed"
+            scroll={{ x: 'max-content' }}
+            pagination={{
+              current: page,
+              pageSize,
+              total: data?.pagination.total,
+              showSizeChanger: true,
+              onChange: (nextPage, nextPageSize) => {
+                setPage(nextPage);
+                if (nextPageSize && nextPageSize !== pageSize) {
+                  setPageSize(nextPageSize);
+                  setPage(1);
+                }
+              },
+              showTotal: total => `Total ${total} users`,
+            }}
+          />
+        )}
       </Card>
     </div>
   );

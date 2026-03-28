@@ -8,6 +8,7 @@ import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { AppSettingsModule } from './app-settings/app-settings.module';
 import { CmsModule } from './cms/cms.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
@@ -19,6 +20,7 @@ import redisConfig from './config/redis.config';
 import { HealthModule } from './health/health.module';
 import { JobsModule } from './jobs/jobs.module';
 import { MealPlansModule } from './meal-plans/meal-plans.module';
+import { MealPlanTypesModule } from './meal-plan-types/meal-plan-types.module';
 import { MenuItemsModule } from './menu-items/menu-items.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { OrdersModule } from './orders/orders.module';
@@ -49,10 +51,12 @@ import { UsersModule } from './users/users.module';
     }),
 
     // Rate limiting (global)
-    ThrottlerModule.forRoot([{
-      ttl: 60000, // 1 minute
-      limit: 100, // 100 requests per minute (default)
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 1 minute
+        limit: 100, // 100 requests per minute (default)
+      },
+    ]),
 
     // Structured logging
     LoggerModule.forRoot({
@@ -78,7 +82,7 @@ import { UsersModule } from './users/users.module';
           return 'info';
         },
         serializers: {
-          req: (req) => ({
+          req: req => ({
             id: req.id,
             method: req.method,
             url: req.url,
@@ -87,7 +91,7 @@ import { UsersModule } from './users/users.module';
               'user-agent': req.headers['user-agent'],
             },
           }),
-          res: (res) => ({
+          res: res => ({
             statusCode: res.statusCode,
           }),
         },
@@ -98,10 +102,12 @@ import { UsersModule } from './users/users.module';
     PrismaModule,
     AdminModule,
     AuthModule,
+    AppSettingsModule,
     CmsModule,
     UsersModule,
     StudentsModule,
     SchoolsModule,
+    MealPlanTypesModule,
     MealPlansModule,
     MenuItemsModule,
     SubscriptionsModule,

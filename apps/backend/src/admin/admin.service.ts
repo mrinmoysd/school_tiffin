@@ -60,7 +60,7 @@ export class AdminService {
             lte: endOfMonth(now),
           },
         },
-        _sum: { amount: true },
+        _sum: { finalAmount: true },
       }),
       this.prisma.pauseRequest.count({
         where: { status: 'PENDING' },
@@ -79,7 +79,7 @@ export class AdminService {
     const stats = {
       activeSubscriptions,
       todayDeliveries,
-      monthlyRevenue: monthlyRevenue._sum.amount || 0,
+      monthlyRevenue: monthlyRevenue._sum.finalAmount || 0,
       pendingPauseRequests,
       activeSchools,
       totalUsers,
@@ -829,7 +829,7 @@ export class AdminService {
       },
     });
 
-    const totalRevenue = orders.reduce((sum, order) => sum + Number(order.amount), 0);
+    const totalRevenue = orders.reduce((sum, order) => sum + Number(order.finalAmount), 0);
     const totalOrders = orders.length;
 
     // Group by school
@@ -839,7 +839,7 @@ export class AdminService {
         acc[schoolName] = { orders: 0, revenue: 0 };
       }
       acc[schoolName].orders += 1;
-      acc[schoolName].revenue += Number(order.amount);
+      acc[schoolName].revenue += Number(order.finalAmount);
       return acc;
     }, {});
 
@@ -855,7 +855,7 @@ export class AdminService {
 
   async exportSalesReportCsv(startDate?: string, endDate?: string, schoolId?: string) {
     const report = await this.getSalesReport(startDate, endDate, schoolId);
-    const rows: string[] = ['orderId,orderNumber,studentName,school,amount,paidAt'];
+    const rows: string[] = ['orderId,orderNumber,studentName,school,amount,finalAmount,paidAt'];
 
     for (const order of report.orders) {
       rows.push(
@@ -865,6 +865,7 @@ export class AdminService {
           order.subscription?.student?.fullName || '',
           order.subscription?.student?.school?.name || '',
           Number(order.amount),
+          Number(order.finalAmount),
           order.paidAt || '',
         ]
           .map(v => `"${String(v ?? '').replace(/"/g, '""')}"`)

@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { normalizeImageReferencePath } from '../uploads/upload-storage.util';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 
@@ -25,10 +26,18 @@ export class StudentsService {
       throw new BadRequestException('School is not accepting registrations');
     }
 
-    const { schoolId, ...rest } = createStudentDto;
+    const { schoolId, profileImageUrl, imageUrl, ...rest } = createStudentDto;
+    const normalizedProfileImagePath =
+      profileImageUrl === undefined && imageUrl === undefined
+        ? undefined
+        : normalizeImageReferencePath(profileImageUrl ?? imageUrl);
+
     const student = await this.prisma.student.create({
       data: {
         ...rest,
+        ...(profileImageUrl !== undefined || imageUrl !== undefined
+          ? { profileImageUrl: normalizedProfileImagePath }
+          : {}),
         parent: { connect: { id: parentId } },
         ...(schoolId && { school: { connect: { id: schoolId } } }),
       },
@@ -135,12 +144,22 @@ export class StudentsService {
       }
     }
 
-    const { schoolId, ...rest } = updateStudentDto;
+    const { schoolId, profileImageUrl, imageUrl, ...rest } = updateStudentDto;
+    const normalizedProfileImagePath =
+      profileImageUrl === undefined && imageUrl === undefined
+        ? undefined
+        : normalizeImageReferencePath(profileImageUrl ?? imageUrl);
+
     const updatedStudent = await this.prisma.student.update({
       where: { id },
       data: {
         ...rest,
-        ...(schoolId !== undefined && { school: schoolId ? { connect: { id: schoolId } } : { disconnect: true } }),
+        ...(profileImageUrl !== undefined || imageUrl !== undefined
+          ? { profileImageUrl: normalizedProfileImagePath }
+          : {}),
+        ...(schoolId !== undefined && {
+          school: schoolId ? { connect: { id: schoolId } } : { disconnect: true },
+        }),
       },
       include: {
         school: {

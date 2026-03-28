@@ -17,7 +17,6 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { MealPlanType } from '@prisma/client';
 import { Public, Roles, UserRole } from '../common/decorators';
 import { CreateMealPlanDto, UpdateMealPlanDto } from './dto';
 import { MealPlansService } from './meal-plans.service';
@@ -49,7 +48,7 @@ export class MealPlansController {
    *
    * Used by:
    * - Public clients: typically provide schoolId only
-   * - Admin panel: may provide schoolId, planType, search, isActive
+   * - Admin panel: may provide schoolId, mealPlanTypeId/planType, search, isActive
    */
   @Get()
   @Public()
@@ -65,10 +64,14 @@ export class MealPlansController {
     example: '550e8400-e29b-41d4-a716-446655440000',
   })
   @ApiQuery({
+    name: 'mealPlanTypeId',
+    required: false,
+    description: 'Filter by meal plan type UUID',
+  })
+  @ApiQuery({
     name: 'planType',
     required: false,
-    enum: MealPlanType,
-    description: 'Filter by meal plan type',
+    description: 'Legacy filter by meal plan type code (e.g., LUNCH)',
   })
   @ApiQuery({
     name: 'search',
@@ -111,7 +114,8 @@ export class MealPlansController {
   })
   async findBySchool(
     @Query('schoolId', new ParseUUIDPipe({ optional: true })) schoolId?: string,
-    @Query('planType') planType?: MealPlanType,
+    @Query('mealPlanTypeId', new ParseUUIDPipe({ optional: true })) mealPlanTypeId?: string,
+    @Query('planType') planType?: string,
     @Query('search') search?: string,
     @Query('isActive') isActiveRaw?: string,
   ) {
@@ -124,7 +128,7 @@ export class MealPlansController {
             : undefined
         : undefined;
 
-    return this.mealPlansService.findAll(schoolId, isActive, planType, search);
+    return this.mealPlansService.findAll(schoolId, isActive, mealPlanTypeId, planType, search);
   }
 
   /**

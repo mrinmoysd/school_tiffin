@@ -24,6 +24,8 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { pauseRequestService } from '@/services';
 import { PauseRequest, PauseRequestFilters, PauseRequestStatus } from '@/types';
+import TableSkeleton from '@/components/TableSkeleton';
+import ErrorState from '@/components/ErrorState';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -37,7 +39,13 @@ const PauseRequestsPage = () => {
   const [filters, setFilters] = useState<PauseRequestFilters>({});
 
   // Fetch pause requests
-  const { data: pauseRequests, isLoading } = useQuery({
+  const {
+    data: pauseRequests,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['pauseRequests', filters],
     queryFn: () => pauseRequestService.getAll(filters),
   });
@@ -285,23 +293,32 @@ const PauseRequestsPage = () => {
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={pauseRequests}
-          rowKey="id"
-          loading={isLoading}
-          tableLayout="fixed"
-          scroll={{ x: 'max-content' }}
-          pagination={{
-            total: pauseRequests?.length,
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: total => `Total ${total} requests`,
-          }}
-          rowClassName={record =>
-            record.status === PauseRequestStatus.PENDING ? 'bg-orange-50' : ''
-          }
-        />
+        {isLoading ? (
+          <TableSkeleton rows={8} />
+        ) : isError ? (
+          <ErrorState
+            title="Unable to load pause requests"
+            description={(error as Error)?.message}
+            onRetry={refetch}
+          />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={pauseRequests}
+            rowKey="id"
+            tableLayout="fixed"
+            scroll={{ x: 'max-content' }}
+            pagination={{
+              total: pauseRequests?.length,
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: total => `Total ${total} requests`,
+            }}
+            rowClassName={record =>
+              record.status === PauseRequestStatus.PENDING ? 'bg-orange-50' : ''
+            }
+          />
+        )}
       </Card>
     </div>
   );
