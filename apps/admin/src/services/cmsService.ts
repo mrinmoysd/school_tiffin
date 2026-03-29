@@ -3,8 +3,10 @@ import { ApiResponse, CMSPage, CreateCMSPageDto, UpdateCMSPageDto } from '@/type
 
 export const cmsService = {
   // Get all pages
-  getAll: async (): Promise<CMSPage[]> => {
-    const response = await api.get<ApiResponse<CMSPage[]>>('/cms');
+  getAll: async (includeUnpublished = true): Promise<CMSPage[]> => {
+    const response = await api.get<ApiResponse<CMSPage[]>>('/cms', {
+      params: { includeUnpublished },
+    });
     return response.data.data;
   },
 

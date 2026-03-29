@@ -68,6 +68,7 @@ export class CmsService {
         slug: true,
         title: true,
         content: true,
+        isPublished: true,
         version: true,
         publishedAt: true,
         updatedAt: true,

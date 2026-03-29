@@ -4,6 +4,7 @@ import { ArrowLeftOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@an
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '@/services';
 import { OrderStatus, TransactionStatus } from '@/types';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -175,7 +176,7 @@ const OrderDetailPage = () => {
 
           {/* Transactions */}
           <Card title="Payment Transactions">
-            <div className="table-scrollbar">
+            <HorizontalScrollContainer>
               <Table
                 columns={transactionColumns}
                 dataSource={order.transactions}
@@ -186,7 +187,7 @@ const OrderDetailPage = () => {
                 scroll={{ x: 760 }}
                 locale={{ emptyText: 'No transactions' }}
               />
-            </div>
+            </HorizontalScrollContainer>
           </Card>
         </div>
 

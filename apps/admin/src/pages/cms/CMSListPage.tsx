@@ -30,7 +30,7 @@ const CMSListPage = () => {
     refetch,
   } = useQuery({
     queryKey: ['cmsPages'],
-    queryFn: cmsService.getAll,
+    queryFn: () => cmsService.getAll(true),
   });
 
   // Publish/Unpublish mutation

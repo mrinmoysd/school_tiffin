@@ -34,6 +34,7 @@ import { MenuItem, CreateMenuItemDto, UpdateMenuItemDto } from '@/types';
 import { DEFAULT_MEAL_PLAN_IMAGE } from '@/constants/images';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
@@ -390,7 +391,7 @@ const MenuManagementPage = () => {
           </Button>
         }
       >
-        <div className="table-scrollbar">
+        <HorizontalScrollContainer>
           {menuItemsLoading ? (
             <TableSkeleton rows={6} />
           ) : menuItemsError ? (
@@ -408,7 +409,7 @@ const MenuManagementPage = () => {
               scroll={{ x: 'max-content' }}
             />
           )}
-        </div>
+        </HorizontalScrollContainer>
       </Card>
 
       {/* Add/Edit Modal */}

@@ -22,6 +22,7 @@ import { useQuery } from '@tanstack/react-query';
 import { adminService, schoolService } from '@/services';
 import { ReportFilters, SchoolRevenueItem } from '@/types';
 import ErrorState from '@/components/ErrorState';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import {
   LineChart,
   Line,
@@ -274,7 +275,7 @@ const SalesReportPage = () => {
           <Card title="Revenue by School">
             <Row gutter={24}>
               <Col xs={24} lg={12}>
-                <div className="table-scrollbar">
+                <HorizontalScrollContainer>
                   <Table
                     columns={schoolColumns}
                     dataSource={report?.schoolBreakdown}
@@ -283,7 +284,7 @@ const SalesReportPage = () => {
                     size="small"
                     scroll={{ x: 'max-content' }}
                   />
-                </div>
+                </HorizontalScrollContainer>
               </Col>
               <Col xs={24} lg={12}>
                 <div style={{ height: 300 }}>
