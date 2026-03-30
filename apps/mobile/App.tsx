@@ -3,13 +3,19 @@ import { Platform, StatusBar } from 'react-native';
 import { Provider } from 'react-redux';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import Constants from 'expo-constants';
+import { requireOptionalNativeModule } from 'expo';
 import { AppNavigator } from './src/navigation';
 import { bootstrapAuth, logout } from './src/store/auth';
 import { useAppDispatch } from './src/store/hooks';
 import { store } from './src/store';
 import { setUnauthorizedHandler } from './src/api/client/apiClient';
 import { useAppTheme } from './src/theme';
+
+type NavigationBarModule = {
+  setBackgroundColorAsync: (color: string) => Promise<void>;
+  setButtonStyleAsync: (style: 'light' | 'dark') => Promise<void>;
+  setBorderColorAsync: (color: string) => Promise<void>;
+};
 
 const BootstrapAuthState = () => {
   const dispatch = useAppDispatch();
@@ -32,18 +38,26 @@ const AppShell = () => {
   const { resolvedTheme, colors } = useAppTheme();
 
   useEffect(() => {
-    if (Platform.OS !== 'android' || Constants.executionEnvironment === 'storeClient') {
+    if (Platform.OS !== 'android') {
       return;
     }
 
     const applyAndroidNavigationBarTheme = async () => {
       try {
-        const NavigationBar = await import('expo-navigation-bar');
+        const NavigationBar = requireOptionalNativeModule<NavigationBarModule>('ExpoNavigationBar');
+
+        if (!NavigationBar) {
+          if (__DEV__) {
+            console.warn('ExpoNavigationBar native module is unavailable in this runtime.');
+          }
+          return;
+        }
+
         await NavigationBar.setBackgroundColorAsync(colors.neutral.white);
         await NavigationBar.setButtonStyleAsync(resolvedTheme === 'dark' ? 'light' : 'dark');
         await NavigationBar.setBorderColorAsync(colors.neutral.slate200);
       } catch {
-        // Native module may be unavailable until the Android app is rebuilt.
+        // Ignore if this native module isn't available in the current runtime.
       }
     };
 
