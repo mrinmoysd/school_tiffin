@@ -11,12 +11,12 @@ import { validateEnv } from './config/env.validation';
 import { getUploadsRootPath } from './uploads/upload-storage.util';
 
 async function bootstrap() {
-  // Validate environment variables first
-  validateEnv();
-
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true, // Buffer logs until logger is ready
   });
+
+  // Validate environment variables after ConfigModule loads env files.
+  validateEnv();
 
   // Use Pino logger
   app.useLogger(app.get(Logger));

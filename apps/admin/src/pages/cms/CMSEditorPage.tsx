@@ -1,6 +1,17 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Form, Input, Button, Card, Typography, message, Switch, Spin, Row, Col } from 'antd';
+import {
+  App as AntdApp,
+  Form,
+  Input,
+  Button,
+  Card,
+  Typography,
+  Switch,
+  Spin,
+  Row,
+  Col,
+} from 'antd';
 import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cmsService } from '@/services';
@@ -11,6 +22,7 @@ const { Title, Text } = Typography;
 
 const CMSEditorPage = () => {
   const navigate = useNavigate();
+  const { message } = AntdApp.useApp();
   const { slug } = useParams<{ slug: string }>();
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
@@ -59,7 +71,20 @@ const CMSEditorPage = () => {
 
   const onFinish = (values: CreateCMSPageDto | UpdateCMSPageDto) => {
     if (isEditing) {
-      updateMutation.mutate(values);
+      const updatePayload: UpdateCMSPageDto = {};
+      const typedValues = values as CreateCMSPageDto & UpdateCMSPageDto;
+
+      if (typeof typedValues.title === 'string') {
+        updatePayload.title = typedValues.title;
+      }
+      if (typeof typedValues.content === 'string') {
+        updatePayload.content = typedValues.content;
+      }
+      if (typeof typedValues.isPublished === 'boolean') {
+        updatePayload.isPublished = typedValues.isPublished;
+      }
+
+      updateMutation.mutate(updatePayload);
     } else {
       // New pages are created as published so they are visible immediately in CMS list.
       createMutation.mutate({
@@ -108,7 +133,7 @@ const CMSEditorPage = () => {
           form={form}
           layout="vertical"
           onFinish={onFinish}
-          initialValues={{ isPublished: false }}
+          initialValues={isEditing ? {} : { isPublished: false }}
           requiredMark="optional"
         >
           <Row gutter={24}>

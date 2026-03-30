@@ -23,6 +23,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userService } from '@/services';
 import { UserRole, SubscriptionStatus, OrderStatus } from '@/types';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -262,7 +263,7 @@ const UserDetailPage = () => {
         </span>
       ),
       children: (
-        <div className="table-scrollbar">
+        <HorizontalScrollContainer>
           <Table
             columns={studentColumns}
             dataSource={students}
@@ -272,7 +273,7 @@ const UserDetailPage = () => {
             tableLayout="fixed"
             scroll={{ x: 620 }}
           />
-        </div>
+        </HorizontalScrollContainer>
       ),
     },
     {
@@ -283,7 +284,7 @@ const UserDetailPage = () => {
         </span>
       ),
       children: (
-        <div className="table-scrollbar">
+        <HorizontalScrollContainer>
           <Table
             columns={subscriptionColumns}
             dataSource={subscriptions}
@@ -293,7 +294,7 @@ const UserDetailPage = () => {
             tableLayout="fixed"
             scroll={{ x: 640 }}
           />
-        </div>
+        </HorizontalScrollContainer>
       ),
     },
     {
@@ -304,7 +305,7 @@ const UserDetailPage = () => {
         </span>
       ),
       children: (
-        <div className="table-scrollbar">
+        <HorizontalScrollContainer>
           <Table
             columns={orderColumns}
             dataSource={orders}
@@ -314,7 +315,7 @@ const UserDetailPage = () => {
             tableLayout="fixed"
             scroll={{ x: 520 }}
           />
-        </div>
+        </HorizontalScrollContainer>
       ),
     },
   ];

@@ -26,6 +26,16 @@ import { sanitizeUploadFolder } from './upload-storage.util';
 @Roles(UserRole.ADMIN)
 @Controller({ path: 'uploads', version: '1' })
 export class UploadsController {
+  private readonly ADMIN_ALLOWED_UPLOAD_TOP_LEVEL_FOLDERS = new Set([
+    'app-branding',
+    'cms-pages',
+    'images',
+    'meal-plans',
+    'menu-items',
+    'students',
+    'users',
+  ]);
+
   constructor(private readonly uploadsService: UploadsService) {}
 
   /**
@@ -38,7 +48,7 @@ export class UploadsController {
   @ApiOperation({
     summary: '[Admin/Parent] Upload image',
     description:
-      'Upload an image to the server file system. Allowed types: JPEG, PNG, WebP. Max size: 5MB. Parents are restricted to profile folders.',
+      'Upload an image through backend-managed Cloudinary integration. Allowed types: JPEG, PNG, WebP. Max size: 5MB. Admin uploads are restricted to approved folders; parents are restricted to profile folders.',
   })
   @ApiBody({
     schema: {
@@ -65,8 +75,8 @@ export class UploadsController {
         success: true,
         statusCode: 201,
         data: {
-          url: '/uploads/meal-plans/3de8f7fd-53e7-4f6c-96fb-f7b84762bf6d.jpg',
-          key: 'meal-plans/3de8f7fd-53e7-4f6c-96fb-f7b84762bf6d.jpg',
+          url: 'https://res.cloudinary.com/demo/image/upload/v1736793442/meal-plans/3de8f7fd-53e7-4f6c-96fb-f7b84762bf6d.jpg',
+          key: 'cloudinary:meal-plans/3de8f7fd-53e7-4f6c-96fb-f7b84762bf6d',
           originalName: 'meal.jpg',
           mimeType: 'image/jpeg',
           size: 245678,
@@ -89,7 +99,7 @@ export class UploadsController {
     const uploadFolder =
       role === UserRole.PARENT
         ? this.resolveParentUploadFolder(folder, userId)
-        : folder || 'images';
+        : this.resolveAdminUploadFolder(folder);
 
     return this.uploadsService.uploadImage(file, uploadFolder);
   }
@@ -100,7 +110,7 @@ export class UploadsController {
   @Delete('image')
   @ApiOperation({
     summary: '[Admin] Delete image',
-    description: 'Delete an image from server storage by providing key/path/url.',
+    description: 'Delete an image from Cloudinary (or legacy local storage) by key/path/url.',
   })
   @ApiBody({
     schema: {
@@ -136,5 +146,20 @@ export class UploadsController {
     }
 
     return `parents/${userId}/${topLevelFolder}`;
+  }
+
+  private resolveAdminUploadFolder(folder: string | undefined): string {
+    const normalizedFolder = sanitizeUploadFolder(folder || 'images');
+    const topLevelFolder = normalizedFolder.split('/')[0];
+
+    if (!this.ADMIN_ALLOWED_UPLOAD_TOP_LEVEL_FOLDERS.has(topLevelFolder)) {
+      throw new BadRequestException(
+        `Invalid upload folder. Allowed folders: ${Array.from(
+          this.ADMIN_ALLOWED_UPLOAD_TOP_LEVEL_FOLDERS,
+        ).join(', ')}`,
+      );
+    }
+
+    return normalizedFolder;
   }
 }

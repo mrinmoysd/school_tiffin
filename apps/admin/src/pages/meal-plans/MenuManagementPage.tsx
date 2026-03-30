@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
+  App as AntdApp,
   Table,
   Button,
   Typography,
@@ -10,7 +11,6 @@ import {
   Input,
   InputNumber,
   Select,
-  message,
   Space,
   Tooltip,
   Tag,
@@ -34,6 +34,7 @@ import { MenuItem, CreateMenuItemDto, UpdateMenuItemDto } from '@/types';
 import { DEFAULT_MEAL_PLAN_IMAGE } from '@/constants/images';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
@@ -46,6 +47,7 @@ const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 
 const MenuManagementPage = () => {
   const navigate = useNavigate();
+  const { message } = AntdApp.useApp();
   const { id: mealPlanId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -193,7 +195,7 @@ const MenuManagementPage = () => {
     }
 
     if (file.size > MAX_IMAGE_SIZE) {
-      message.error(`Image must be smaller than ${MAX_IMAGE_SIZE_MB}MB.`);
+      message.error(`Image must be ${MAX_IMAGE_SIZE_MB}MB or smaller.`);
       return Upload.LIST_IGNORE;
     }
 
@@ -204,8 +206,10 @@ const MenuManagementPage = () => {
       setHasCustomImage(true);
       setUploadedImageKey(result.key);
       form.setFieldValue('imageUrl', result.url);
-    } catch {
-      message.error('Image upload failed. Please check server upload storage settings.');
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Image upload failed. Please try again.';
+      message.error(errorMessage);
     } finally {
       setImageUploading(false);
     }
@@ -390,7 +394,7 @@ const MenuManagementPage = () => {
           </Button>
         }
       >
-        <div className="table-scrollbar">
+        <HorizontalScrollContainer>
           {menuItemsLoading ? (
             <TableSkeleton rows={6} />
           ) : menuItemsError ? (
@@ -408,7 +412,7 @@ const MenuManagementPage = () => {
               scroll={{ x: 'max-content' }}
             />
           )}
-        </div>
+        </HorizontalScrollContainer>
       </Card>
 
       {/* Add/Edit Modal */}

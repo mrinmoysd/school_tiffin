@@ -29,6 +29,7 @@ import { DEFAULT_MEAL_PLAN_IMAGE } from '@/constants/images';
 import { MealPlan, MealPlanFilters } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
@@ -325,7 +326,7 @@ const MealPlansListPage = () => {
 
       {/* Table */}
       <Card>
-        <div className="table-scrollbar">
+        <HorizontalScrollContainer>
           {isLoading ? (
             <TableSkeleton rows={8} />
           ) : isError ? (
@@ -349,7 +350,7 @@ const MealPlansListPage = () => {
               }}
             />
           )}
-        </div>
+        </HorizontalScrollContainer>
       </Card>
     </div>
   );

@@ -25,6 +25,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { subscriptionService } from '@/services';
 import { SubscriptionStatus, DeliveryStatus, PauseRequestStatus } from '@/types';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -192,7 +193,7 @@ const SubscriptionDetailPage = () => {
         </span>
       ),
       children: (
-        <div className="table-scrollbar">
+        <HorizontalScrollContainer>
           <Table
             columns={scheduleColumns}
             dataSource={schedule}
@@ -201,7 +202,7 @@ const SubscriptionDetailPage = () => {
             size="small"
             scroll={{ x: 'max-content' }}
           />
-        </div>
+        </HorizontalScrollContainer>
       ),
     },
     {
@@ -215,7 +216,7 @@ const SubscriptionDetailPage = () => {
         </span>
       ),
       children: (
-        <div className="table-scrollbar">
+        <HorizontalScrollContainer>
           <Table
             columns={pauseColumns}
             dataSource={subscription.pauseRequests}
@@ -225,7 +226,7 @@ const SubscriptionDetailPage = () => {
             locale={{ emptyText: 'No pause requests' }}
             scroll={{ x: 'max-content' }}
           />
-        </div>
+        </HorizontalScrollContainer>
       ),
     },
   ];

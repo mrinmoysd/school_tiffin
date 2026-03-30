@@ -12,7 +12,7 @@ const CMSPreviewPage = () => {
 
   const { data: page, isLoading } = useQuery({
     queryKey: ['cmsPreview', slug],
-    queryFn: () => cmsService.getBySlug(slug!),
+    queryFn: () => cmsService.getById(slug!),
     enabled: !!slug,
     retry: 0,
   });

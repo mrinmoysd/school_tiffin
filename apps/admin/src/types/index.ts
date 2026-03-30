@@ -399,7 +399,10 @@ export interface CreateCMSPageDto {
   isPublished?: boolean;
 }
 
-export interface UpdateCMSPageDto extends Partial<CreateCMSPageDto> {
+export interface UpdateCMSPageDto {
+  title?: string;
+  content?: string;
+  metaDescription?: string;
   isPublished?: boolean;
 }
 

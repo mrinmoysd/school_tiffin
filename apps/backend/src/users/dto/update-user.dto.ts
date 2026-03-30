@@ -35,8 +35,8 @@ export class UpdateUserDto {
   phone?: string;
 
   @ApiProperty({
-    description: 'User profile image path reference',
-    example: '/uploads/users/uuid.jpg',
+    description: 'User profile image URL',
+    example: 'https://res.cloudinary.com/demo/image/upload/v1736793442/users/profile.jpg',
     required: false,
     nullable: true,
   })

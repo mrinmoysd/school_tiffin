@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Table, Button, Typography, Card, Tag, Space, App, message, Tooltip, Switch } from 'antd';
+import { Table, Button, Typography, Card, Tag, Space, App, Tooltip, Switch } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
@@ -19,7 +19,7 @@ const { Title, Text } = Typography;
 const CMSListPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { modal } = App.useApp();
+  const { modal, message } = App.useApp();
 
   // Fetch CMS pages
   const {
@@ -30,7 +30,7 @@ const CMSListPage = () => {
     refetch,
   } = useQuery({
     queryKey: ['cmsPages'],
-    queryFn: cmsService.getAll,
+    queryFn: () => cmsService.getAll(true),
   });
 
   // Publish/Unpublish mutation

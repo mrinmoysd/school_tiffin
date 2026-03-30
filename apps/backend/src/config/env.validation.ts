@@ -49,13 +49,43 @@ const envSchema = z.object({
 
   // Local uploads
   UPLOAD_DIR: z.string().optional(),
+
+  // Cloudinary
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
 });
 
-export type Env = z.infer<typeof envSchema>;
+const envSchemaWithRules = envSchema.superRefine((env, ctx) => {
+  const hasCloudName = Boolean(env.CLOUDINARY_CLOUD_NAME?.trim());
+  const hasApiKey = Boolean(env.CLOUDINARY_API_KEY?.trim());
+  const hasApiSecret = Boolean(env.CLOUDINARY_API_SECRET?.trim());
+  const configuredCount = Number(hasCloudName) + Number(hasApiKey) + Number(hasApiSecret);
+
+  if (configuredCount > 0 && configuredCount < 3) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['CLOUDINARY_CLOUD_NAME'],
+      message:
+        'Cloudinary is partially configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET together.',
+    });
+  }
+
+  if (env.NODE_ENV === 'production' && configuredCount !== 3) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['CLOUDINARY_CLOUD_NAME'],
+      message:
+        'Cloudinary credentials are required in production. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.',
+    });
+  }
+});
+
+export type Env = z.infer<typeof envSchemaWithRules>;
 
 export function validateEnv(): Env {
   try {
-    return envSchema.parse(process.env);
+    return envSchemaWithRules.parse(process.env);
   } catch (error) {
     console.error('❌ Invalid environment variables:');
     if (error instanceof z.ZodError) {
@@ -68,6 +98,3 @@ export function validateEnv(): Env {
     process.exit(1);
   }
 }
-
-// Export validated env
-export const env = validateEnv();
