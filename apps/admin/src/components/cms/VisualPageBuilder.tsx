@@ -1108,7 +1108,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
     }
 
     if (file.size > MAX_IMAGE_SIZE) {
-      message.error(`Image must be smaller than ${MAX_IMAGE_SIZE_MB}MB.`);
+      message.error(`Image must be ${MAX_IMAGE_SIZE_MB}MB or smaller.`);
       return Upload.LIST_IGNORE;
     }
 

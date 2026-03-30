@@ -151,7 +151,7 @@ export class UploadsService {
 
     if (file.size > this.MAX_FILE_SIZE) {
       throw new BadRequestException(
-        `File size exceeds maximum limit of ${this.MAX_FILE_SIZE / 1024 / 1024}MB`,
+        `Image must be ${this.MAX_FILE_SIZE / 1024 / 1024}MB or smaller.`,
       );
     }
   }

@@ -101,7 +101,7 @@ const MealPlanCreatePage = () => {
     }
 
     if (file.size > MAX_IMAGE_SIZE) {
-      message.error(`Image must be smaller than ${MAX_IMAGE_SIZE_MB}MB.`);
+      message.error(`Image must be ${MAX_IMAGE_SIZE_MB}MB or smaller.`);
       return Upload.LIST_IGNORE;
     }
 
@@ -114,8 +114,10 @@ const MealPlanCreatePage = () => {
       setHasCustomImage(true);
       setUploadedImageKey(uploadedKey);
       form.setFieldValue('imageUrl', uploadedUrl);
-    } catch {
-      message.error('Image upload failed. Please verify Cloudinary configuration.');
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Image upload failed. Please try again.';
+      message.error(errorMessage);
     } finally {
       setImageUploading(false);
     }

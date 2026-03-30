@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type ComponentRef } from 'react';
 import {
+  App as AntdApp,
   Button,
   Card,
   Collapse,
@@ -13,7 +14,6 @@ import {
   Table,
   Tag,
   Typography,
-  message,
 } from 'antd';
 import { PlusOutlined, EditOutlined, UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -25,8 +25,12 @@ import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
+const MAX_IMAGE_SIZE_MB = 5;
+const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+const BLOCKED_IMAGE_TYPES = new Set(['image/svg+xml']);
 
 const SettingsPage = () => {
+  const { message } = AntdApp.useApp();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingType, setEditingType] = useState<MealPlanTypeMaster | null>(null);
@@ -274,6 +278,18 @@ const SettingsPage = () => {
     event.target.value = '';
 
     if (!selectedFile) return;
+
+    const mimeType = (selectedFile.type || '').toLowerCase().trim();
+    if (!mimeType.startsWith('image/') || BLOCKED_IMAGE_TYPES.has(mimeType)) {
+      message.error('Please upload a valid image file (SVG is not supported).');
+      return;
+    }
+
+    if (selectedFile.size > MAX_IMAGE_SIZE) {
+      message.error(`Image must be ${MAX_IMAGE_SIZE_MB}MB or smaller.`);
+      return;
+    }
+
     uploadLogoMutation.mutate(selectedFile);
   };
 
@@ -431,6 +447,12 @@ const SettingsPage = () => {
                           <Text type="secondary">
                             This logo is used across admin, browser tab icon, and mobile app clients
                             via the public branding API.
+                          </Text>
+                          <br />
+                          <Text type="secondary">
+                            Supported formats: JPG, PNG, WEBP, AVIF, HEIC/HEIF. Max{' '}
+                            {MAX_IMAGE_SIZE_MB}
+                            MB.
                           </Text>
                         </div>
 

@@ -10,6 +10,20 @@ type UploadResult = {
 };
 
 const CLOUDINARY_KEY_PREFIX = 'cloudinary:';
+const MAX_IMAGE_SIZE_MB = 5;
+const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+const BLOCKED_IMAGE_MIME_TYPES = new Set(['image/svg+xml']);
+
+const validateUploadImageFile = (file: File): void => {
+  const mimeType = (file.type || '').toLowerCase().trim();
+  if (!mimeType.startsWith('image/') || BLOCKED_IMAGE_MIME_TYPES.has(mimeType)) {
+    throw new Error('Please upload a valid image file (SVG is not supported).');
+  }
+
+  if (file.size > MAX_IMAGE_SIZE) {
+    throw new Error(`Image must be ${MAX_IMAGE_SIZE_MB}MB or smaller.`);
+  }
+};
 
 const normalizeCloudinaryPublicId = (value: string): string | null => {
   const normalized = value.trim().replace(/^\/+/, '');
@@ -153,6 +167,8 @@ const parseUploadResult = (payload: unknown): UploadResult => {
 
 export const uploadService = {
   uploadImage: async (file: File, folder: string = 'images'): Promise<UploadResult> => {
+    validateUploadImageFile(file);
+
     const formData = new FormData();
     formData.append('file', file);
     formData.append('folder', folder);
