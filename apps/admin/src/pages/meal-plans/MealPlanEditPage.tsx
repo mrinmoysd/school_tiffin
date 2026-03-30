@@ -17,7 +17,15 @@ import {
 } from 'antd';
 import { ArrowLeftOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { mealPlanService, mealPlanTypeService, schoolService, uploadService } from '@/services';
+import {
+  isAllowedUploadImageMimeType,
+  MAX_IMAGE_SIZE,
+  MAX_IMAGE_SIZE_MB,
+  mealPlanService,
+  mealPlanTypeService,
+  schoolService,
+  uploadService,
+} from '@/services';
 import { UpdateMealPlanDto } from '@/types';
 import { DEFAULT_MEAL_PLAN_IMAGE } from '@/constants/images';
 
@@ -38,9 +46,6 @@ const paiseToRupees = (value?: number) =>
 
 const rupeesToPaise = (value?: number) =>
   value === undefined || value === null ? value : Math.round(value * 100);
-
-const MAX_IMAGE_SIZE_MB = 5;
-const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 
 const MealPlanEditPage = () => {
   const navigate = useNavigate();
@@ -129,8 +134,8 @@ const MealPlanEditPage = () => {
   };
 
   const handleImageUpload = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      message.error('Please upload an image file (JPG, PNG, or WEBP).');
+    if (!isAllowedUploadImageMimeType(file.type || '')) {
+      message.error('Please upload an image file (JPG or PNG only).');
       return Upload.LIST_IGNORE;
     }
 
@@ -276,7 +281,7 @@ const MealPlanEditPage = () => {
 
           <Form.Item
             label="Plan Image (optional)"
-            extra={`JPG, PNG, or WEBP. Max ${MAX_IMAGE_SIZE_MB}MB.`}
+            extra={`JPG or PNG. Max ${MAX_IMAGE_SIZE_MB}MB.`}
           >
             <div className="flex items-center gap-4">
               <div className="w-24 h-24 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
@@ -287,7 +292,11 @@ const MealPlanEditPage = () => {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Upload beforeUpload={handleImageUpload} showUploadList={false} accept="image/*">
+                <Upload
+                  beforeUpload={handleImageUpload}
+                  showUploadList={false}
+                  accept="image/png,image/jpeg"
+                >
                   <Button icon={<UploadOutlined />} loading={imageUploading}>
                     Upload Image
                   </Button>

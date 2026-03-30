@@ -48,7 +48,7 @@ export class UploadsController {
   @ApiOperation({
     summary: '[Admin/Parent] Upload image',
     description:
-      'Upload an image through backend-managed Cloudinary integration. Allowed types: JPEG, PNG, WebP. Max size: 5MB. Admin uploads are restricted to approved folders; parents are restricted to profile folders.',
+      'Upload an image through backend-managed Cloudinary integration. Allowed types: JPEG, PNG. Max size defaults to 2MB (configurable via MAX_IMAGE_UPLOAD_MB). Admin uploads are restricted to approved folders; parents are restricted to profile folders.',
   })
   @ApiBody({
     schema: {

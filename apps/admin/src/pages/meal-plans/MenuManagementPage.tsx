@@ -29,7 +29,14 @@ import {
   UploadOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { mealPlanService, menuItemService, uploadService } from '@/services';
+import {
+  isAllowedUploadImageMimeType,
+  MAX_IMAGE_SIZE,
+  MAX_IMAGE_SIZE_MB,
+  mealPlanService,
+  menuItemService,
+  uploadService,
+} from '@/services';
 import { MenuItem, CreateMenuItemDto, UpdateMenuItemDto } from '@/types';
 import { DEFAULT_MEAL_PLAN_IMAGE } from '@/constants/images';
 import TableSkeleton from '@/components/TableSkeleton';
@@ -42,9 +49,6 @@ const { TextArea } = Input;
 const { confirm } = Modal;
 
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const MAX_IMAGE_SIZE_MB = 5;
-const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024;
-
 const MenuManagementPage = () => {
   const navigate = useNavigate();
   const { message } = AntdApp.useApp();
@@ -189,8 +193,8 @@ const MenuManagementPage = () => {
   };
 
   const handleImageUpload = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      message.error('Please upload an image file (JPG, PNG, or WEBP).');
+    if (!isAllowedUploadImageMimeType(file.type || '')) {
+      message.error('Please upload an image file (JPG or PNG only).');
       return Upload.LIST_IGNORE;
     }
 
@@ -446,7 +450,7 @@ const MenuManagementPage = () => {
 
           <Form.Item
             label="Item Image (optional)"
-            extra={`JPG, PNG, or WEBP. Max ${MAX_IMAGE_SIZE_MB}MB.`}
+            extra={`JPG or PNG. Max ${MAX_IMAGE_SIZE_MB}MB.`}
           >
             <div className="flex items-center gap-4">
               <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
@@ -457,7 +461,11 @@ const MenuManagementPage = () => {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Upload beforeUpload={handleImageUpload} showUploadList={false} accept="image/*">
+                <Upload
+                  beforeUpload={handleImageUpload}
+                  showUploadList={false}
+                  accept="image/png,image/jpeg"
+                >
                   <Button icon={<UploadOutlined />} loading={imageUploading}>
                     Upload Image
                   </Button>

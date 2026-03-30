@@ -17,7 +17,14 @@ import {
 } from 'antd';
 import { PlusOutlined, EditOutlined, UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { appSettingService, mealPlanTypeService, uploadService } from '@/services';
+import {
+  appSettingService,
+  isAllowedUploadImageMimeType,
+  MAX_IMAGE_SIZE,
+  MAX_IMAGE_SIZE_MB,
+  mealPlanTypeService,
+  uploadService,
+} from '@/services';
 import { CreateMealPlanTypeDto, MealPlanTypeMaster, UpdateMealPlanTypeDto } from '@/types';
 import ErrorState from '@/components/ErrorState';
 import TableSkeleton from '@/components/TableSkeleton';
@@ -25,9 +32,6 @@ import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
-const MAX_IMAGE_SIZE_MB = 5;
-const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024;
-const BLOCKED_IMAGE_TYPES = new Set(['image/svg+xml']);
 
 const SettingsPage = () => {
   const { message } = AntdApp.useApp();
@@ -280,8 +284,8 @@ const SettingsPage = () => {
     if (!selectedFile) return;
 
     const mimeType = (selectedFile.type || '').toLowerCase().trim();
-    if (!mimeType.startsWith('image/') || BLOCKED_IMAGE_TYPES.has(mimeType)) {
-      message.error('Please upload a valid image file (SVG is not supported).');
+    if (!isAllowedUploadImageMimeType(mimeType)) {
+      message.error('Please upload a valid image file (JPG or PNG only).');
       return;
     }
 
@@ -434,7 +438,7 @@ const SettingsPage = () => {
                       <input
                         ref={logoInputRef}
                         type="file"
-                        accept="image/png,image/jpeg,image/jpg,image/webp,image/avif,image/heic,image/heif"
+                        accept="image/png,image/jpeg"
                         className="hidden"
                         onChange={handleLogoSelect}
                       />
@@ -450,8 +454,7 @@ const SettingsPage = () => {
                           </Text>
                           <br />
                           <Text type="secondary">
-                            Supported formats: JPG, PNG, WEBP, AVIF, HEIC/HEIF. Max{' '}
-                            {MAX_IMAGE_SIZE_MB}
+                            Supported formats: JPG, PNG. Max {MAX_IMAGE_SIZE_MB}
                             MB.
                           </Text>
                         </div>
