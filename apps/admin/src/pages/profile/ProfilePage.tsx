@@ -8,6 +8,7 @@ import {
 } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
 import {
+  App as AntdApp,
   Avatar,
   Button,
   Card,
@@ -18,7 +19,6 @@ import {
   Modal,
   Typography,
   Upload,
-  message,
 } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { uploadService, userService } from '@/services';
@@ -32,16 +32,17 @@ const BLOCKED_IMAGE_TYPES = ['image/svg+xml'];
 interface ProfileFormValues {
   fullName: string;
   phone?: string;
-  profileImageUrl?: string | null;
 }
 
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const { message } = AntdApp.useApp();
   const { user, setUser } = useAuthStore();
   const [form] = Form.useForm<ProfileFormValues>();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [initialImageUrl, setInitialImageUrl] = useState<string | null>(null);
+  const [pendingProfileImageUrl, setPendingProfileImageUrl] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [latestUploadedImageKey, setLatestUploadedImageKey] = useState<string | null>(null);
 
@@ -50,7 +51,7 @@ const ProfilePage = () => {
       userService.updateMyProfile({
         fullName: values.fullName.trim(),
         phone: values.phone?.trim() || undefined,
-        profileImageUrl: values.profileImageUrl ?? null,
+        profileImageUrl: pendingProfileImageUrl,
       }),
     onSuccess: updatedUser => {
       if (!user) return;
@@ -73,6 +74,7 @@ const ProfilePage = () => {
       setIsEditModalOpen(false);
       form.resetFields();
       setInitialImageUrl(null);
+      setPendingProfileImageUrl(null);
       setImagePreview(null);
       setLatestUploadedImageKey(null);
     },
@@ -87,17 +89,20 @@ const ProfilePage = () => {
     form.setFieldsValue({
       fullName: user.fullName || '',
       phone: user.phoneNumber || '',
-      profileImageUrl: currentImage,
     });
     setInitialImageUrl(currentImage);
+    setPendingProfileImageUrl(currentImage);
     setImagePreview(currentImage);
     setLatestUploadedImageKey(null);
     setIsEditModalOpen(true);
   };
 
   const handleCloseEditModal = () => {
-    const currentFormImage = form.getFieldValue('profileImageUrl');
-    if (latestUploadedImageKey && currentFormImage && currentFormImage !== initialImageUrl) {
+    if (
+      latestUploadedImageKey &&
+      pendingProfileImageUrl &&
+      pendingProfileImageUrl !== initialImageUrl
+    ) {
       void uploadService.deleteImage(latestUploadedImageKey).catch(() => {
         // Ignore cleanup errors when user closes modal without saving.
       });
@@ -106,6 +111,7 @@ const ProfilePage = () => {
     setIsEditModalOpen(false);
     form.resetFields();
     setInitialImageUrl(null);
+    setPendingProfileImageUrl(null);
     setImagePreview(null);
     setLatestUploadedImageKey(null);
   };
@@ -125,17 +131,23 @@ const ProfilePage = () => {
     try {
       setImageUploading(true);
       const result = await uploadService.uploadImage(file, 'users');
+      const uploadedUrl = result.url.trim();
+      const uploadedKey = result.key.trim();
+
+      if (!uploadedUrl || !uploadedKey) {
+        throw new Error('Invalid upload response from server.');
+      }
 
       // Cleanup temporary image uploaded in this modal session when replacing it.
-      if (latestUploadedImageKey && latestUploadedImageKey !== result.key) {
+      if (latestUploadedImageKey && latestUploadedImageKey !== uploadedKey) {
         await uploadService.deleteImage(latestUploadedImageKey).catch(() => {
           // Ignore cleanup errors; latest image still applies.
         });
       }
 
-      setLatestUploadedImageKey(result.key);
-      setImagePreview(result.url);
-      form.setFieldValue('profileImageUrl', result.url);
+      setLatestUploadedImageKey(uploadedKey);
+      setImagePreview(uploadedUrl);
+      setPendingProfileImageUrl(uploadedUrl);
       message.success('Image uploaded. Click Save Changes to update your profile.');
     } catch (error) {
       const errorMessage =
@@ -145,13 +157,15 @@ const ProfilePage = () => {
       setImageUploading(false);
     }
 
-    return false;
+    return Upload.LIST_IGNORE;
   };
 
   const handleRemoveImage = async () => {
-    const currentFormImage = form.getFieldValue('profileImageUrl');
-
-    if (latestUploadedImageKey && currentFormImage && currentFormImage !== initialImageUrl) {
+    if (
+      latestUploadedImageKey &&
+      pendingProfileImageUrl &&
+      pendingProfileImageUrl !== initialImageUrl
+    ) {
       await uploadService.deleteImage(latestUploadedImageKey).catch(() => {
         // Ignore cleanup errors and still allow removing selection from UI.
       });
@@ -159,7 +173,7 @@ const ProfilePage = () => {
     }
 
     setImagePreview(null);
-    form.setFieldValue('profileImageUrl', null);
+    setPendingProfileImageUrl(null);
   };
 
   const handleUpdateProfile = async () => {
@@ -277,11 +291,6 @@ const ProfilePage = () => {
               </div>
             </div>
           </Form.Item>
-
-          <Form.Item name="profileImageUrl" hidden>
-            <Input />
-          </Form.Item>
-
           <Form.Item
             name="fullName"
             label="Full Name"

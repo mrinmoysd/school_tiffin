@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import {
+  App as AntdApp,
   Form,
   Input,
   Button,
   Card,
   Typography,
-  message,
   Row,
   Col,
   Select,
@@ -40,6 +40,7 @@ const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 
 const MealPlanCreatePage = () => {
   const navigate = useNavigate();
+  const { message } = AntdApp.useApp();
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
   const [imagePreview, setImagePreview] = useState<string>(DEFAULT_MEAL_PLAN_IMAGE);
@@ -54,7 +55,10 @@ const MealPlanCreatePage = () => {
   useEffect(() => {
     if (typeof pricePerDay === 'number' && typeof durationDays === 'number') {
       const total = Number((pricePerDay * durationDays).toFixed(2));
-      form.setFieldValue('totalPrice', total);
+      const currentTotal = form.getFieldValue('totalPrice');
+      if (currentTotal !== total) {
+        form.setFieldValue('totalPrice', total);
+      }
     }
   }, [pricePerDay, durationDays, form]);
 
@@ -104,17 +108,19 @@ const MealPlanCreatePage = () => {
     try {
       setImageUploading(true);
       const result = await uploadService.uploadImage(file, 'meal-plans');
-      setImagePreview(result.url);
+      const uploadedUrl = result.url.trim();
+      const uploadedKey = result.key.trim();
+      setImagePreview(uploadedUrl);
       setHasCustomImage(true);
-      setUploadedImageKey(result.key);
-      form.setFieldValue('imageUrl', result.url);
+      setUploadedImageKey(uploadedKey);
+      form.setFieldValue('imageUrl', uploadedUrl);
     } catch {
-      message.error('Image upload failed. Please check server upload storage settings.');
+      message.error('Image upload failed. Please verify Cloudinary configuration.');
     } finally {
       setImageUploading(false);
     }
 
-    return false;
+    return Upload.LIST_IGNORE;
   };
 
   const handleRemoveImage = async () => {

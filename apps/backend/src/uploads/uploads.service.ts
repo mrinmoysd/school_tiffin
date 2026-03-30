@@ -1,6 +1,6 @@
-import { promises as fs } from 'fs';
+import { existsSync, promises as fs, readFileSync } from 'fs';
 import { extname, join } from 'path';
-import { randomUUID } from 'crypto';
+import { createHash } from 'crypto';
 import { Buffer } from 'buffer';
 import type { Readable } from 'stream';
 import {
@@ -14,7 +14,6 @@ import {
   extractUploadStorageKey,
   getUploadsRootPath,
   sanitizeUploadFolder,
-  toPublicUploadPath,
 } from './upload-storage.util';
 
 type FilesystemError = {
@@ -23,10 +22,43 @@ type FilesystemError = {
   stack?: string;
 };
 
+type CloudinaryUploadResponse = {
+  secure_url?: string;
+  public_id?: string;
+  error?: {
+    message?: string;
+  };
+};
+
+type CloudinaryDestroyResponse = {
+  result?: string;
+  error?: {
+    message?: string;
+  };
+};
+
+type CloudinaryConfig = {
+  cloudName: string;
+  apiKey: string;
+  apiSecret: string;
+};
+
 @Injectable()
 export class UploadsService {
   private readonly logger = new Logger(UploadsService.name);
   private readonly uploadsRootPath = getUploadsRootPath();
+  private readonly CLOUDINARY_KEY_PREFIX = 'cloudinary:';
+  private readonly runtimeEnvFallbackCache = new Map<string, string | null>();
+  private readonly ALLOWED_TOP_LEVEL_FOLDERS = new Set([
+    'app-branding',
+    'cms-pages',
+    'images',
+    'meal-plans',
+    'menu-items',
+    'parents',
+    'students',
+    'users',
+  ]);
 
   // Common explicit image types (kept for error messaging/reference)
   private readonly ALLOWED_IMAGE_TYPES = [
@@ -131,28 +163,13 @@ export class UploadsService {
     this.validateImageFile(file);
 
     const safeFolder = sanitizeUploadFolder(folder);
-    const extension = this.resolveImageExtension(file);
-    const fileName = `${randomUUID()}${extension}`;
-    const key = `${safeFolder}/${fileName}`;
-    const filePath = this.resolveAbsolutePathForKey(key);
+    this.assertAllowedTopLevelFolder(safeFolder, 'upload folder');
     const fileBuffer = await this.getFileBuffer(file);
-
-    await fs.mkdir(join(this.uploadsRootPath, safeFolder), { recursive: true });
-
-    try {
-      await fs.writeFile(filePath, fileBuffer);
-    } catch (error) {
-      const fsError = error as FilesystemError;
-      this.logger.error(
-        `Failed to save uploaded image at ${filePath}: ${fsError.message || 'unknown error'}`,
-        fsError.stack,
-      );
-      throw new InternalServerErrorException('Failed to save uploaded image');
-    }
+    const cloudinaryResult = await this.uploadToCloudinary(file, fileBuffer, safeFolder);
 
     return {
-      url: toPublicUploadPath(key),
-      key,
+      url: cloudinaryResult.secureUrl,
+      key: `${this.CLOUDINARY_KEY_PREFIX}${cloudinaryResult.publicId}`,
       originalName: file.originalname,
       mimeType: (file.mimetype || '').replace(/&#x2f;|&#x2F;|&#47;/g, '/'),
       size: file.size,
@@ -163,10 +180,18 @@ export class UploadsService {
    * Delete image
    */
   async deleteImage(keyOrPathOrUrl: string) {
+    const cloudinaryPublicId = this.extractCloudinaryPublicId(keyOrPathOrUrl);
+    if (cloudinaryPublicId) {
+      this.assertAllowedTopLevelFolder(cloudinaryPublicId, 'Cloudinary asset key');
+      await this.deleteFromCloudinary(cloudinaryPublicId);
+      return { message: 'Image deleted successfully' };
+    }
+
     const key = extractUploadStorageKey(keyOrPathOrUrl);
     if (!key) {
       throw new BadRequestException('Invalid image key/path');
     }
+    this.assertAllowedTopLevelFolder(key, 'image key/path');
 
     const filePath = this.resolveAbsolutePathForKey(key);
 
@@ -181,6 +206,323 @@ export class UploadsService {
     }
 
     return { message: 'Image deleted successfully' };
+  }
+
+  private getCloudinaryConfig(): CloudinaryConfig {
+    const cloudName = this.getRuntimeEnvValue('CLOUDINARY_CLOUD_NAME');
+    const apiKey = this.getRuntimeEnvValue('CLOUDINARY_API_KEY');
+    const apiSecret = this.getRuntimeEnvValue('CLOUDINARY_API_SECRET');
+
+    if (!cloudName || !apiKey || !apiSecret) {
+      const missing = [
+        !cloudName ? 'CLOUDINARY_CLOUD_NAME' : null,
+        !apiKey ? 'CLOUDINARY_API_KEY' : null,
+        !apiSecret ? 'CLOUDINARY_API_SECRET' : null,
+      ]
+        .filter(Boolean)
+        .join(', ');
+
+      this.logger.error(
+        `Cloudinary is not configured on the server. Missing: ${missing || 'unknown keys'}. cwd=${process.cwd()}`,
+      );
+      throw new InternalServerErrorException('Cloudinary is not configured on the server');
+    }
+
+    return {
+      cloudName,
+      apiKey,
+      apiSecret,
+    };
+  }
+
+  private buildCloudinarySignature(params: Record<string, string>, apiSecret: string): string {
+    const signaturePayload = Object.entries(params)
+      .filter(([, value]) => Boolean(value))
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, value]) => `${key}=${value}`)
+      .join('&');
+
+    return createHash('sha1').update(`${signaturePayload}${apiSecret}`).digest('hex');
+  }
+
+  private async uploadToCloudinary(
+    file: Express.Multer.File,
+    fileBuffer: Buffer,
+    folder: string,
+  ): Promise<{ secureUrl: string; publicId: string }> {
+    const { cloudName, apiKey, apiSecret } = this.getCloudinaryConfig();
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const signature = this.buildCloudinarySignature({ folder, timestamp }, apiSecret);
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/image/upload`;
+    const normalizedMimeType = (file.mimetype || '')
+      .toLowerCase()
+      .trim()
+      .replace(/&#x2f;|&#x2F;|&#47;/g, '/');
+    const fallbackExtension = this.resolveImageExtension(file).replace(/^\./, '') || 'jpg';
+    const blobMimeType = normalizedMimeType.startsWith('image/')
+      ? normalizedMimeType
+      : `image/${fallbackExtension}`;
+
+    const formData = new FormData();
+    formData.append(
+      'file',
+      new Blob([new Uint8Array(fileBuffer)], { type: blobMimeType }),
+      file.originalname,
+    );
+    formData.append('folder', folder);
+    formData.append('api_key', apiKey);
+    formData.append('timestamp', timestamp);
+    formData.append('signature', signature);
+
+    let response: Awaited<ReturnType<typeof fetch>>;
+    try {
+      response = await fetch(uploadUrl, {
+        method: 'POST',
+        body: formData,
+      });
+    } catch (error) {
+      const uploadError = error as { message?: string };
+      this.logger.error(
+        `Cloudinary upload request failed: ${uploadError.message || 'unknown error'}`,
+      );
+      throw new InternalServerErrorException('Failed to upload image');
+    }
+
+    const payload = (await response.json().catch(() => ({}))) as CloudinaryUploadResponse;
+    if (!response.ok || !payload.secure_url || !payload.public_id) {
+      this.logger.error(
+        `Cloudinary upload failed with status ${response.status}: ${
+          payload.error?.message || 'invalid upload response'
+        }`,
+      );
+      throw new InternalServerErrorException('Failed to upload image');
+    }
+
+    return {
+      secureUrl: payload.secure_url,
+      publicId: payload.public_id,
+    };
+  }
+
+  private async deleteFromCloudinary(publicId: string): Promise<void> {
+    const { cloudName, apiKey, apiSecret } = this.getCloudinaryConfig();
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const invalidate = 'true';
+    const signature = this.buildCloudinarySignature(
+      {
+        public_id: publicId,
+        timestamp,
+        invalidate,
+      },
+      apiSecret,
+    );
+    const destroyUrl = `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/image/destroy`;
+    const formData = new FormData();
+    formData.append('public_id', publicId);
+    formData.append('api_key', apiKey);
+    formData.append('timestamp', timestamp);
+    formData.append('invalidate', invalidate);
+    formData.append('signature', signature);
+
+    let response: Awaited<ReturnType<typeof fetch>>;
+    try {
+      response = await fetch(destroyUrl, {
+        method: 'POST',
+        body: formData,
+      });
+    } catch (error) {
+      const cloudinaryError = error as { message?: string };
+      this.logger.error(
+        `Cloudinary delete request failed for ${publicId}: ${cloudinaryError.message || 'unknown error'}`,
+      );
+      throw new InternalServerErrorException('Failed to delete image');
+    }
+
+    const payload = (await response.json().catch(() => ({}))) as CloudinaryDestroyResponse;
+    if (!response.ok) {
+      this.logger.error(
+        `Cloudinary delete failed with status ${response.status}: ${
+          payload.error?.message || 'invalid delete response'
+        }`,
+      );
+      throw new InternalServerErrorException('Failed to delete image');
+    }
+
+    const normalizedResult = (payload.result || '').toLowerCase();
+    if (normalizedResult && normalizedResult !== 'ok' && normalizedResult !== 'not found') {
+      this.logger.error(`Cloudinary delete failed for ${publicId}: ${payload.result}`);
+      throw new InternalServerErrorException('Failed to delete image');
+    }
+  }
+
+  private extractCloudinaryPublicId(value?: string | null): string | null {
+    if (typeof value !== 'string') return null;
+
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    if (trimmed.startsWith(this.CLOUDINARY_KEY_PREFIX)) {
+      return this.normalizeCloudinaryPublicId(trimmed.slice(this.CLOUDINARY_KEY_PREFIX.length));
+    }
+
+    try {
+      const parsed = new URL(trimmed);
+      if (!parsed.hostname.endsWith('cloudinary.com')) {
+        return null;
+      }
+
+      const pathSegments = decodeURIComponent(parsed.pathname)
+        .split('/')
+        .map(segment => segment.trim())
+        .filter(Boolean);
+      const uploadIndex = pathSegments.indexOf('upload');
+      if (uploadIndex < 0) {
+        return null;
+      }
+
+      const publicIdSegments = pathSegments.slice(uploadIndex + 1);
+      if (publicIdSegments.length === 0) {
+        return null;
+      }
+
+      if (/^v\d+$/.test(publicIdSegments[0] || '')) {
+        publicIdSegments.shift();
+      }
+
+      if (publicIdSegments.length === 0) {
+        return null;
+      }
+
+      const lastSegment = publicIdSegments[publicIdSegments.length - 1];
+      publicIdSegments[publicIdSegments.length - 1] = lastSegment.replace(/\.[^/.]+$/, '');
+
+      return this.normalizeCloudinaryPublicId(publicIdSegments.join('/'));
+    } catch {
+      return null;
+    }
+  }
+
+  private normalizeCloudinaryPublicId(value: string): string | null {
+    const normalized = value.trim().replace(/^\/+/, '');
+    if (
+      !normalized ||
+      normalized === '.' ||
+      normalized.startsWith('..') ||
+      normalized.includes('/..') ||
+      normalized.includes('\0')
+    ) {
+      return null;
+    }
+
+    return normalized;
+  }
+
+  private assertAllowedTopLevelFolder(pathLike: string, contextLabel: string): void {
+    const topLevelFolder = this.extractTopLevelFolder(pathLike);
+    if (!topLevelFolder || !this.ALLOWED_TOP_LEVEL_FOLDERS.has(topLevelFolder)) {
+      throw new BadRequestException(`Invalid ${contextLabel}`);
+    }
+  }
+
+  private extractTopLevelFolder(pathLike: string): string | null {
+    const firstSegment = pathLike
+      .split('/')
+      .map(segment => segment.trim())
+      .filter(Boolean)[0];
+
+    return firstSegment || null;
+  }
+
+  private getRuntimeEnvValue(key: string): string | undefined {
+    const directValue = process.env[key]?.trim();
+    if (directValue) {
+      return directValue;
+    }
+
+    if (this.runtimeEnvFallbackCache.has(key)) {
+      const cached = this.runtimeEnvFallbackCache.get(key);
+      return cached || undefined;
+    }
+
+    const fallbackValue = this.readValueFromEnvFiles(key);
+    this.runtimeEnvFallbackCache.set(key, fallbackValue || null);
+    return fallbackValue || undefined;
+  }
+
+  private readValueFromEnvFiles(key: string): string | null {
+    const envFileCandidates = this.getEnvFileCandidates();
+
+    for (const filePath of envFileCandidates) {
+      if (!existsSync(filePath)) {
+        continue;
+      }
+
+      const value = this.readSingleEnvValue(filePath, key);
+      if (value) {
+        return value;
+      }
+    }
+
+    return null;
+  }
+
+  private getEnvFileCandidates(): string[] {
+    const cwd = process.cwd();
+    const runtimeAppRoot = join(__dirname, '..', '..');
+
+    return Array.from(
+      new Set([
+        join(cwd, '.env.local'),
+        join(cwd, '.env'),
+        join(cwd, 'apps', 'backend', '.env.local'),
+        join(cwd, 'apps', 'backend', '.env'),
+        join(runtimeAppRoot, '.env.local'),
+        join(runtimeAppRoot, '.env'),
+      ]),
+    );
+  }
+
+  private readSingleEnvValue(filePath: string, key: string): string | null {
+    try {
+      const content = readFileSync(filePath, 'utf8');
+      const lines = content.split(/\r?\n/);
+
+      for (const line of lines) {
+        const trimmedLine = line.trim();
+        if (!trimmedLine || trimmedLine.startsWith('#')) {
+          continue;
+        }
+
+        const separatorIndex = line.indexOf('=');
+        if (separatorIndex <= 0) {
+          continue;
+        }
+
+        const parsedKey = line.slice(0, separatorIndex).trim();
+        if (parsedKey !== key) {
+          continue;
+        }
+
+        let rawValue = line.slice(separatorIndex + 1).trim();
+        if (
+          (rawValue.startsWith('"') && rawValue.endsWith('"')) ||
+          (rawValue.startsWith("'") && rawValue.endsWith("'"))
+        ) {
+          rawValue = rawValue.slice(1, -1);
+        } else {
+          const inlineCommentIndex = rawValue.indexOf(' #');
+          if (inlineCommentIndex >= 0) {
+            rawValue = rawValue.slice(0, inlineCommentIndex).trim();
+          }
+        }
+
+        return rawValue || null;
+      }
+    } catch {
+      return null;
+    }
+
+    return null;
   }
 
   private resolveImageExtension(file: Express.Multer.File): string {

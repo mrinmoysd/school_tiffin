@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
+  App as AntdApp,
   Table,
   Button,
   Typography,
@@ -10,7 +11,6 @@ import {
   Input,
   InputNumber,
   Select,
-  message,
   Space,
   Tooltip,
   Tag,
@@ -47,6 +47,7 @@ const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 
 const MenuManagementPage = () => {
   const navigate = useNavigate();
+  const { message } = AntdApp.useApp();
   const { id: mealPlanId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -206,7 +207,7 @@ const MenuManagementPage = () => {
       setUploadedImageKey(result.key);
       form.setFieldValue('imageUrl', result.url);
     } catch {
-      message.error('Image upload failed. Please check server upload storage settings.');
+      message.error('Image upload failed. Please verify Cloudinary configuration.');
     } finally {
       setImageUploading(false);
     }

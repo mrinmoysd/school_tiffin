@@ -3,8 +3,8 @@ import { IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class UpdateBrandingSettingDto {
   @ApiPropertyOptional({
-    description: 'Application logo path reference. Send null to clear logo.',
-    example: '/uploads/app-branding/logo.png',
+    description: 'Application logo image URL. Send null to clear logo.',
+    example: 'https://res.cloudinary.com/demo/image/upload/v1736793442/app-branding/logo.png',
     nullable: true,
   })
   @IsOptional()

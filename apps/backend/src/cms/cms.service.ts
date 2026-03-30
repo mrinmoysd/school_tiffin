@@ -86,6 +86,32 @@ export class CmsService {
   }
 
   /**
+   * Get page by slug for admin editor/preview (includes unpublished and bypasses cache)
+   */
+  async findBySlugForAdmin(slug: string) {
+    const page = await this.prisma.cmsPage.findUnique({
+      where: { slug },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        content: true,
+        isPublished: true,
+        version: true,
+        publishedAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!page) {
+      throw new NotFoundException('Page not found');
+    }
+
+    return page;
+  }
+
+  /**
    * Get all pages (Admin only)
    */
   async findAll(includeUnpublished = false) {

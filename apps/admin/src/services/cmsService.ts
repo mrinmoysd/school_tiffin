@@ -12,7 +12,7 @@ export const cmsService = {
 
   // Get page by slug
   getById: async (slug: string): Promise<CMSPage> => {
-    const response = await api.get<ApiResponse<CMSPage>>(`/cms/${slug}`);
+    const response = await api.get<ApiResponse<CMSPage>>(`/cms/admin/${slug}`);
     return response.data.data;
   },
 

@@ -1,5 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseBoolPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  ParseBoolPipe,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { CmsService } from './cms.service';
 import { CreateCmsPageDto, UpdateCmsPageDto } from './dto';
 import { Public, Roles, UserRole } from '../common/decorators';
@@ -33,7 +50,8 @@ export class CmsController {
   @Public()
   @ApiOperation({
     summary: 'Get all CMS pages',
-    description: 'Get all published pages (public) or all pages including unpublished (admin with query param).',
+    description:
+      'Get all published pages (public) or all pages including unpublished (admin with query param).',
   })
   @ApiQuery({
     name: 'includeUnpublished',
@@ -42,8 +60,32 @@ export class CmsController {
     description: 'Include unpublished pages (admin only)',
   })
   @ApiResponse({ status: 200, description: 'Pages retrieved successfully' })
-  async findAll(@Query('includeUnpublished', new ParseBoolPipe({ optional: true })) includeUnpublished?: boolean) {
+  async findAll(
+    @Query('includeUnpublished', new ParseBoolPipe({ optional: true }))
+    includeUnpublished?: boolean,
+  ) {
     return this.cmsService.findAll(includeUnpublished);
+  }
+
+  /**
+   * Get page by slug for admin editor/preview (includes unpublished)
+   */
+  @Get('admin/:slug')
+  @ApiBearerAuth()
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({
+    summary: '[Admin] Get CMS page by slug',
+    description: 'Get page content by slug for admin editor/preview, including unpublished pages.',
+  })
+  @ApiParam({
+    name: 'slug',
+    description: 'Page slug',
+    example: 'about-us',
+  })
+  @ApiResponse({ status: 200, description: 'Page found' })
+  @ApiResponse({ status: 404, description: 'Page not found' })
+  async findOneForAdmin(@Param('slug') slug: string) {
+    return this.cmsService.findBySlugForAdmin(slug);
   }
 
   /**

@@ -1,6 +1,7 @@
 /* global Event, HTMLDivElement, HTMLElement, HTMLOListElement, Node, Range, requestAnimationFrame */
 import { DragEvent, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  App as AntdApp,
   Alert,
   Button,
   Card,
@@ -8,7 +9,6 @@ import {
   Drawer,
   Empty,
   Input,
-  message,
   Select,
   Space,
   Tooltip,
@@ -480,6 +480,7 @@ const MarkupSelectionEditor = ({
 };
 
 const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
+  const { message } = AntdApp.useApp();
   const parsedInitial = useMemo(() => deserializeVisualBuilderContent(value), [value]);
   const [blocks, setBlocks] = useState<CmsVisualBlock[]>(
     parsedInitial.blocks.map(block => ensureBlockSection(block)),
@@ -1114,17 +1115,19 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
     try {
       setImageUploadingByBlockId(prev => ({ ...prev, [blockId]: true }));
       const result = await uploadService.uploadImage(file, 'cms-pages');
+      const uploadedUrl = result.url.trim();
+      const uploadedKey = result.key.trim();
 
       const previousKey = uploadedImageKeysRef.current[blockId];
-      if (previousKey && previousKey !== result.key) {
+      if (previousKey && previousKey !== uploadedKey) {
         await uploadService.deleteImage(previousKey).catch(() => {
           // Ignore cleanup error and still apply latest uploaded image.
         });
       }
 
-      uploadedImageKeysRef.current[blockId] = result.key;
+      uploadedImageKeysRef.current[blockId] = uploadedKey;
       updateBlock(blockId, current =>
-        current.type === 'image' ? { ...current, imageUrl: result.url } : current,
+        current.type === 'image' ? { ...current, imageUrl: uploadedUrl } : current,
       );
       message.success('Image uploaded successfully.');
     } catch (error) {
@@ -1135,7 +1138,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
       setImageUploadingByBlockId(prev => ({ ...prev, [blockId]: false }));
     }
 
-    return false;
+    return Upload.LIST_IGNORE;
   };
 
   const handleRemoveUploadedImage = async (blockId: string) => {

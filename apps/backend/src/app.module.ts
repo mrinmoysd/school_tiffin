@@ -40,7 +40,7 @@ import { UsersModule } from './users/users.module';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [databaseConfig, jwtConfig, redisConfig],
-      envFilePath: ['.env.local', '.env'],
+      envFilePath: ['apps/backend/.env.local', 'apps/backend/.env', '.env.local', '.env'],
     }),
 
     // Cache Manager (global)
