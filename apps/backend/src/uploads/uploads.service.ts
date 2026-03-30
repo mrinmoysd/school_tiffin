@@ -45,6 +45,7 @@ type CloudinaryConfig = {
 
 @Injectable()
 export class UploadsService {
+  private readonly DEFAULT_MAX_IMAGE_UPLOAD_MB = 2;
   private readonly logger = new Logger(UploadsService.name);
   private readonly uploadsRootPath = getUploadsRootPath();
   private readonly CLOUDINARY_KEY_PREFIX = 'cloudinary:';
@@ -65,36 +66,17 @@ export class UploadsService {
     'image/jpeg',
     'image/jpg',
     'image/png',
-    'image/webp',
-    'image/avif',
-    'image/heic',
-    'image/heif',
-    'image/jfif',
     'image/pjpeg',
     'image/x-png',
   ];
   private readonly BLOCKED_IMAGE_TYPES = ['image/svg+xml'];
-  private readonly ALLOWED_IMAGE_EXTENSIONS = [
-    '.jpg',
-    '.jpeg',
-    '.png',
-    '.webp',
-    '.avif',
-    '.heic',
-    '.heif',
-    '.jfif',
-  ];
-  private readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  private readonly ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png'];
+  private readonly MAX_FILE_SIZE = this.resolveMaxImageUploadBytes();
 
   private readonly MIME_EXTENSION_MAP: Record<string, string> = {
     'image/jpeg': '.jpg',
     'image/jpg': '.jpg',
     'image/png': '.png',
-    'image/webp': '.webp',
-    'image/avif': '.avif',
-    'image/heic': '.heic',
-    'image/heif': '.heif',
-    'image/jfif': '.jpg',
     'image/pjpeg': '.jpg',
     'image/x-png': '.png',
   };
@@ -108,16 +90,7 @@ export class UploadsService {
       buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47;
     // JPEG/JFIF signature: FF D8 FF
     const isJpeg = buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
-    // WebP: RIFF....WEBP
-    const isWebp =
-      buffer.toString('ascii', 0, 4) === 'RIFF' && buffer.toString('ascii', 8, 12) === 'WEBP';
-    // AVIF/HEIC/HEIF: ....ftyp + known brand
-    const hasFtyp = buffer.toString('ascii', 4, 8) === 'ftyp';
-    const brand = buffer.toString('ascii', 8, 12);
-    const isIsoImage =
-      hasFtyp && ['avif', 'avis', 'heic', 'heix', 'heif', 'heis', 'mif1', 'msf1'].includes(brand);
-
-    return isPng || isJpeg || isWebp || isIsoImage;
+    return isPng || isJpeg;
   }
 
   /**
@@ -132,7 +105,7 @@ export class UploadsService {
       .toLowerCase()
       .trim()
       .replace(/&#x2f;|&#x2F;|&#47;/g, '/');
-    const isImageMime = mimeType.startsWith('image/');
+    const isAllowedImageMime = this.ALLOWED_IMAGE_TYPES.includes(mimeType);
     const isBlockedType = this.BLOCKED_IMAGE_TYPES.includes(mimeType);
     const fileExtension = extname(file.originalname || '').toLowerCase();
     const isAllowedImageExtension = this.ALLOWED_IMAGE_EXTENSIONS.includes(fileExtension);
@@ -143,10 +116,8 @@ export class UploadsService {
     const isKnownByContent = this.isKnownImageByContent(file);
     const isOctetStreamImage = isOctetStream && (isAllowedImageExtension || isKnownByContent);
 
-    if ((!isImageMime && !isOctetStreamImage) || isBlockedType) {
-      throw new BadRequestException(
-        `Invalid file type. Allowed image formats include: ${this.ALLOWED_IMAGE_TYPES.join(', ')}`,
-      );
+    if ((!isAllowedImageMime && !isOctetStreamImage) || isBlockedType) {
+      throw new BadRequestException('Invalid file type. Allowed image formats: JPEG, PNG.');
     }
 
     if (file.size > this.MAX_FILE_SIZE) {
@@ -447,6 +418,17 @@ export class UploadsService {
     const fallbackValue = this.readValueFromEnvFiles(key);
     this.runtimeEnvFallbackCache.set(key, fallbackValue || null);
     return fallbackValue || undefined;
+  }
+
+  private resolveMaxImageUploadBytes(): number {
+    const rawValue = this.getRuntimeEnvValue('MAX_IMAGE_UPLOAD_MB');
+    const parsedMb = Number(rawValue);
+
+    if (Number.isFinite(parsedMb) && parsedMb > 0) {
+      return parsedMb * 1024 * 1024;
+    }
+
+    return this.DEFAULT_MAX_IMAGE_UPLOAD_MB * 1024 * 1024;
   }
 
   private readValueFromEnvFiles(key: string): string | null {

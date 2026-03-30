@@ -30,7 +30,12 @@ import {
   RocketOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
-import { uploadService } from '@/services';
+import {
+  isAllowedUploadImageMimeType,
+  MAX_IMAGE_SIZE,
+  MAX_IMAGE_SIZE_MB,
+  uploadService,
+} from '@/services';
 import {
   CmsVisualBlock,
   CmsVisualBlockType,
@@ -98,9 +103,6 @@ const FONT_FAMILY_OPTIONS = [
 ];
 
 const FONT_SIZE_OPTIONS = ['12', '14', '16', '18', '20', '24', '28', '32', '36', '40'];
-const MAX_IMAGE_SIZE_MB = 5;
-const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024;
-
 const TEXT_ALIGN_OPTIONS: Array<{ label: string; value: TextAlignFormat }> = [
   { label: 'L', value: 'left' },
   { label: 'C', value: 'center' },
@@ -1102,8 +1104,8 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
   };
 
   const handleImageUpload = (blockId: string) => async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      message.error('Please upload an image file (JPG, PNG, or WEBP).');
+    if (!isAllowedUploadImageMimeType(file.type || '')) {
+      message.error('Please upload an image file (JPG or PNG only).');
       return Upload.LIST_IGNORE;
     }
 
@@ -1454,7 +1456,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
               <Upload
                 beforeUpload={handleImageUpload(block.id)}
                 showUploadList={false}
-                accept="image/*"
+                accept="image/png,image/jpeg"
               >
                 <Button
                   icon={<UploadOutlined />}

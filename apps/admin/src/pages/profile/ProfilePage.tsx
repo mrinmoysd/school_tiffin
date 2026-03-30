@@ -21,13 +21,16 @@ import {
   Upload,
 } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { uploadService, userService } from '@/services';
+import {
+  isAllowedUploadImageMimeType,
+  MAX_IMAGE_SIZE,
+  MAX_IMAGE_SIZE_MB,
+  uploadService,
+  userService,
+} from '@/services';
 import { useAuthStore } from '@/stores/authStore';
 
 const { Title, Text } = Typography;
-const MAX_IMAGE_SIZE_MB = 5;
-const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024;
-const BLOCKED_IMAGE_TYPES = ['image/svg+xml'];
 
 interface ProfileFormValues {
   fullName: string;
@@ -118,8 +121,8 @@ const ProfilePage = () => {
 
   const handleImageUpload = async (file: File) => {
     const mimeType = (file.type || '').toLowerCase().trim();
-    if (!mimeType.startsWith('image/') || BLOCKED_IMAGE_TYPES.includes(mimeType)) {
-      message.error('Please upload a valid image file (SVG is not supported).');
+    if (!isAllowedUploadImageMimeType(mimeType)) {
+      message.error('Please upload a valid image file (JPG or PNG only).');
       return Upload.LIST_IGNORE;
     }
 
@@ -274,7 +277,11 @@ const ProfilePage = () => {
               )}
 
               <div className="flex flex-col gap-2">
-                <Upload beforeUpload={handleImageUpload} showUploadList={false} accept="image/*">
+                <Upload
+                  beforeUpload={handleImageUpload}
+                  showUploadList={false}
+                  accept="image/png,image/jpeg"
+                >
                   <Button icon={<UploadOutlined />} loading={imageUploading}>
                     Upload Image
                   </Button>

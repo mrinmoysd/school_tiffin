@@ -10,14 +10,28 @@ type UploadResult = {
 };
 
 const CLOUDINARY_KEY_PREFIX = 'cloudinary:';
-const MAX_IMAGE_SIZE_MB = 5;
-const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024;
-const BLOCKED_IMAGE_MIME_TYPES = new Set(['image/svg+xml']);
+const DEFAULT_MAX_IMAGE_SIZE_MB = 2;
+const parsedMaxImageSizeMb = Number(import.meta.env.VITE_MAX_IMAGE_UPLOAD_MB);
+export const MAX_IMAGE_SIZE_MB =
+  Number.isFinite(parsedMaxImageSizeMb) && parsedMaxImageSizeMb > 0
+    ? parsedMaxImageSizeMb
+    : DEFAULT_MAX_IMAGE_SIZE_MB;
+export const MAX_IMAGE_SIZE = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+const ALLOWED_IMAGE_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/pjpeg',
+  'image/x-png',
+]);
+
+export const isAllowedUploadImageMimeType = (mimeType: string): boolean =>
+  ALLOWED_IMAGE_MIME_TYPES.has((mimeType || '').toLowerCase().trim());
 
 const validateUploadImageFile = (file: File): void => {
   const mimeType = (file.type || '').toLowerCase().trim();
-  if (!mimeType.startsWith('image/') || BLOCKED_IMAGE_MIME_TYPES.has(mimeType)) {
-    throw new Error('Please upload a valid image file (SVG is not supported).');
+  if (!isAllowedUploadImageMimeType(mimeType)) {
+    throw new Error('Please upload a valid image file (JPG or PNG only).');
   }
 
   if (file.size > MAX_IMAGE_SIZE) {

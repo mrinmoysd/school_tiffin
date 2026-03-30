@@ -49,6 +49,7 @@ const envSchema = z.object({
 
   // Local uploads
   UPLOAD_DIR: z.string().optional(),
+  MAX_IMAGE_UPLOAD_MB: z.coerce.number().positive().default(2),
 
   // Cloudinary
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
