@@ -3,6 +3,7 @@ import { Platform, StatusBar } from 'react-native';
 import { Provider } from 'react-redux';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import Constants from 'expo-constants';
 import { AppNavigator } from './src/navigation';
 import { bootstrapAuth, logout } from './src/store/auth';
 import { useAppDispatch } from './src/store/hooks';
@@ -31,7 +32,7 @@ const AppShell = () => {
   const { resolvedTheme, colors } = useAppTheme();
 
   useEffect(() => {
-    if (Platform.OS !== 'android') {
+    if (Platform.OS !== 'android' || Constants.executionEnvironment === 'storeClient') {
       return;
     }
 
