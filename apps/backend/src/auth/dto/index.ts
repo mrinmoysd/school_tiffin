@@ -3,3 +3,4 @@ export { LoginDTO as LoginDto } from './login.dto';
 export { SendOtpDto } from './send-otp.dto';
 export { VerifyOtpDto } from './verify-otp.dto';
 export { RefreshTokenDTO as RefreshTokenDto } from './refresh-token.dto';
+export { ForgotPasswordDto } from './forgot-password.dto';

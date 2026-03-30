@@ -1,21 +1,13 @@
-import { IsEmail, IsString, MinLength, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, Matches } from 'class-validator';
 import { EMAIL_VALIDATION_REGEX } from '../../common/constants/validation.constants';
 
-export class LoginDTO {
+export class ForgotPasswordDto {
   @ApiProperty({
-    example: 'parent@example.com',
     description: 'User email address',
+    example: 'parent@example.com',
   })
   @IsEmail()
   @Matches(EMAIL_VALIDATION_REGEX, { message: 'email must be a valid email' })
   email: string;
-
-  @ApiProperty({
-    example: 'SecurePass123!',
-    description: 'User password',
-  })
-  @IsString()
-  @MinLength(8)
-  password: string;
 }

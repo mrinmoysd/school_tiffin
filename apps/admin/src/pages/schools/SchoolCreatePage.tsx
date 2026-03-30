@@ -4,11 +4,17 @@ import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { schoolService } from '@/services';
 import { CreateSchoolDto } from '@/types';
+import {
+  EMAIL_VALIDATION_REGEX,
+  isValidIndianPhone,
+  normalizeIndianPhone,
+} from '@/constants/validation';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 const DAYS_OF_WEEK = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+const MAX_SCHOOL_NAME_LENGTH = 150;
 
 const SchoolCreatePage = () => {
   const navigate = useNavigate();
@@ -31,6 +37,7 @@ const SchoolCreatePage = () => {
     const { operatingDaysArray, ...rest } = values;
     const data: CreateSchoolDto = {
       ...rest,
+      contactPhone: rest.contactPhone?.trim() ? normalizeIndianPhone(rest.contactPhone) : undefined,
       // Backend expects comma-separated values
       operatingDays: operatingDaysArray.join(','),
     };
@@ -69,9 +76,17 @@ const SchoolCreatePage = () => {
                 rules={[
                   { required: true, message: 'Please enter school name' },
                   { min: 3, message: 'Name must be at least 3 characters' },
+                  {
+                    max: MAX_SCHOOL_NAME_LENGTH,
+                    message: `School name cannot exceed ${MAX_SCHOOL_NAME_LENGTH} characters`,
+                  },
                 ]}
               >
-                <Input placeholder="e.g., Delhi Public School" />
+                <Input
+                  placeholder="e.g., Delhi Public School"
+                  maxLength={MAX_SCHOOL_NAME_LENGTH}
+                  showCount
+                />
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
@@ -124,7 +139,7 @@ const SchoolCreatePage = () => {
               <Form.Item
                 name="contactEmail"
                 label="Contact Email"
-                rules={[{ type: 'email', message: 'Please enter valid email' }]}
+                rules={[{ pattern: EMAIL_VALIDATION_REGEX, message: 'Please enter valid email' }]}
               >
                 <Input placeholder="e.g., admin@school.edu" />
               </Form.Item>
@@ -133,9 +148,18 @@ const SchoolCreatePage = () => {
               <Form.Item
                 name="contactPhone"
                 label="Contact Phone"
-                rules={[{ pattern: /^\d{10}$/, message: 'Please enter valid 10-digit phone' }]}
+                rules={[
+                  {
+                    validator: (_, value: string | undefined) => {
+                      if (isValidIndianPhone(value)) return Promise.resolve();
+                      return Promise.reject(
+                        new Error('Enter a valid mobile or landline number (optional +91).'),
+                      );
+                    },
+                  },
+                ]}
               >
-                <Input placeholder="e.g., 9876543210" maxLength={10} />
+                <Input placeholder="e.g., 9876543210 or 02212345678" maxLength={16} />
               </Form.Item>
             </Col>
           </Row>

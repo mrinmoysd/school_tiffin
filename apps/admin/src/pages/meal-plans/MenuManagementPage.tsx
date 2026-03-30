@@ -78,7 +78,7 @@ const MenuManagementPage = () => {
         open={isOverflow ? undefined : false}
         mouseEnterDelay={0.05}
         mouseLeaveDelay={0.1}
-        overlayClassName="st-ellipsis-tooltip"
+        classNames={{ root: 'st-ellipsis-tooltip' }}
       >
         <span
           ref={node => {

@@ -1,5 +1,11 @@
-import { IsString, IsBoolean, IsOptional, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsBoolean, IsOptional, MinLength, MaxLength, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import {
+  EMAIL_VALIDATION_REGEX,
+  INDIAN_PHONE_WITH_COUNTRY_CODE_REGEX,
+} from '../../common/constants/validation.constants';
+import { normalizeIndianPhone } from '../../common/utils/phone.util';
 
 export class UpdateSchoolDto {
   @ApiProperty({
@@ -57,12 +63,16 @@ export class UpdateSchoolDto {
   pincode?: string;
 
   @ApiProperty({
-    description: 'School contact phone',
+    description: 'School contact phone (mobile or landline)',
     example: '+912212345678',
     required: false,
   })
   @IsOptional()
   @IsString()
+  @Transform(({ value }) => normalizeIndianPhone(value))
+  @Matches(INDIAN_PHONE_WITH_COUNTRY_CODE_REGEX, {
+    message: 'Invalid contactPhone format. Enter a valid Indian mobile or landline number.',
+  })
   contactPhone?: string;
 
   @ApiProperty({
@@ -72,6 +82,7 @@ export class UpdateSchoolDto {
   })
   @IsOptional()
   @IsString()
+  @Matches(EMAIL_VALIDATION_REGEX, { message: 'contactEmail must be a valid email' })
   contactEmail?: string;
 
   @ApiProperty({

@@ -49,7 +49,7 @@ const SubscriptionsListPage = () => {
   const ellipsisTooltip = {
     mouseEnterDelay: 0.05,
     mouseLeaveDelay: 0.1,
-    overlayClassName: 'st-ellipsis-tooltip',
+    rootClassName: 'st-ellipsis-tooltip',
   };
 
   const EllipsisCell = ({ text, strong }: { text?: string; strong?: boolean }) => {
@@ -68,7 +68,7 @@ const SubscriptionsListPage = () => {
         open={isOverflow ? undefined : false}
         mouseEnterDelay={ellipsisTooltip.mouseEnterDelay}
         mouseLeaveDelay={ellipsisTooltip.mouseLeaveDelay}
-        overlayClassName={ellipsisTooltip.overlayClassName}
+        classNames={{ root: ellipsisTooltip.rootClassName }}
       >
         <span
           ref={node => {

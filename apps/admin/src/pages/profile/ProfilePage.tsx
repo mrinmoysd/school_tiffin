@@ -29,6 +29,7 @@ import {
   userService,
 } from '@/services';
 import { useAuthStore } from '@/stores/authStore';
+import { isValidIndianPhone, normalizeIndianPhone } from '@/constants/validation';
 
 const { Title, Text } = Typography;
 
@@ -53,7 +54,7 @@ const ProfilePage = () => {
     mutationFn: (values: ProfileFormValues) =>
       userService.updateMyProfile({
         fullName: values.fullName.trim(),
-        phone: values.phone?.trim() || undefined,
+        phone: values.phone?.trim() ? normalizeIndianPhone(values.phone) : undefined,
         profileImageUrl: pendingProfileImageUrl,
       }),
     onSuccess: updatedUser => {
@@ -316,20 +317,15 @@ const ProfilePage = () => {
             rules={[
               {
                 validator: (_, value: string | undefined) => {
-                  const trimmed = value?.trim();
-                  if (!trimmed) return Promise.resolve();
-                  const indianPhoneRegex = /^\+91[6-9]\d{9}$/;
-                  if (!indianPhoneRegex.test(trimmed)) {
-                    return Promise.reject(
-                      new Error('Phone number must be in format +91XXXXXXXXXX'),
-                    );
-                  }
-                  return Promise.resolve();
+                  if (isValidIndianPhone(value)) return Promise.resolve();
+                  return Promise.reject(
+                    new Error('Enter a valid mobile or landline number (optional +91).'),
+                  );
                 },
               },
             ]}
           >
-            <Input placeholder="+919876543210" />
+            <Input placeholder="e.g., 9876543210 or 02212345678" maxLength={16} />
           </Form.Item>
         </Form>
       </Modal>

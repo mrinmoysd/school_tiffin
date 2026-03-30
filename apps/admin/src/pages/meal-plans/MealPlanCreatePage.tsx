@@ -1,20 +1,4 @@
-import { useNavigate } from 'react-router-dom';
-import {
-  App as AntdApp,
-  Form,
-  Input,
-  Button,
-  Card,
-  Typography,
-  Row,
-  Col,
-  Select,
-  InputNumber,
-  Switch,
-  Upload,
-} from 'antd';
-import { ArrowLeftOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { DEFAULT_MEAL_PLAN_IMAGE } from '@/constants/images';
 import {
   isAllowedUploadImageMimeType,
   MAX_IMAGE_SIZE,
@@ -25,8 +9,24 @@ import {
   uploadService,
 } from '@/services';
 import { CreateMealPlanDto } from '@/types';
-import { DEFAULT_MEAL_PLAN_IMAGE } from '@/constants/images';
+import { ArrowLeftOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  App as AntdApp,
+  Button,
+  Card,
+  Col,
+  Form,
+  Input,
+  InputNumber,
+  Row,
+  Select,
+  Switch,
+  Typography,
+  Upload,
+} from 'antd';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -35,13 +35,30 @@ const formatRupeesInput = (value?: string | number) => {
   if (value === undefined || value === null || value === '') return '';
   const num = typeof value === 'number' ? value : Number(value);
   if (Number.isNaN(num)) return '';
-  return `₹${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `₹${num.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 };
 
 const parseRupeesInput = (value?: string) => (value ? value.replace(/[₹,\s]/g, '') : '');
 
 const rupeesToPaise = (value?: number) =>
   value === undefined || value === null ? value : Math.round(value * 100);
+
+const FLOAT_COMPARISON_EPSILON = 0.0001;
+
+const shouldUpdateComputedTotalPrice = (currentValue: unknown, nextValue: number): boolean => {
+  if (typeof currentValue === 'number') {
+    return Math.abs(currentValue - nextValue) > FLOAT_COMPARISON_EPSILON;
+  }
+
+  if (typeof currentValue === 'string' && currentValue.trim() !== '') {
+    const parsedCurrentValue = Number(currentValue);
+    if (Number.isFinite(parsedCurrentValue)) {
+      return Math.abs(parsedCurrentValue - nextValue) > FLOAT_COMPARISON_EPSILON;
+    }
+  }
+
+  return true;
+};
 
 const MealPlanCreatePage = () => {
   const navigate = useNavigate();
@@ -61,7 +78,7 @@ const MealPlanCreatePage = () => {
     if (typeof pricePerDay === 'number' && typeof durationDays === 'number') {
       const total = Number((pricePerDay * durationDays).toFixed(2));
       const currentTotal = form.getFieldValue('totalPrice');
-      if (currentTotal !== total) {
+      if (shouldUpdateComputedTotalPrice(currentTotal, total)) {
         form.setFieldValue('totalPrice', total);
       }
     }

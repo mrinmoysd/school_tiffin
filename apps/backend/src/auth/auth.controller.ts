@@ -3,7 +3,14 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nes
 import { Throttle } from '@nestjs/throttler';
 import { CurrentUser, Public } from '../common/decorators';
 import { AuthService } from './auth.service';
-import { LoginDto, RefreshTokenDto, RegisterDto, SendOtpDto, VerifyOtpDto } from './dto';
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  RefreshTokenDto,
+  RegisterDto,
+  SendOtpDto,
+  VerifyOtpDto,
+} from './dto';
 
 @ApiTags('Authentication')
 @Controller({ path: 'auth', version: '1' })
@@ -298,15 +305,7 @@ export class AuthController {
       'Send password reset email. Returns same response whether email exists or not (security best practice).',
   })
   @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        email: {
-          type: 'string',
-          example: 'parent@example.com',
-        },
-      },
-    },
+    type: ForgotPasswordDto,
   })
   @ApiResponse({
     status: 200,
@@ -322,8 +321,8 @@ export class AuthController {
       },
     },
   })
-  async forgotPassword(@Body('email') email: string) {
-    return this.authService.forgotPassword(email);
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.email);
   }
 
   /**

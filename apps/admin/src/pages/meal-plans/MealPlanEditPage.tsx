@@ -36,7 +36,7 @@ const formatRupeesInput = (value?: string | number) => {
   if (value === undefined || value === null || value === '') return '';
   const num = typeof value === 'number' ? value : Number(value);
   if (Number.isNaN(num)) return '';
-  return `₹${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `₹${num.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 };
 
 const parseRupeesInput = (value?: string) => (value ? value.replace(/[₹,\s]/g, '') : '');
@@ -47,6 +47,22 @@ const paiseToRupees = (value?: number) =>
 const rupeesToPaise = (value?: number) =>
   value === undefined || value === null ? value : Math.round(value * 100);
 
+const FLOAT_COMPARISON_EPSILON = 0.0001;
+
+const shouldUpdateComputedTotalPrice = (currentValue: unknown, nextValue: number): boolean => {
+  if (typeof currentValue === 'number') {
+    return Math.abs(currentValue - nextValue) > FLOAT_COMPARISON_EPSILON;
+  }
+
+  if (typeof currentValue === 'string' && currentValue.trim() !== '') {
+    const parsedCurrentValue = Number(currentValue);
+    if (Number.isFinite(parsedCurrentValue)) {
+      return Math.abs(parsedCurrentValue - nextValue) > FLOAT_COMPARISON_EPSILON;
+    }
+  }
+
+  return true;
+};
 const MealPlanEditPage = () => {
   const navigate = useNavigate();
   const { message } = AntdApp.useApp();
@@ -66,7 +82,7 @@ const MealPlanEditPage = () => {
     if (typeof pricePerDay === 'number' && typeof durationDays === 'number') {
       const total = Number((pricePerDay * durationDays).toFixed(2));
       const currentTotal = form.getFieldValue('totalPrice');
-      if (currentTotal !== total) {
+      if (shouldUpdateComputedTotalPrice(currentTotal, total)) {
         form.setFieldValue('totalPrice', total);
       }
     }
