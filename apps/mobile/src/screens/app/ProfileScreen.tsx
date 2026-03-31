@@ -16,7 +16,6 @@ import { usersApi, type UserProfile } from '../../api/users';
 import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { logout } from '../../store/auth';
-import { setThemePreference } from '../../store/theme';
 import { useAppDispatch } from '../../store/hooks';
 import { ThemePreference, useAppTheme } from '../../theme';
 
@@ -49,7 +48,7 @@ const getVerificationStatus = (profile: UserProfile | null) => ({
 
 export const ProfileScreen = ({ navigation }: Props) => {
   const dispatch = useAppDispatch();
-  const { colors, preference } = useAppTheme();
+  const { colors, preference, setPreference } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const hasFocusedOnceRef = useRef(false);
 
@@ -192,7 +191,7 @@ export const ProfileScreen = ({ navigation }: Props) => {
           {themeOptions.map(option => (
             <Pressable
               key={option.key}
-              onPress={() => dispatch(setThemePreference(option.key))}
+              onPress={() => setPreference(option.key)}
               style={[styles.themeOption, preference === option.key && styles.themeOptionSelected]}
             >
               <Text

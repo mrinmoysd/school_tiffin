@@ -1,21 +1,8 @@
-import { AppThemeColors, darkThemeColors, lightThemeColors, themeColors } from './colors';
-
-export type ThemePreference = 'light' | 'dark' | 'system';
-export type ResolvedTheme = 'light' | 'dark';
-
-export const resolveThemePreference = (
-  preference: ThemePreference,
-  systemTheme: ResolvedTheme,
-): ResolvedTheme => {
-  if (preference === 'system') {
-    return systemTheme;
-  }
-
-  return preference;
-};
-
-export const getThemeColors = (theme: ResolvedTheme): AppThemeColors =>
-  theme === 'dark' ? darkThemeColors : lightThemeColors;
-
-export { lightThemeColors, darkThemeColors, themeColors };
-export { useAppTheme } from './useAppTheme';
+export { lightThemeColors, darkThemeColors, themeColors } from './colors';
+export {
+  getThemeColors,
+  resolveThemePreference,
+  type ResolvedTheme,
+  type ThemePreference,
+} from './themeCore';
+export { ThemeProvider, useAppTheme } from './ThemeProvider';

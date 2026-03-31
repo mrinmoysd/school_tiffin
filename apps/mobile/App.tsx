@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Platform, StatusBar } from 'react-native';
+import { Platform, StatusBar, StyleSheet, View } from 'react-native';
 import { Provider } from 'react-redux';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -9,12 +9,10 @@ import { bootstrapAuth, logout } from './src/store/auth';
 import { useAppDispatch } from './src/store/hooks';
 import { store } from './src/store';
 import { setUnauthorizedHandler } from './src/api/client/apiClient';
-import { useAppTheme } from './src/theme';
+import { ThemeProvider, useAppTheme } from './src/theme';
 
 type NavigationBarModule = {
-  setBackgroundColorAsync: (color: string) => Promise<void>;
   setButtonStyleAsync: (style: 'light' | 'dark') => Promise<void>;
-  setBorderColorAsync: (color: string) => Promise<void>;
 };
 
 const BootstrapAuthState = () => {
@@ -53,25 +51,25 @@ const AppShell = () => {
           return;
         }
 
-        await NavigationBar.setBackgroundColorAsync(colors.neutral.white);
         await NavigationBar.setButtonStyleAsync(resolvedTheme === 'dark' ? 'light' : 'dark');
-        await NavigationBar.setBorderColorAsync(colors.neutral.slate200);
       } catch {
         // Ignore if this native module isn't available in the current runtime.
       }
     };
 
     void applyAndroidNavigationBarTheme();
-  }, [colors.neutral.slate200, colors.neutral.white, resolvedTheme]);
+  }, [resolvedTheme]);
 
   return (
     <SafeAreaProvider>
-      <StatusBar
-        barStyle={resolvedTheme === 'dark' ? 'light-content' : 'dark-content'}
-        backgroundColor={colors.neutral.white}
-        translucent={false}
-      />
-      <BootstrapAuthState />
+      <View style={[styles.appRoot, { backgroundColor: colors.neutral.white }]}>
+        <StatusBar
+          barStyle={resolvedTheme === 'dark' ? 'light-content' : 'dark-content'}
+          backgroundColor={colors.neutral.white}
+          translucent={false}
+        />
+        <BootstrapAuthState />
+      </View>
     </SafeAreaProvider>
   );
 };
@@ -80,8 +78,16 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Provider store={store}>
-        <AppShell />
+        <ThemeProvider>
+          <AppShell />
+        </ThemeProvider>
       </Provider>
     </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  appRoot: {
+    flex: 1,
+  },
+});
