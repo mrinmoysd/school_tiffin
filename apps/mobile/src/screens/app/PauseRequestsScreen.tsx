@@ -17,7 +17,7 @@ import {
   type PauseRequestStatus,
 } from '../../api/subscriptions';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PauseRequests'>;
 type FilterKey = 'ALL' | PauseRequestStatus;
@@ -47,22 +47,27 @@ const formatDate = (value?: string | null) => {
   });
 };
 
-const getStatusBadgeStyle = (status: PauseRequestStatus) => {
+const getStatusBadgeStyle = (
+  status: PauseRequestStatus,
+  colors: ReturnType<typeof useAppTheme>['colors'],
+) => {
   switch (status) {
     case 'PENDING':
-      return styles.statusPending;
+      return { backgroundColor: colors.surface.warningSubtle };
     case 'APPROVED':
-      return styles.statusApproved;
+      return { backgroundColor: colors.surface.successSubtle };
     case 'REJECTED':
-      return styles.statusRejected;
+      return { backgroundColor: colors.surface.dangerSubtle };
     case 'PROCESSED':
-      return styles.statusProcessed;
+      return { backgroundColor: colors.surface.infoSubtle };
     default:
-      return styles.statusPending;
+      return { backgroundColor: colors.surface.warningSubtle };
   }
 };
 
 export const PauseRequestsScreen = ({ navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const [filter, setFilter] = useState<FilterKey>('ALL');
   const [requests, setRequests] = useState<PauseRequestListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -134,7 +139,7 @@ export const PauseRequestsScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -178,7 +183,7 @@ export const PauseRequestsScreen = ({ navigation }: Props) => {
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <Text style={styles.studentName}>{item.subscription.student.fullName}</Text>
-              <View style={[styles.statusBadge, getStatusBadgeStyle(item.status)]}>
+              <View style={[styles.statusBadge, getStatusBadgeStyle(item.status, colors)]}>
                 <Text style={styles.statusText}>{item.status}</Text>
               </View>
             </View>
@@ -222,152 +227,153 @@ export const PauseRequestsScreen = ({ navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-    padding: 16,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  filtersRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 12,
-  },
-  filterChip: {
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate300,
-    backgroundColor: themeColors.neutral.white,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  filterChipActive: {
-    borderColor: themeColors.action.primary,
-    backgroundColor: themeColors.surface.infoSoft,
-  },
-  filterChipText: {
-    color: themeColors.text.subtle,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  filterChipTextActive: {
-    color: themeColors.intent.infoStrong,
-  },
-  errorText: {
-    color: themeColors.intent.danger,
-    fontSize: 13,
-    marginBottom: 10,
-  },
-  listContent: {
-    paddingBottom: 24,
-    flexGrow: 1,
-  },
-  emptyCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 16,
-  },
-  emptyTitle: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  emptySubtitle: {
-    color: themeColors.text.muted,
-    fontSize: 13,
-  },
-  card: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-    marginBottom: 10,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  studentName: {
-    color: themeColors.text.primary,
-    fontSize: 16,
-    fontWeight: '700',
-    flex: 1,
-    marginRight: 8,
-  },
-  statusBadge: {
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  statusPending: {
-    backgroundColor: themeColors.surface.warningSubtle,
-  },
-  statusApproved: {
-    backgroundColor: themeColors.surface.successSubtle,
-  },
-  statusRejected: {
-    backgroundColor: themeColors.surface.dangerSubtle,
-  },
-  statusProcessed: {
-    backgroundColor: themeColors.surface.infoSubtle,
-  },
-  statusText: {
-    color: themeColors.text.primary,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  metaText: {
-    color: themeColors.text.secondary,
-    fontSize: 13,
-    marginBottom: 3,
-  },
-  reasonText: {
-    color: themeColors.text.subtle,
-    fontSize: 13,
-    marginTop: 4,
-  },
-  actionsRow: {
-    marginTop: 10,
-    flexDirection: 'row',
-  },
-  actionButton: {
-    height: 38,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-  },
-  viewButton: {
-    backgroundColor: themeColors.surface.infoSubtle,
-    flex: 1,
-    marginRight: 8,
-  },
-  cancelButton: {
-    backgroundColor: themeColors.surface.dangerSubtle,
-    minWidth: 92,
-  },
-  viewButtonText: {
-    color: themeColors.intent.infoStrong,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  cancelButtonText: {
-    color: themeColors.text.dangerStrong,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+      padding: 16,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.neutral.slate50,
+    },
+    filtersRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      marginBottom: 12,
+    },
+    filterChip: {
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      marginRight: 8,
+      marginBottom: 8,
+    },
+    filterChipActive: {
+      borderColor: colors.action.primary,
+      backgroundColor: colors.surface.infoSoft,
+    },
+    filterChipText: {
+      color: colors.text.subtle,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    filterChipTextActive: {
+      color: colors.intent.infoStrong,
+    },
+    errorText: {
+      color: colors.intent.danger,
+      fontSize: 13,
+      marginBottom: 10,
+    },
+    listContent: {
+      paddingBottom: 24,
+      flexGrow: 1,
+    },
+    emptyCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 16,
+    },
+    emptyTitle: {
+      color: colors.text.primary,
+      fontSize: 15,
+      fontWeight: '700',
+      marginBottom: 4,
+    },
+    emptySubtitle: {
+      color: colors.text.muted,
+      fontSize: 13,
+    },
+    card: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+      marginBottom: 10,
+    },
+    cardHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    studentName: {
+      color: colors.text.primary,
+      fontSize: 16,
+      fontWeight: '700',
+      flex: 1,
+      marginRight: 8,
+    },
+    statusBadge: {
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    statusPending: {
+      backgroundColor: colors.surface.warningSubtle,
+    },
+    statusApproved: {
+      backgroundColor: colors.surface.successSubtle,
+    },
+    statusRejected: {
+      backgroundColor: colors.surface.dangerSubtle,
+    },
+    statusProcessed: {
+      backgroundColor: colors.surface.infoSubtle,
+    },
+    statusText: {
+      color: colors.text.primary,
+      fontSize: 11,
+      fontWeight: '700',
+    },
+    metaText: {
+      color: colors.text.secondary,
+      fontSize: 13,
+      marginBottom: 3,
+    },
+    reasonText: {
+      color: colors.text.subtle,
+      fontSize: 13,
+      marginTop: 4,
+    },
+    actionsRow: {
+      marginTop: 10,
+      flexDirection: 'row',
+    },
+    actionButton: {
+      height: 38,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 12,
+    },
+    viewButton: {
+      backgroundColor: colors.surface.infoSubtle,
+      flex: 1,
+      marginRight: 8,
+    },
+    cancelButton: {
+      backgroundColor: colors.surface.dangerSubtle,
+      minWidth: 92,
+    },
+    viewButtonText: {
+      color: colors.intent.infoStrong,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    cancelButtonText: {
+      color: colors.text.dangerStrong,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+  });

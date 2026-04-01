@@ -8,7 +8,7 @@ import { mealPlansApi, type MealPlanDetails } from '../../api/meal-plans';
 import { schoolsApi, type SchoolDetails } from '../../api/schools';
 import { subscriptionsApi } from '../../api/subscriptions';
 import { ApiClientError } from '../../api/client/apiClient';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SubscriptionReview'>;
 
@@ -81,6 +81,8 @@ const buildPreviewSchedule = (
 };
 
 export const SubscriptionReviewScreen = ({ route, navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const [student, setStudent] = useState<Student | null>(null);
   const [mealPlan, setMealPlan] = useState<MealPlanDetails | null>(null);
   const [school, setSchool] = useState<SchoolDetails | null>(null);
@@ -169,7 +171,7 @@ export const SubscriptionReviewScreen = ({ route, navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -213,50 +215,51 @@ export const SubscriptionReviewScreen = ({ route, navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 24,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: themeColors.neutral.slate50,
-    paddingHorizontal: 24,
-  },
-  title: {
-    color: themeColors.text.primary,
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 12,
-  },
-  summaryCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-    marginBottom: 12,
-  },
-  summaryLine: {
-    color: themeColors.text.subtle,
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  summaryTotal: {
-    marginTop: 6,
-    color: themeColors.text.primary,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  errorText: {
-    color: themeColors.intent.danger,
-    fontSize: 13,
-    marginBottom: 10,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    content: {
+      padding: 16,
+      paddingBottom: 24,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.neutral.slate50,
+      paddingHorizontal: 24,
+    },
+    title: {
+      color: colors.text.primary,
+      fontSize: 22,
+      fontWeight: '700',
+      marginBottom: 12,
+    },
+    summaryCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+      marginBottom: 12,
+    },
+    summaryLine: {
+      color: colors.text.subtle,
+      fontSize: 14,
+      marginBottom: 4,
+    },
+    summaryTotal: {
+      marginTop: 6,
+      color: colors.text.primary,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    errorText: {
+      color: colors.intent.danger,
+      fontSize: 13,
+      marginBottom: 10,
+    },
+  });

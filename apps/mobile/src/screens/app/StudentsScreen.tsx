@@ -16,7 +16,7 @@ import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi, type Student } from '../../api/students';
 import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Students'>;
 
@@ -29,6 +29,8 @@ const formatGrade = (grade: Student['grade']) => {
 };
 
 export const StudentsScreen = ({ navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const hasFocusedOnceRef = useRef(false);
 
   const [students, setStudents] = useState<Student[]>([]);
@@ -116,7 +118,7 @@ export const StudentsScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -206,134 +208,135 @@ export const StudentsScreen = ({ navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  content: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingBottom: 28,
-  },
-  headerBlock: {
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: themeColors.text.primary,
-  },
-  subtitle: {
-    marginTop: 6,
-    color: themeColors.text.secondary,
-    fontSize: 13,
-  },
-  addButton: {
-    marginTop: 12,
-  },
-  swipeHint: {
-    marginTop: 10,
-    color: themeColors.text.muted,
-    fontSize: 12,
-  },
-  errorText: {
-    marginTop: 8,
-    color: themeColors.intent.danger,
-    fontSize: 13,
-  },
-  emptyCard: {
-    marginTop: 8,
-    backgroundColor: themeColors.neutral.white,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    borderRadius: 12,
-    padding: 14,
-  },
-  emptyTitle: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  emptySubtitle: {
-    color: themeColors.text.muted,
-    fontSize: 13,
-  },
-  studentCard: {
-    backgroundColor: themeColors.neutral.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    padding: 14,
-    marginBottom: 10,
-  },
-  studentName: {
-    color: themeColors.text.primary,
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  studentMeta: {
-    color: themeColors.text.secondary,
-    fontSize: 13,
-    marginBottom: 4,
-  },
-  actionRow: {
-    marginTop: 10,
-    flexDirection: 'row',
-  },
-  inlineAction: {
-    height: 36,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-  },
-  inlineEdit: {
-    backgroundColor: themeColors.surface.infoSubtle,
-    marginRight: 8,
-  },
-  inlineDelete: {
-    backgroundColor: themeColors.surface.dangerSubtle,
-  },
-  inlineEditText: {
-    color: themeColors.intent.infoStrong,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  inlineDeleteText: {
-    color: themeColors.intent.danger,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  swipeActions: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    marginBottom: 10,
-  },
-  swipeAction: {
-    width: 84,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
-    marginLeft: 8,
-  },
-  swipeEditAction: {
-    backgroundColor: themeColors.intent.infoStrong,
-  },
-  swipeDeleteAction: {
-    backgroundColor: themeColors.intent.danger,
-  },
-  swipeActionText: {
-    color: themeColors.neutral.white,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.neutral.slate50,
+    },
+    content: {
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      paddingBottom: 28,
+    },
+    headerBlock: {
+      marginBottom: 12,
+    },
+    title: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: colors.text.primary,
+    },
+    subtitle: {
+      marginTop: 6,
+      color: colors.text.secondary,
+      fontSize: 13,
+    },
+    addButton: {
+      marginTop: 12,
+    },
+    swipeHint: {
+      marginTop: 10,
+      color: colors.text.muted,
+      fontSize: 12,
+    },
+    errorText: {
+      marginTop: 8,
+      color: colors.intent.danger,
+      fontSize: 13,
+    },
+    emptyCard: {
+      marginTop: 8,
+      backgroundColor: colors.neutral.white,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      borderRadius: 12,
+      padding: 14,
+    },
+    emptyTitle: {
+      color: colors.text.primary,
+      fontSize: 15,
+      fontWeight: '700',
+      marginBottom: 4,
+    },
+    emptySubtitle: {
+      color: colors.text.muted,
+      fontSize: 13,
+    },
+    studentCard: {
+      backgroundColor: colors.neutral.white,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      padding: 14,
+      marginBottom: 10,
+    },
+    studentName: {
+      color: colors.text.primary,
+      fontSize: 16,
+      fontWeight: '700',
+      marginBottom: 4,
+    },
+    studentMeta: {
+      color: colors.text.secondary,
+      fontSize: 13,
+      marginBottom: 4,
+    },
+    actionRow: {
+      marginTop: 10,
+      flexDirection: 'row',
+    },
+    inlineAction: {
+      height: 36,
+      borderRadius: 10,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 12,
+    },
+    inlineEdit: {
+      backgroundColor: colors.surface.infoSubtle,
+      marginRight: 8,
+    },
+    inlineDelete: {
+      backgroundColor: colors.surface.dangerSubtle,
+    },
+    inlineEditText: {
+      color: colors.intent.infoStrong,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    inlineDeleteText: {
+      color: colors.intent.danger,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    swipeActions: {
+      flexDirection: 'row',
+      alignItems: 'stretch',
+      marginBottom: 10,
+    },
+    swipeAction: {
+      width: 84,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 10,
+      marginLeft: 8,
+    },
+    swipeEditAction: {
+      backgroundColor: colors.intent.infoStrong,
+    },
+    swipeDeleteAction: {
+      backgroundColor: colors.intent.danger,
+    },
+    swipeActionText: {
+      color: colors.neutral.white,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+  });

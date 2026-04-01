@@ -16,7 +16,7 @@ import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { studentsApi, type Student } from '../../api/students';
 import { ApiClientError } from '../../api/client/apiClient';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SelectStudent'>;
 
@@ -29,6 +29,8 @@ const formatGrade = (grade: Student['grade']) => {
 };
 
 export const SelectStudentScreen = ({ navigation, route }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -129,7 +131,7 @@ export const SelectStudentScreen = ({ navigation, route }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -283,159 +285,160 @@ export const SelectStudentScreen = ({ navigation, route }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 24,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  title: {
-    color: themeColors.text.primary,
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  subtitle: {
-    marginTop: 6,
-    color: themeColors.text.secondary,
-    fontSize: 14,
-    marginBottom: 12,
-  },
-  errorCard: {
-    borderRadius: 12,
-    backgroundColor: themeColors.surface.dangerSoft,
-    borderWidth: 1,
-    borderColor: themeColors.border.danger,
-    padding: 12,
-    marginBottom: 12,
-  },
-  errorText: {
-    color: themeColors.text.dangerStrong,
-    fontSize: 13,
-    marginBottom: 6,
-  },
-  retryText: {
-    color: themeColors.intent.infoStrong,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  studentsSection: {
-    marginBottom: 14,
-  },
-  emptyCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-  },
-  emptyTitle: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  emptySubtitle: {
-    color: themeColors.text.muted,
-    fontSize: 13,
-  },
-  studentCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 12,
-    marginBottom: 10,
-  },
-  studentCardSelected: {
-    borderColor: themeColors.border.infoAccent,
-    backgroundColor: themeColors.surface.infoSofter,
-  },
-  studentRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  radioOuter: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: themeColors.neutral.slate400,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  radioOuterSelected: {
-    borderColor: themeColors.intent.info,
-  },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: themeColors.intent.info,
-  },
-  studentInfo: {
-    marginLeft: 10,
-    flex: 1,
-  },
-  studentName: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 3,
-  },
-  studentMeta: {
-    color: themeColors.text.secondary,
-    fontSize: 13,
-    marginBottom: 2,
-  },
-  continueButton: {
-    marginTop: 10,
-  },
-  dateWrapper: {
-    marginTop: 12,
-    marginBottom: 4,
-  },
-  dateLabel: {
-    marginBottom: 6,
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  datePickerButton: {
-    minHeight: 48,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate300,
-    backgroundColor: themeColors.neutral.white,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  datePickerText: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    flex: 1,
-  },
-  datePickerArrow: {
-    color: themeColors.text.secondary,
-    fontSize: 13,
-    marginLeft: 8,
-  },
-  editLink: {
-    marginTop: 6,
-    color: themeColors.intent.infoStrong,
-    fontSize: 13,
-    fontWeight: '600',
-    alignSelf: 'flex-start',
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    content: {
+      padding: 16,
+      paddingBottom: 24,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.neutral.slate50,
+    },
+    title: {
+      color: colors.text.primary,
+      fontSize: 22,
+      fontWeight: '700',
+    },
+    subtitle: {
+      marginTop: 6,
+      color: colors.text.secondary,
+      fontSize: 14,
+      marginBottom: 12,
+    },
+    errorCard: {
+      borderRadius: 12,
+      backgroundColor: colors.surface.dangerSoft,
+      borderWidth: 1,
+      borderColor: colors.border.danger,
+      padding: 12,
+      marginBottom: 12,
+    },
+    errorText: {
+      color: colors.text.dangerStrong,
+      fontSize: 13,
+      marginBottom: 6,
+    },
+    retryText: {
+      color: colors.intent.infoStrong,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    studentsSection: {
+      marginBottom: 14,
+    },
+    emptyCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+    },
+    emptyTitle: {
+      color: colors.text.primary,
+      fontSize: 15,
+      fontWeight: '600',
+      marginBottom: 4,
+    },
+    emptySubtitle: {
+      color: colors.text.muted,
+      fontSize: 13,
+    },
+    studentCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 12,
+      marginBottom: 10,
+    },
+    studentCardSelected: {
+      borderColor: colors.border.infoAccent,
+      backgroundColor: colors.surface.infoSofter,
+    },
+    studentRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+    },
+    radioOuter: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      borderWidth: 2,
+      borderColor: colors.neutral.slate400,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 2,
+    },
+    radioOuterSelected: {
+      borderColor: colors.intent.info,
+    },
+    radioInner: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: colors.intent.info,
+    },
+    studentInfo: {
+      marginLeft: 10,
+      flex: 1,
+    },
+    studentName: {
+      color: colors.text.primary,
+      fontSize: 15,
+      fontWeight: '700',
+      marginBottom: 3,
+    },
+    studentMeta: {
+      color: colors.text.secondary,
+      fontSize: 13,
+      marginBottom: 2,
+    },
+    continueButton: {
+      marginTop: 10,
+    },
+    dateWrapper: {
+      marginTop: 12,
+      marginBottom: 4,
+    },
+    dateLabel: {
+      marginBottom: 6,
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    datePickerButton: {
+      minHeight: 48,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 12,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    datePickerText: {
+      color: colors.text.primary,
+      fontSize: 15,
+      flex: 1,
+    },
+    datePickerArrow: {
+      color: colors.text.secondary,
+      fontSize: 13,
+      marginLeft: 8,
+    },
+    editLink: {
+      marginTop: 6,
+      color: colors.intent.infoStrong,
+      fontSize: 13,
+      fontWeight: '600',
+      alignSelf: 'flex-start',
+    },
+  });

@@ -7,7 +7,7 @@ import { EMAIL_REGEX } from '../../constants/validation';
 import { clearAuthErrors, clearAuthMessages, forgotPassword } from '../../store/auth';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ForgotPassword'>;
 
@@ -16,6 +16,8 @@ interface ForgotPasswordFormValues {
 }
 
 export const ForgotPasswordScreen = ({ navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const dispatch = useAppDispatch();
   const { forgotPasswordLoading, forgotPasswordError, forgotPasswordSuccessMessage } =
     useAppSelector(state => state.auth);
@@ -88,22 +90,23 @@ export const ForgotPasswordScreen = ({ navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  error: {
-    color: themeColors.intent.danger,
-    marginBottom: 10,
-    fontSize: 13,
-  },
-  success: {
-    color: themeColors.intent.successStrong,
-    marginBottom: 10,
-    fontSize: 13,
-  },
-  link: {
-    marginTop: 14,
-    color: themeColors.intent.infoStrong,
-    textAlign: 'center',
-    fontWeight: '500',
-    fontSize: 14,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    error: {
+      color: colors.intent.danger,
+      marginBottom: 10,
+      fontSize: 13,
+    },
+    success: {
+      color: colors.intent.successStrong,
+      marginBottom: 10,
+      fontSize: 13,
+    },
+    link: {
+      marginTop: 14,
+      color: colors.intent.infoStrong,
+      textAlign: 'center',
+      fontWeight: '500',
+      fontSize: 14,
+    },
+  });

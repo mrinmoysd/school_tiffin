@@ -13,7 +13,7 @@ import { RootStackParamList } from '../../navigation/types';
 import { ApiClientError } from '../../api/client/apiClient';
 import { schoolsApi, type SchoolDetails } from '../../api/schools';
 import { mealPlansApi, type MealPlanSummary } from '../../api/meal-plans';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SchoolDetail'>;
 
@@ -28,6 +28,8 @@ const formatOperatingDays = (operatingDays: string[] | string) => {
 const formatAmount = (value: number | string, currency: string) => `${currency} ${value}`;
 
 export const SchoolDetailScreen = ({ route, navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const [school, setSchool] = useState<SchoolDetails | null>(null);
   const [mealPlans, setMealPlans] = useState<MealPlanSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,7 +65,7 @@ export const SchoolDetailScreen = ({ route, navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -171,139 +173,140 @@ export const SchoolDetailScreen = ({ route, navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 24,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: themeColors.neutral.slate50,
-    paddingHorizontal: 24,
-  },
-  schoolCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-  },
-  title: {
-    color: themeColors.text.primary,
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  metaText: {
-    color: themeColors.text.secondary,
-    fontSize: 13,
-    marginBottom: 4,
-  },
-  section: {
-    marginTop: 18,
-  },
-  sectionTitle: {
-    color: themeColors.text.primary,
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-  emptyCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-  },
-  helperText: {
-    color: themeColors.text.muted,
-    fontSize: 14,
-  },
-  errorText: {
-    color: themeColors.intent.danger,
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  retryText: {
-    color: themeColors.intent.infoStrong,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  planCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 12,
-    marginBottom: 10,
-    flexDirection: 'row',
-  },
-  planImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 10,
-  },
-  planImageFallback: {
-    width: 64,
-    height: 64,
-    borderRadius: 10,
-    backgroundColor: themeColors.surface.infoSoft,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  planImageFallbackText: {
-    color: themeColors.intent.infoStrong,
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  planBody: {
-    marginLeft: 10,
-    flex: 1,
-  },
-  planName: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  planMeta: {
-    color: themeColors.text.secondary,
-    fontSize: 12,
-    marginTop: 2,
-  },
-  actionRow: {
-    marginTop: 10,
-    flexDirection: 'row',
-  },
-  actionButton: {
-    height: 36,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flex: 1,
-  },
-  menuButton: {
-    backgroundColor: themeColors.surface.infoSubtle,
-    marginRight: 8,
-  },
-  menuButtonLabel: {
-    color: themeColors.intent.infoStrong,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  subscribeButton: {
-    backgroundColor: themeColors.surface.successSubtle,
-  },
-  subscribeButtonLabel: {
-    color: themeColors.text.success,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    content: {
+      padding: 16,
+      paddingBottom: 24,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.neutral.slate50,
+      paddingHorizontal: 24,
+    },
+    schoolCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+    },
+    title: {
+      color: colors.text.primary,
+      fontSize: 22,
+      fontWeight: '700',
+      marginBottom: 8,
+    },
+    metaText: {
+      color: colors.text.secondary,
+      fontSize: 13,
+      marginBottom: 4,
+    },
+    section: {
+      marginTop: 18,
+    },
+    sectionTitle: {
+      color: colors.text.primary,
+      fontSize: 18,
+      fontWeight: '700',
+      marginBottom: 10,
+    },
+    emptyCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+    },
+    helperText: {
+      color: colors.text.muted,
+      fontSize: 14,
+    },
+    errorText: {
+      color: colors.intent.danger,
+      fontSize: 14,
+      textAlign: 'center',
+      marginBottom: 10,
+    },
+    retryText: {
+      color: colors.intent.infoStrong,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    planCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 12,
+      marginBottom: 10,
+      flexDirection: 'row',
+    },
+    planImage: {
+      width: 64,
+      height: 64,
+      borderRadius: 10,
+    },
+    planImageFallback: {
+      width: 64,
+      height: 64,
+      borderRadius: 10,
+      backgroundColor: colors.surface.infoSoft,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    planImageFallbackText: {
+      color: colors.intent.infoStrong,
+      fontSize: 22,
+      fontWeight: '700',
+    },
+    planBody: {
+      marginLeft: 10,
+      flex: 1,
+    },
+    planName: {
+      color: colors.text.primary,
+      fontSize: 15,
+      fontWeight: '700',
+      marginBottom: 2,
+    },
+    planMeta: {
+      color: colors.text.secondary,
+      fontSize: 12,
+      marginTop: 2,
+    },
+    actionRow: {
+      marginTop: 10,
+      flexDirection: 'row',
+    },
+    actionButton: {
+      height: 36,
+      borderRadius: 10,
+      justifyContent: 'center',
+      alignItems: 'center',
+      flex: 1,
+    },
+    menuButton: {
+      backgroundColor: colors.surface.infoSubtle,
+      marginRight: 8,
+    },
+    menuButtonLabel: {
+      color: colors.intent.infoStrong,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    subscribeButton: {
+      backgroundColor: colors.surface.successSubtle,
+    },
+    subscribeButtonLabel: {
+      color: colors.text.success,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+  });

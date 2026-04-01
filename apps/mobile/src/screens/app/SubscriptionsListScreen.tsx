@@ -12,7 +12,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ApiClientError } from '../../api/client/apiClient';
 import { subscriptionsApi, type Subscription } from '../../api/subscriptions';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SubscriptionsList'>;
 
@@ -34,22 +34,27 @@ const formatDate = (value: string) => {
   });
 };
 
-const getStatusStyle = (status: Subscription['status']) => {
+const getStatusStyle = (
+  status: Subscription['status'],
+  colors: ReturnType<typeof useAppTheme>['colors'],
+) => {
   switch (status) {
     case 'ACTIVE':
-      return styles.statusActive;
+      return { backgroundColor: colors.surface.successSubtle };
     case 'PAUSED':
-      return styles.statusPaused;
+      return { backgroundColor: colors.surface.warningSoft };
     case 'COMPLETED':
-      return styles.statusCompleted;
+      return { backgroundColor: colors.surface.infoSubtle };
     case 'PENDING_PAYMENT':
-      return styles.statusPending;
+      return { backgroundColor: colors.surface.warningSubtle };
     default:
-      return styles.statusCancelled;
+      return { backgroundColor: colors.neutral.slate100 };
   }
 };
 
 export const SubscriptionsListScreen = ({ navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const [activeTab, setActiveTab] = useState<TabKey>('ACTIVE');
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,7 +103,7 @@ export const SubscriptionsListScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -154,7 +159,7 @@ export const SubscriptionsListScreen = ({ navigation }: Props) => {
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <Text style={styles.planName}>{item.mealPlan.name}</Text>
-              <View style={[styles.statusBadge, getStatusStyle(item.status)]}>
+              <View style={[styles.statusBadge, getStatusStyle(item.status, colors)]}>
                 <Text style={styles.statusText}>{item.status.replace('_', ' ')}</Text>
               </View>
             </View>
@@ -192,160 +197,161 @@ export const SubscriptionsListScreen = ({ navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-    padding: 16,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  tabsRow: {
-    flexDirection: 'row',
-    borderRadius: 12,
-    backgroundColor: themeColors.neutral.slate200,
-    padding: 4,
-    marginBottom: 12,
-  },
-  pauseRequestsLink: {
-    alignSelf: 'flex-start',
-    marginBottom: 10,
-    borderRadius: 999,
-    backgroundColor: themeColors.surface.infoSoft,
-    borderWidth: 1,
-    borderColor: themeColors.border.infoSoft,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  pauseRequestsLinkText: {
-    color: themeColors.intent.infoStrong,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  tabButton: {
-    flex: 1,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabButtonActive: {
-    backgroundColor: themeColors.neutral.white,
-  },
-  tabText: {
-    color: themeColors.text.secondary,
-    fontWeight: '600',
-  },
-  tabTextActive: {
-    color: themeColors.text.primary,
-  },
-  errorText: {
-    color: themeColors.intent.danger,
-    fontSize: 13,
-    marginBottom: 10,
-  },
-  listContent: {
-    paddingBottom: 24,
-    flexGrow: 1,
-  },
-  emptyCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 16,
-  },
-  emptyTitle: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  emptySubtitle: {
-    color: themeColors.text.muted,
-    fontSize: 13,
-  },
-  card: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-    marginBottom: 10,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  planName: {
-    color: themeColors.text.primary,
-    fontSize: 16,
-    fontWeight: '700',
-    flex: 1,
-    marginRight: 8,
-  },
-  statusBadge: {
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  statusActive: {
-    backgroundColor: themeColors.surface.successSubtle,
-  },
-  statusPaused: {
-    backgroundColor: themeColors.surface.warningSoft,
-  },
-  statusCompleted: {
-    backgroundColor: themeColors.surface.infoSubtle,
-  },
-  statusPending: {
-    backgroundColor: themeColors.surface.warningSubtle,
-  },
-  statusCancelled: {
-    backgroundColor: themeColors.neutral.slate100,
-  },
-  statusText: {
-    color: themeColors.text.primary,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  metaText: {
-    color: themeColors.text.secondary,
-    fontSize: 13,
-    marginBottom: 3,
-  },
-  actionsRow: {
-    marginTop: 10,
-    flexDirection: 'row',
-  },
-  actionButton: {
-    flex: 1,
-    height: 38,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  viewButton: {
-    backgroundColor: themeColors.surface.infoSubtle,
-    marginRight: 8,
-  },
-  pauseButton: {
-    backgroundColor: themeColors.surface.warningSoft,
-  },
-  viewButtonText: {
-    color: themeColors.intent.infoStrong,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  pauseButtonText: {
-    color: themeColors.text.warning,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+      padding: 16,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.neutral.slate50,
+    },
+    tabsRow: {
+      flexDirection: 'row',
+      borderRadius: 12,
+      backgroundColor: colors.neutral.slate200,
+      padding: 4,
+      marginBottom: 12,
+    },
+    pauseRequestsLink: {
+      alignSelf: 'flex-start',
+      marginBottom: 10,
+      borderRadius: 999,
+      backgroundColor: colors.surface.infoSoft,
+      borderWidth: 1,
+      borderColor: colors.border.infoSoft,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    pauseRequestsLinkText: {
+      color: colors.intent.infoStrong,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    tabButton: {
+      flex: 1,
+      height: 40,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    tabButtonActive: {
+      backgroundColor: colors.neutral.white,
+    },
+    tabText: {
+      color: colors.text.secondary,
+      fontWeight: '600',
+    },
+    tabTextActive: {
+      color: colors.text.primary,
+    },
+    errorText: {
+      color: colors.intent.danger,
+      fontSize: 13,
+      marginBottom: 10,
+    },
+    listContent: {
+      paddingBottom: 24,
+      flexGrow: 1,
+    },
+    emptyCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 16,
+    },
+    emptyTitle: {
+      color: colors.text.primary,
+      fontSize: 15,
+      fontWeight: '700',
+      marginBottom: 4,
+    },
+    emptySubtitle: {
+      color: colors.text.muted,
+      fontSize: 13,
+    },
+    card: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+      marginBottom: 10,
+    },
+    cardHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    planName: {
+      color: colors.text.primary,
+      fontSize: 16,
+      fontWeight: '700',
+      flex: 1,
+      marginRight: 8,
+    },
+    statusBadge: {
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    statusActive: {
+      backgroundColor: colors.surface.successSubtle,
+    },
+    statusPaused: {
+      backgroundColor: colors.surface.warningSoft,
+    },
+    statusCompleted: {
+      backgroundColor: colors.surface.infoSubtle,
+    },
+    statusPending: {
+      backgroundColor: colors.surface.warningSubtle,
+    },
+    statusCancelled: {
+      backgroundColor: colors.neutral.slate100,
+    },
+    statusText: {
+      color: colors.text.primary,
+      fontSize: 11,
+      fontWeight: '700',
+    },
+    metaText: {
+      color: colors.text.secondary,
+      fontSize: 13,
+      marginBottom: 3,
+    },
+    actionsRow: {
+      marginTop: 10,
+      flexDirection: 'row',
+    },
+    actionButton: {
+      flex: 1,
+      height: 38,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    viewButton: {
+      backgroundColor: colors.surface.infoSubtle,
+      marginRight: 8,
+    },
+    pauseButton: {
+      backgroundColor: colors.surface.warningSoft,
+    },
+    viewButtonText: {
+      color: colors.intent.infoStrong,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    pauseButtonText: {
+      color: colors.text.warning,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+  });

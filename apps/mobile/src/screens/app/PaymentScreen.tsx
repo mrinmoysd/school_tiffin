@@ -6,7 +6,7 @@ import { paymentsApi } from '../../api/payments';
 import { ApiClientError } from '../../api/client/apiClient';
 import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Payment'>;
 
@@ -33,6 +33,8 @@ const isRazorpayFailure = (value: unknown): value is RazorpayFailureData =>
   typeof value === 'object' && value !== null && ('description' in value || 'reason' in value);
 
 export const PaymentScreen = ({ route, navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -62,7 +64,7 @@ export const PaymentScreen = ({ route, navigation }: Props) => {
         description: `Subscription ${paymentIntent.orderNumber}`,
         order_id: paymentIntent.razorpayOrderId,
         theme: {
-          color: themeColors.action.primary,
+          color: colors.action.primary,
         },
       });
 
@@ -120,50 +122,51 @@ export const PaymentScreen = ({ route, navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
-  title: {
-    color: themeColors.text.primary,
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 12,
-  },
-  card: {
-    width: '100%',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-    marginBottom: 12,
-  },
-  label: {
-    color: themeColors.text.secondary,
-    fontSize: 12,
-    marginTop: 2,
-  },
-  value: {
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  successText: {
-    color: themeColors.intent.successStrong,
-    fontSize: 14,
-    marginBottom: 10,
-  },
-  errorText: {
-    color: themeColors.intent.danger,
-    fontSize: 13,
-    marginBottom: 10,
-  },
-  secondaryButton: {
-    marginTop: 10,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+      justifyContent: 'center',
+      paddingHorizontal: 24,
+    },
+    title: {
+      color: colors.text.primary,
+      fontSize: 22,
+      fontWeight: '700',
+      marginBottom: 12,
+    },
+    card: {
+      width: '100%',
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+      marginBottom: 12,
+    },
+    label: {
+      color: colors.text.secondary,
+      fontSize: 12,
+      marginTop: 2,
+    },
+    value: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '600',
+      marginBottom: 8,
+    },
+    successText: {
+      color: colors.intent.successStrong,
+      fontSize: 14,
+      marginBottom: 10,
+    },
+    errorText: {
+      color: colors.intent.danger,
+      fontSize: 13,
+      marginBottom: 10,
+    },
+    secondaryButton: {
+      marginTop: 10,
+    },
+  });

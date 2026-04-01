@@ -19,7 +19,7 @@ import {
 } from '../../api/subscriptions';
 import { AppButton, FormTextInput } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PauseRequest'>;
 type PickerField = 'startDate' | 'endDate' | null;
@@ -86,6 +86,8 @@ const countAffectedDays = (
   }).length;
 
 export const PauseRequestScreen = ({ route, navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
   const [schedule, setSchedule] = useState<SubscriptionScheduleDay[]>([]);
   const [screenLoading, setScreenLoading] = useState(true);
@@ -258,7 +260,7 @@ export const PauseRequestScreen = ({ route, navigation }: Props) => {
   if (screenLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -378,116 +380,117 @@ export const PauseRequestScreen = ({ route, navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 28,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  title: {
-    color: themeColors.text.primary,
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  subtitle: {
-    marginTop: 6,
-    marginBottom: 12,
-    color: themeColors.text.secondary,
-    fontSize: 14,
-  },
-  infoCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-    marginBottom: 14,
-  },
-  infoLabel: {
-    color: themeColors.text.muted,
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  infoValue: {
-    color: themeColors.text.primary,
-    fontSize: 16,
-    fontWeight: '700',
-    marginTop: 2,
-    marginBottom: 4,
-  },
-  infoMuted: {
-    color: themeColors.text.subtle,
-    fontSize: 13,
-    marginTop: 2,
-  },
-  fieldWrapper: {
-    marginBottom: 14,
-  },
-  fieldLabel: {
-    marginBottom: 6,
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  dateField: {
-    minHeight: 48,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate300,
-    backgroundColor: themeColors.neutral.white,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dateFieldText: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    flex: 1,
-  },
-  dateFieldArrow: {
-    color: themeColors.text.secondary,
-    fontSize: 13,
-    marginLeft: 8,
-  },
-  reasonInput: {
-    minHeight: 90,
-    textAlignVertical: 'top',
-    paddingTop: 10,
-  },
-  previewCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.border.infoLight,
-    backgroundColor: themeColors.surface.infoSofter,
-    padding: 14,
-    marginBottom: 12,
-  },
-  previewTitle: {
-    color: themeColors.text.infoDark,
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-  previewText: {
-    color: themeColors.text.infoDeeper,
-    fontSize: 13,
-    marginBottom: 4,
-  },
-  errorText: {
-    color: themeColors.intent.danger,
-    fontSize: 13,
-    marginBottom: 10,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    content: {
+      padding: 16,
+      paddingBottom: 28,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      backgroundColor: colors.neutral.slate50,
+    },
+    title: {
+      color: colors.text.primary,
+      fontSize: 22,
+      fontWeight: '700',
+    },
+    subtitle: {
+      marginTop: 6,
+      marginBottom: 12,
+      color: colors.text.secondary,
+      fontSize: 14,
+    },
+    infoCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+      marginBottom: 14,
+    },
+    infoLabel: {
+      color: colors.text.muted,
+      fontSize: 12,
+      textTransform: 'uppercase',
+      letterSpacing: 0.8,
+    },
+    infoValue: {
+      color: colors.text.primary,
+      fontSize: 16,
+      fontWeight: '700',
+      marginTop: 2,
+      marginBottom: 4,
+    },
+    infoMuted: {
+      color: colors.text.subtle,
+      fontSize: 13,
+      marginTop: 2,
+    },
+    fieldWrapper: {
+      marginBottom: 14,
+    },
+    fieldLabel: {
+      marginBottom: 6,
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    dateField: {
+      minHeight: 48,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 12,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    dateFieldText: {
+      color: colors.text.primary,
+      fontSize: 15,
+      flex: 1,
+    },
+    dateFieldArrow: {
+      color: colors.text.secondary,
+      fontSize: 13,
+      marginLeft: 8,
+    },
+    reasonInput: {
+      minHeight: 90,
+      textAlignVertical: 'top',
+      paddingTop: 10,
+    },
+    previewCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border.infoLight,
+      backgroundColor: colors.surface.infoSofter,
+      padding: 14,
+      marginBottom: 12,
+    },
+    previewTitle: {
+      color: colors.text.infoDark,
+      fontSize: 15,
+      fontWeight: '700',
+      marginBottom: 6,
+    },
+    previewText: {
+      color: colors.text.infoDeeper,
+      fontSize: 13,
+      marginBottom: 4,
+    },
+    errorText: {
+      color: colors.intent.danger,
+      fontSize: 13,
+      marginBottom: 10,
+    },
+  });

@@ -5,7 +5,7 @@ import { ApiClientError } from '../../api/client/apiClient';
 import { ordersApi, type OrderDetail } from '../../api/orders';
 import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'OrderDetail'>;
 
@@ -40,6 +40,8 @@ const formatDateTime = (value?: string | null) => {
 const normalizeStatus = (status: string) => status.replace('_', ' ');
 
 export const OrderDetailScreen = ({ route }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -88,7 +90,7 @@ export const OrderDetailScreen = ({ route }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -189,90 +191,91 @@ export const OrderDetailScreen = ({ route }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  content: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingBottom: 28,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: themeColors.text.primary,
-    marginBottom: 12,
-  },
-  card: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-    marginBottom: 10,
-  },
-  cardTitle: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-  line: {
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  muted: {
-    color: themeColors.text.subtle,
-    fontSize: 13,
-    marginBottom: 8,
-  },
-  transactionsSection: {
-    marginTop: 6,
-    borderTopWidth: 1,
-    borderTopColor: themeColors.neutral.slate200,
-    paddingTop: 8,
-  },
-  transactionsTitle: {
-    color: themeColors.text.primary,
-    fontSize: 13,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  transactionItem: {
-    borderRadius: 10,
-    backgroundColor: themeColors.neutral.slate50,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    padding: 10,
-    marginBottom: 8,
-  },
-  transactionLine: {
-    color: themeColors.text.primary,
-    fontSize: 13,
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  transactionMeta: {
-    color: themeColors.text.secondary,
-    fontSize: 12,
-    marginBottom: 2,
-  },
-  errorText: {
-    color: themeColors.intent.danger,
-    fontSize: 13,
-    marginBottom: 10,
-  },
-  secondaryButton: {
-    marginTop: 10,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    content: {
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      paddingBottom: 28,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+    },
+    title: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: colors.text.primary,
+      marginBottom: 12,
+    },
+    card: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+      marginBottom: 10,
+    },
+    cardTitle: {
+      color: colors.text.primary,
+      fontSize: 15,
+      fontWeight: '700',
+      marginBottom: 6,
+    },
+    line: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '600',
+      marginBottom: 4,
+    },
+    muted: {
+      color: colors.text.subtle,
+      fontSize: 13,
+      marginBottom: 8,
+    },
+    transactionsSection: {
+      marginTop: 6,
+      borderTopWidth: 1,
+      borderTopColor: colors.neutral.slate200,
+      paddingTop: 8,
+    },
+    transactionsTitle: {
+      color: colors.text.primary,
+      fontSize: 13,
+      fontWeight: '700',
+      marginBottom: 8,
+    },
+    transactionItem: {
+      borderRadius: 10,
+      backgroundColor: colors.neutral.slate50,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      padding: 10,
+      marginBottom: 8,
+    },
+    transactionLine: {
+      color: colors.text.primary,
+      fontSize: 13,
+      fontWeight: '600',
+      marginBottom: 2,
+    },
+    transactionMeta: {
+      color: colors.text.secondary,
+      fontSize: 12,
+      marginBottom: 2,
+    },
+    errorText: {
+      color: colors.intent.danger,
+      fontSize: 13,
+      marginBottom: 10,
+    },
+    secondaryButton: {
+      marginTop: 10,
+    },
+  });

@@ -12,7 +12,7 @@ import {
 import { clearAuthErrors, register } from '../../store/auth';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
@@ -26,6 +26,8 @@ interface RegisterFormValues {
 }
 
 export const RegisterScreen = ({ navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const dispatch = useAppDispatch();
   const { registerLoading, registerError } = useAppSelector(state => state.auth);
 
@@ -202,25 +204,26 @@ export const RegisterScreen = ({ navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  error: {
-    color: themeColors.intent.danger,
-    marginBottom: 10,
-    fontSize: 13,
-  },
-  footerRow: {
-    marginTop: 14,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  footerText: {
-    color: themeColors.text.secondary,
-    fontSize: 14,
-  },
-  footerLink: {
-    color: themeColors.intent.infoStrong,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    error: {
+      color: colors.intent.danger,
+      marginBottom: 10,
+      fontSize: 13,
+    },
+    footerRow: {
+      marginTop: 14,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    footerText: {
+      color: colors.text.secondary,
+      fontSize: 14,
+    },
+    footerLink: {
+      color: colors.intent.infoStrong,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+  });

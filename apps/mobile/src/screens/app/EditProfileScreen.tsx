@@ -9,7 +9,7 @@ import { INDIAN_PHONE_REGEX } from '../../constants/validation';
 import { RootStackParamList } from '../../navigation/types';
 import { setAuthUser } from '../../store/auth';
 import { useAppDispatch } from '../../store/hooks';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EditProfile'>;
 
@@ -50,6 +50,8 @@ const toAuthUser = (profile: UserProfile) => ({
 });
 
 export const EditProfileScreen = ({ navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const dispatch = useAppDispatch();
   const [initialLoading, setInitialLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -130,7 +132,7 @@ export const EditProfileScreen = ({ navigation }: Props) => {
   if (initialLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -219,40 +221,41 @@ export const EditProfileScreen = ({ navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  content: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingBottom: 28,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: themeColors.text.primary,
-    marginBottom: 4,
-  },
-  subtitle: {
-    color: themeColors.text.secondary,
-    fontSize: 13,
-    marginBottom: 14,
-  },
-  errorText: {
-    color: themeColors.intent.danger,
-    fontSize: 13,
-    marginBottom: 10,
-  },
-  cancelButton: {
-    marginTop: 10,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    content: {
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      paddingBottom: 28,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      backgroundColor: colors.neutral.slate50,
+    },
+    title: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: colors.text.primary,
+      marginBottom: 4,
+    },
+    subtitle: {
+      color: colors.text.secondary,
+      fontSize: 13,
+      marginBottom: 14,
+    },
+    errorText: {
+      color: colors.intent.danger,
+      fontSize: 13,
+      marginBottom: 10,
+    },
+    cancelButton: {
+      marginTop: 10,
+    },
+  });

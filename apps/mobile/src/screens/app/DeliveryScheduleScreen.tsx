@@ -12,7 +12,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ApiClientError } from '../../api/client/apiClient';
 import { subscriptionsApi, type SubscriptionScheduleDay } from '../../api/subscriptions';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DeliverySchedule'>;
 
@@ -38,16 +38,16 @@ const formatDate = (value: string) =>
     weekday: 'short',
   });
 
-const getStatusColor = (status: string) => {
+const getStatusColor = (status: string, colors: ReturnType<typeof useAppTheme>['colors']) => {
   switch (status) {
     case 'DELIVERED':
-      return themeColors.intent.success;
+      return colors.intent.success;
     case 'PAUSED':
-      return themeColors.intent.warning;
+      return colors.intent.warning;
     case 'SCHEDULED':
-      return themeColors.intent.infoStrong;
+      return colors.intent.infoStrong;
     default:
-      return themeColors.neutral.slate400;
+      return colors.neutral.slate400;
   }
 };
 
@@ -64,6 +64,8 @@ const buildMonthGrid = (monthDate: Date): Date[] => {
 };
 
 export const DeliveryScheduleScreen = ({ route }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const [schedule, setSchedule] = useState<SubscriptionScheduleDay[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -126,7 +128,7 @@ export const DeliveryScheduleScreen = ({ route }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -187,7 +189,10 @@ export const DeliveryScheduleScreen = ({ route }: Props) => {
                 </Text>
                 {dayEntry ? (
                   <View
-                    style={[styles.dayDot, { backgroundColor: getStatusColor(dayEntry.status) }]}
+                    style={[
+                      styles.dayDot,
+                      { backgroundColor: getStatusColor(dayEntry.status, colors) },
+                    ]}
                   />
                 ) : null}
               </Pressable>
@@ -199,15 +204,15 @@ export const DeliveryScheduleScreen = ({ route }: Props) => {
       <View style={styles.legendCard}>
         <Text style={styles.legendTitle}>Legend</Text>
         <View style={styles.legendRow}>
-          <View style={[styles.legendDot, { backgroundColor: themeColors.intent.infoStrong }]} />
+          <View style={[styles.legendDot, { backgroundColor: colors.intent.infoStrong }]} />
           <Text style={styles.legendText}>Scheduled</Text>
         </View>
         <View style={styles.legendRow}>
-          <View style={[styles.legendDot, { backgroundColor: themeColors.intent.success }]} />
+          <View style={[styles.legendDot, { backgroundColor: colors.intent.success }]} />
           <Text style={styles.legendText}>Delivered</Text>
         </View>
         <View style={styles.legendRow}>
-          <View style={[styles.legendDot, { backgroundColor: themeColors.intent.warning }]} />
+          <View style={[styles.legendDot, { backgroundColor: colors.intent.warning }]} />
           <Text style={styles.legendText}>Paused</Text>
         </View>
       </View>
@@ -225,147 +230,148 @@ export const DeliveryScheduleScreen = ({ route }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 24,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  title: {
-    color: themeColors.text.primary,
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-  errorText: {
-    color: themeColors.intent.danger,
-    fontSize: 13,
-    marginBottom: 10,
-  },
-  monthHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  monthNavButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    backgroundColor: themeColors.neutral.slate200,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  monthNavLabel: {
-    color: themeColors.text.primary,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  monthLabel: {
-    color: themeColors.text.primary,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  calendarCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 10,
-    marginBottom: 10,
-  },
-  weekHeaderRow: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
-  weekHeaderText: {
-    flex: 1,
-    textAlign: 'center',
-    color: themeColors.text.secondary,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  dayCell: {
-    width: '14.2857%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  dayCellSelected: {
-    backgroundColor: themeColors.surface.infoSoft,
-  },
-  dayText: {
-    color: themeColors.text.primary,
-    fontSize: 13,
-  },
-  dayTextMuted: {
-    color: themeColors.neutral.slate400,
-  },
-  dayDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    marginTop: 4,
-  },
-  legendCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 12,
-    marginBottom: 10,
-  },
-  legendTitle: {
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  legendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  legendDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 8,
-  },
-  legendText: {
-    color: themeColors.text.subtle,
-    fontSize: 13,
-  },
-  detailsCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 12,
-  },
-  detailsTitle: {
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  detailText: {
-    color: themeColors.text.subtle,
-    fontSize: 13,
-    marginBottom: 6,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    content: {
+      padding: 16,
+      paddingBottom: 24,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.neutral.slate50,
+    },
+    title: {
+      color: colors.text.primary,
+      fontSize: 22,
+      fontWeight: '700',
+      marginBottom: 10,
+    },
+    errorText: {
+      color: colors.intent.danger,
+      fontSize: 13,
+      marginBottom: 10,
+    },
+    monthHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 10,
+    },
+    monthNavButton: {
+      width: 34,
+      height: 34,
+      borderRadius: 10,
+      backgroundColor: colors.neutral.slate200,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    monthNavLabel: {
+      color: colors.text.primary,
+      fontWeight: '700',
+      fontSize: 16,
+    },
+    monthLabel: {
+      color: colors.text.primary,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    calendarCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 10,
+      marginBottom: 10,
+    },
+    weekHeaderRow: {
+      flexDirection: 'row',
+      marginBottom: 8,
+    },
+    weekHeaderText: {
+      flex: 1,
+      textAlign: 'center',
+      color: colors.text.secondary,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    grid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+    },
+    dayCell: {
+      width: '14.2857%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 8,
+      borderRadius: 8,
+    },
+    dayCellSelected: {
+      backgroundColor: colors.surface.infoSoft,
+    },
+    dayText: {
+      color: colors.text.primary,
+      fontSize: 13,
+    },
+    dayTextMuted: {
+      color: colors.neutral.slate400,
+    },
+    dayDot: {
+      width: 7,
+      height: 7,
+      borderRadius: 4,
+      marginTop: 4,
+    },
+    legendCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 12,
+      marginBottom: 10,
+    },
+    legendTitle: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '700',
+      marginBottom: 8,
+    },
+    legendRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 6,
+    },
+    legendDot: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      marginRight: 8,
+    },
+    legendText: {
+      color: colors.text.subtle,
+      fontSize: 13,
+    },
+    detailsCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 12,
+    },
+    detailsTitle: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '700',
+      marginBottom: 8,
+    },
+    detailText: {
+      color: colors.text.subtle,
+      fontSize: 13,
+      marginBottom: 6,
+    },
+  });

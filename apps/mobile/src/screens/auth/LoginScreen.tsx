@@ -7,7 +7,7 @@ import { EMAIL_REGEX } from '../../constants/validation';
 import { clearAuthErrors, login } from '../../store/auth';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -18,6 +18,8 @@ interface LoginFormValues {
 }
 
 export const LoginScreen = ({ navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const dispatch = useAppDispatch();
   const { loginLoading, loginError } = useAppSelector(state => state.auth);
 
@@ -115,38 +117,39 @@ export const LoginScreen = ({ navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  link: {
-    color: themeColors.intent.infoStrong,
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 12,
-  },
-  secondaryLink: {
-    color: themeColors.intent.infoStrong,
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 16,
-    fontWeight: '500',
-  },
-  error: {
-    color: themeColors.intent.danger,
-    marginBottom: 10,
-    fontSize: 13,
-  },
-  footerRow: {
-    marginTop: 14,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  footerText: {
-    color: themeColors.text.secondary,
-    fontSize: 14,
-  },
-  footerLink: {
-    color: themeColors.intent.infoStrong,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    link: {
+      color: colors.intent.infoStrong,
+      fontSize: 14,
+      fontWeight: '500',
+      marginBottom: 12,
+    },
+    secondaryLink: {
+      color: colors.intent.infoStrong,
+      fontSize: 14,
+      textAlign: 'center',
+      marginTop: 16,
+      fontWeight: '500',
+    },
+    error: {
+      color: colors.intent.danger,
+      marginBottom: 10,
+      fontSize: 13,
+    },
+    footerRow: {
+      marginTop: 14,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    footerText: {
+      color: colors.text.secondary,
+      fontSize: 14,
+    },
+    footerLink: {
+      color: colors.intent.infoStrong,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+  });

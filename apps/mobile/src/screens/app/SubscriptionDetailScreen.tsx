@@ -5,7 +5,7 @@ import { ApiClientError } from '../../api/client/apiClient';
 import { subscriptionsApi, type SubscriptionDetails } from '../../api/subscriptions';
 import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SubscriptionDetail'>;
 
@@ -31,6 +31,8 @@ const formatMoney = (value: number, currency: string) => `${currency} ${(value /
 const canCancelSubscription = (status: string) => status !== 'COMPLETED' && status !== 'CANCELLED';
 
 export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -111,7 +113,7 @@ export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -198,63 +200,64 @@ export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  content: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingBottom: 28,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: themeColors.text.primary,
-    marginBottom: 12,
-  },
-  card: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-    marginBottom: 10,
-  },
-  cardTitle: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-  line: {
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  muted: {
-    color: themeColors.text.subtle,
-    fontSize: 13,
-    marginBottom: 8,
-  },
-  errorText: {
-    color: themeColors.intent.danger,
-    fontSize: 13,
-    marginBottom: 10,
-  },
-  secondaryButton: {
-    marginTop: 10,
-  },
-  cancelButton: {
-    marginTop: 10,
-    backgroundColor: themeColors.intent.danger,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    content: {
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      paddingBottom: 28,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+    },
+    title: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: colors.text.primary,
+      marginBottom: 12,
+    },
+    card: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+      marginBottom: 10,
+    },
+    cardTitle: {
+      color: colors.text.primary,
+      fontSize: 15,
+      fontWeight: '700',
+      marginBottom: 6,
+    },
+    line: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '600',
+      marginBottom: 4,
+    },
+    muted: {
+      color: colors.text.subtle,
+      fontSize: 13,
+      marginBottom: 8,
+    },
+    errorText: {
+      color: colors.intent.danger,
+      fontSize: 13,
+      marginBottom: 10,
+    },
+    secondaryButton: {
+      marginTop: 10,
+    },
+    cancelButton: {
+      marginTop: 10,
+      backgroundColor: colors.intent.danger,
+    },
+  });

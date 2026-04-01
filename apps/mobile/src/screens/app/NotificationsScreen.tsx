@@ -12,7 +12,7 @@ import {
 import { ApiClientError } from '../../api/client/apiClient';
 import { notificationsApi, type NotificationItem } from '../../api/notifications';
 import { AppButton } from '../../components/ui';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 const formatTimeAgo = (value: string) => {
   const date = new Date(value);
@@ -50,6 +50,8 @@ const formatTimeAgo = (value: string) => {
 };
 
 export const NotificationsScreen = () => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const hasFocusedOnceRef = useRef(false);
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -155,7 +157,7 @@ export const NotificationsScreen = () => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -219,110 +221,111 @@ export const NotificationsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  content: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingBottom: 28,
-  },
-  headerBlock: {
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: themeColors.text.primary,
-  },
-  subtitle: {
-    marginTop: 6,
-    fontSize: 13,
-    color: themeColors.text.secondary,
-  },
-  markAllButton: {
-    marginTop: 12,
-  },
-  errorText: {
-    marginTop: 8,
-    color: themeColors.intent.danger,
-    fontSize: 13,
-  },
-  emptyCard: {
-    marginTop: 8,
-    backgroundColor: themeColors.neutral.white,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    borderRadius: 12,
-    padding: 14,
-  },
-  emptyTitle: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  emptySubtitle: {
-    color: themeColors.text.muted,
-    fontSize: 13,
-  },
-  itemCard: {
-    backgroundColor: themeColors.neutral.white,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 10,
-  },
-  itemCardUnread: {
-    borderColor: themeColors.border.info,
-    backgroundColor: themeColors.surface.infoAlt,
-  },
-  itemTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 6,
-  },
-  itemTitle: {
-    flex: 1,
-    color: themeColors.text.primary,
-    fontSize: 15,
-    fontWeight: '700',
-    marginRight: 8,
-  },
-  itemStatusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  unreadDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 999,
-    backgroundColor: themeColors.intent.infoStrong,
-    marginRight: 6,
-  },
-  itemTime: {
-    color: themeColors.text.muted,
-    fontSize: 12,
-  },
-  itemBody: {
-    color: themeColors.text.subtle,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  itemMeta: {
-    marginTop: 8,
-    color: themeColors.text.muted,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.neutral.slate50,
+    },
+    content: {
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      paddingBottom: 28,
+    },
+    headerBlock: {
+      marginBottom: 12,
+    },
+    title: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: colors.text.primary,
+    },
+    subtitle: {
+      marginTop: 6,
+      fontSize: 13,
+      color: colors.text.secondary,
+    },
+    markAllButton: {
+      marginTop: 12,
+    },
+    errorText: {
+      marginTop: 8,
+      color: colors.intent.danger,
+      fontSize: 13,
+    },
+    emptyCard: {
+      marginTop: 8,
+      backgroundColor: colors.neutral.white,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      borderRadius: 12,
+      padding: 14,
+    },
+    emptyTitle: {
+      color: colors.text.primary,
+      fontSize: 15,
+      fontWeight: '700',
+      marginBottom: 4,
+    },
+    emptySubtitle: {
+      color: colors.text.muted,
+      fontSize: 13,
+    },
+    itemCard: {
+      backgroundColor: colors.neutral.white,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      borderRadius: 12,
+      padding: 14,
+      marginBottom: 10,
+    },
+    itemCardUnread: {
+      borderColor: colors.border.info,
+      backgroundColor: colors.surface.infoAlt,
+    },
+    itemTopRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: 6,
+    },
+    itemTitle: {
+      flex: 1,
+      color: colors.text.primary,
+      fontSize: 15,
+      fontWeight: '700',
+      marginRight: 8,
+    },
+    itemStatusRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    unreadDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 999,
+      backgroundColor: colors.intent.infoStrong,
+      marginRight: 6,
+    },
+    itemTime: {
+      color: colors.text.muted,
+      fontSize: 12,
+    },
+    itemBody: {
+      color: colors.text.subtle,
+      fontSize: 13,
+      lineHeight: 18,
+    },
+    itemMeta: {
+      marginTop: 8,
+      color: colors.text.muted,
+      fontSize: 12,
+      fontWeight: '600',
+    },
+  });

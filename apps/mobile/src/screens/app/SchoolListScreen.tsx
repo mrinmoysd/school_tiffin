@@ -15,7 +15,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { schoolsApi, type School } from '../../api/schools';
 import { ApiClientError } from '../../api/client/apiClient';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SchoolList'>;
 
@@ -30,6 +30,8 @@ const getOperatingDays = (operatingDays: School['operatingDays']): string => {
 };
 
 export const SchoolListScreen = ({ navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const [allSchools, setAllSchools] = useState<School[]>([]);
   const [cityFilteredSchools, setCityFilteredSchools] = useState<School[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -198,7 +200,7 @@ export const SchoolListScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -242,12 +244,10 @@ export const SchoolListScreen = ({ navigation }: Props) => {
                 value={serviceAvailableOnly}
                 onValueChange={setServiceAvailableOnly}
                 trackColor={{
-                  false: themeColors.neutral.slate300,
-                  true: themeColors.border.infoSoft,
+                  false: colors.neutral.slate300,
+                  true: colors.border.infoSoft,
                 }}
-                thumbColor={
-                  serviceAvailableOnly ? themeColors.intent.info : themeColors.neutral.white
-                }
+                thumbColor={serviceAvailableOnly ? colors.intent.info : colors.neutral.white}
               />
             </View>
 
@@ -264,7 +264,7 @@ export const SchoolListScreen = ({ navigation }: Props) => {
         ListFooterComponent={
           visibleCount < filteredSchools.length ? (
             <View style={styles.footerLoader}>
-              <ActivityIndicator color={themeColors.action.primary} />
+              <ActivityIndicator color={colors.action.primary} />
             </View>
           ) : null
         }
@@ -298,210 +298,211 @@ export const SchoolListScreen = ({ navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  listContent: {
-    padding: 16,
-    paddingBottom: 24,
-  },
-  filtersContainer: {
-    marginBottom: 12,
-  },
-  screenTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: themeColors.text.primary,
-    marginBottom: 12,
-  },
-  searchInput: {
-    height: 46,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate300,
-    backgroundColor: themeColors.neutral.white,
-    paddingHorizontal: 12,
-    marginBottom: 10,
-    color: themeColors.text.primary,
-  },
-  filterRow: {
-    marginBottom: 10,
-  },
-  cityDropdown: {
-    minHeight: 44,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate300,
-    backgroundColor: themeColors.neutral.white,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cityDropdownText: {
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  cityDropdownArrow: {
-    color: themeColors.text.subtle,
-    fontSize: 13,
-  },
-  toggleRow: {
-    minHeight: 44,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate300,
-    backgroundColor: themeColors.neutral.white,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  toggleLabel: {
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  errorText: {
-    marginTop: 4,
-    color: themeColors.intent.danger,
-    fontSize: 13,
-  },
-  emptyState: {
-    marginTop: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-  },
-  emptyTitle: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  emptySubtitle: {
-    color: themeColors.text.muted,
-    fontSize: 13,
-  },
-  card: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 12,
-    flexDirection: 'row',
-    marginBottom: 10,
-  },
-  thumbnail: {
-    width: 56,
-    height: 56,
-    borderRadius: 10,
-  },
-  thumbnailFallback: {
-    width: 56,
-    height: 56,
-    borderRadius: 10,
-    backgroundColor: themeColors.surface.infoSoft,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  thumbnailText: {
-    color: themeColors.intent.infoStrong,
-    fontWeight: '700',
-    fontSize: 20,
-  },
-  cardContent: {
-    marginLeft: 10,
-    flex: 1,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 4,
-  },
-  schoolName: {
-    flex: 1,
-    color: themeColors.text.primary,
-    fontSize: 15,
-    fontWeight: '700',
-    marginRight: 8,
-  },
-  badge: {
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  availableBadge: {
-    backgroundColor: themeColors.surface.successSubtle,
-  },
-  unavailableBadge: {
-    backgroundColor: themeColors.surface.dangerSubtle,
-  },
-  badgeText: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  availableBadgeText: {
-    color: themeColors.text.success,
-  },
-  unavailableBadgeText: {
-    color: themeColors.text.danger,
-  },
-  locationText: {
-    color: themeColors.text.secondary,
-    fontSize: 13,
-    marginBottom: 3,
-  },
-  operatingDaysText: {
-    color: themeColors.text.muted,
-    fontSize: 12,
-  },
-  footerLoader: {
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: themeColors.overlay.scrim,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  modalCard: {
-    borderRadius: 14,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-    maxHeight: '70%',
-  },
-  modalTitle: {
-    color: themeColors.text.primary,
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-  modalOption: {
-    minHeight: 42,
-    borderRadius: 10,
-    backgroundColor: themeColors.neutral.slate50,
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    marginBottom: 8,
-  },
-  modalOptionText: {
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.neutral.slate50,
+    },
+    listContent: {
+      padding: 16,
+      paddingBottom: 24,
+    },
+    filtersContainer: {
+      marginBottom: 12,
+    },
+    screenTitle: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: colors.text.primary,
+      marginBottom: 12,
+    },
+    searchInput: {
+      height: 46,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 12,
+      marginBottom: 10,
+      color: colors.text.primary,
+    },
+    filterRow: {
+      marginBottom: 10,
+    },
+    cityDropdown: {
+      minHeight: 44,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 12,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    cityDropdownText: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    cityDropdownArrow: {
+      color: colors.text.subtle,
+      fontSize: 13,
+    },
+    toggleRow: {
+      minHeight: 44,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 12,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    toggleLabel: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    errorText: {
+      marginTop: 4,
+      color: colors.intent.danger,
+      fontSize: 13,
+    },
+    emptyState: {
+      marginTop: 6,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+    },
+    emptyTitle: {
+      color: colors.text.primary,
+      fontSize: 15,
+      fontWeight: '600',
+      marginBottom: 4,
+    },
+    emptySubtitle: {
+      color: colors.text.muted,
+      fontSize: 13,
+    },
+    card: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 12,
+      flexDirection: 'row',
+      marginBottom: 10,
+    },
+    thumbnail: {
+      width: 56,
+      height: 56,
+      borderRadius: 10,
+    },
+    thumbnailFallback: {
+      width: 56,
+      height: 56,
+      borderRadius: 10,
+      backgroundColor: colors.surface.infoSoft,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    thumbnailText: {
+      color: colors.intent.infoStrong,
+      fontWeight: '700',
+      fontSize: 20,
+    },
+    cardContent: {
+      marginLeft: 10,
+      flex: 1,
+    },
+    nameRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: 4,
+    },
+    schoolName: {
+      flex: 1,
+      color: colors.text.primary,
+      fontSize: 15,
+      fontWeight: '700',
+      marginRight: 8,
+    },
+    badge: {
+      borderRadius: 999,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+    },
+    availableBadge: {
+      backgroundColor: colors.surface.successSubtle,
+    },
+    unavailableBadge: {
+      backgroundColor: colors.surface.dangerSubtle,
+    },
+    badgeText: {
+      fontSize: 11,
+      fontWeight: '600',
+    },
+    availableBadgeText: {
+      color: colors.text.success,
+    },
+    unavailableBadgeText: {
+      color: colors.text.danger,
+    },
+    locationText: {
+      color: colors.text.secondary,
+      fontSize: 13,
+      marginBottom: 3,
+    },
+    operatingDaysText: {
+      color: colors.text.muted,
+      fontSize: 12,
+    },
+    footerLoader: {
+      paddingVertical: 10,
+      alignItems: 'center',
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: colors.overlay.scrim,
+      justifyContent: 'center',
+      paddingHorizontal: 20,
+    },
+    modalCard: {
+      borderRadius: 14,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+      maxHeight: '70%',
+    },
+    modalTitle: {
+      color: colors.text.primary,
+      fontSize: 16,
+      fontWeight: '700',
+      marginBottom: 10,
+    },
+    modalOption: {
+      minHeight: 42,
+      borderRadius: 10,
+      backgroundColor: colors.neutral.slate50,
+      justifyContent: 'center',
+      paddingHorizontal: 12,
+      marginBottom: 8,
+    },
+    modalOptionText: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+  });

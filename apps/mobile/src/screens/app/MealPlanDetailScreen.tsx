@@ -14,7 +14,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { mealPlansApi, type MealPlanDetails, type MealPlanMenuItem } from '../../api/meal-plans';
 import { ApiClientError } from '../../api/client/apiClient';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MealPlanDetail'>;
 
@@ -53,6 +53,8 @@ const getMenuGroupTitle = (item: MealPlanMenuItem) => {
 };
 
 export const MealPlanDetailScreen = ({ route, navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const [mealPlan, setMealPlan] = useState<MealPlanDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -138,7 +140,7 @@ export const MealPlanDetailScreen = ({ route, navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -252,144 +254,145 @@ export const MealPlanDetailScreen = ({ route, navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 28,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: themeColors.neutral.slate50,
-    paddingHorizontal: 24,
-  },
-  title: {
-    color: themeColors.text.primary,
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  description: {
-    marginTop: 8,
-    color: themeColors.text.secondary,
-    fontSize: 14,
-  },
-  summaryCard: {
-    marginTop: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 12,
-  },
-  metaText: {
-    marginTop: 6,
-    color: themeColors.text.subtle,
-    fontSize: 14,
-  },
-  section: {
-    marginTop: 18,
-  },
-  sectionTitle: {
-    color: themeColors.text.primary,
-    fontSize: 17,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-  carouselSection: {
-    marginTop: 18,
-  },
-  carouselImage: {
-    width: carouselWidth,
-    height: 190,
-    borderRadius: 12,
-    marginRight: 8,
-    backgroundColor: themeColors.neutral.slate200,
-  },
-  dotsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: themeColors.neutral.slate300,
-    marginHorizontal: 4,
-  },
-  dotActive: {
-    backgroundColor: themeColors.action.primary,
-  },
-  groupCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 12,
-    marginBottom: 10,
-  },
-  groupTitle: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  menuItemCard: {
-    borderRadius: 10,
-    backgroundColor: themeColors.neutral.slate50,
-    padding: 10,
-    marginBottom: 8,
-  },
-  menuTitle: {
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  menuText: {
-    color: themeColors.text.secondary,
-    fontSize: 13,
-  },
-  menuMeta: {
-    marginTop: 4,
-    color: themeColors.text.muted,
-    fontSize: 12,
-  },
-  helperText: {
-    color: themeColors.text.muted,
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  errorText: {
-    color: themeColors.intent.danger,
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  retryText: {
-    color: themeColors.intent.infoStrong,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  subscribeNowButton: {
-    marginTop: 16,
-    minHeight: 48,
-    borderRadius: 12,
-    backgroundColor: themeColors.action.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  subscribeNowButtonDisabled: {
-    opacity: 0.6,
-  },
-  subscribeNowLabel: {
-    color: themeColors.neutral.white,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    content: {
+      padding: 16,
+      paddingBottom: 28,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.neutral.slate50,
+      paddingHorizontal: 24,
+    },
+    title: {
+      color: colors.text.primary,
+      fontSize: 22,
+      fontWeight: '700',
+    },
+    description: {
+      marginTop: 8,
+      color: colors.text.secondary,
+      fontSize: 14,
+    },
+    summaryCard: {
+      marginTop: 12,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 12,
+    },
+    metaText: {
+      marginTop: 6,
+      color: colors.text.subtle,
+      fontSize: 14,
+    },
+    section: {
+      marginTop: 18,
+    },
+    sectionTitle: {
+      color: colors.text.primary,
+      fontSize: 17,
+      fontWeight: '700',
+      marginBottom: 10,
+    },
+    carouselSection: {
+      marginTop: 18,
+    },
+    carouselImage: {
+      width: carouselWidth,
+      height: 190,
+      borderRadius: 12,
+      marginRight: 8,
+      backgroundColor: colors.neutral.slate200,
+    },
+    dotsRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      marginTop: 8,
+    },
+    dot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: colors.neutral.slate300,
+      marginHorizontal: 4,
+    },
+    dotActive: {
+      backgroundColor: colors.action.primary,
+    },
+    groupCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 12,
+      marginBottom: 10,
+    },
+    groupTitle: {
+      color: colors.text.primary,
+      fontSize: 15,
+      fontWeight: '700',
+      marginBottom: 8,
+    },
+    menuItemCard: {
+      borderRadius: 10,
+      backgroundColor: colors.neutral.slate50,
+      padding: 10,
+      marginBottom: 8,
+    },
+    menuTitle: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '600',
+      marginBottom: 4,
+    },
+    menuText: {
+      color: colors.text.secondary,
+      fontSize: 13,
+    },
+    menuMeta: {
+      marginTop: 4,
+      color: colors.text.muted,
+      fontSize: 12,
+    },
+    helperText: {
+      color: colors.text.muted,
+      fontSize: 14,
+      textAlign: 'center',
+    },
+    errorText: {
+      color: colors.intent.danger,
+      fontSize: 14,
+      textAlign: 'center',
+      marginBottom: 10,
+    },
+    retryText: {
+      color: colors.intent.infoStrong,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    subscribeNowButton: {
+      marginTop: 16,
+      minHeight: 48,
+      borderRadius: 12,
+      backgroundColor: colors.action.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    subscribeNowButtonDisabled: {
+      opacity: 0.6,
+    },
+    subscribeNowLabel: {
+      color: colors.neutral.white,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+  });

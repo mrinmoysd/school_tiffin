@@ -7,7 +7,7 @@ import { INDIAN_PHONE_REGEX } from '../../constants/validation';
 import { clearAuthErrors, sendOtp } from '../../store/auth';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PhoneLogin'>;
 
@@ -16,6 +16,8 @@ interface PhoneLoginFormValues {
 }
 
 export const PhoneLoginScreen = ({ route, navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const dispatch = useAppDispatch();
   const { sendOtpLoading, otpError } = useAppSelector(state => state.auth);
 
@@ -89,23 +91,24 @@ export const PhoneLoginScreen = ({ route, navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  codeHint: {
-    fontSize: 13,
-    color: themeColors.text.secondary,
-    marginTop: -8,
-    marginBottom: 12,
-  },
-  error: {
-    color: themeColors.intent.danger,
-    marginBottom: 10,
-    fontSize: 13,
-  },
-  link: {
-    marginTop: 14,
-    color: themeColors.intent.infoStrong,
-    fontSize: 14,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    codeHint: {
+      fontSize: 13,
+      color: colors.text.secondary,
+      marginTop: -8,
+      marginBottom: 12,
+    },
+    error: {
+      color: colors.intent.danger,
+      marginBottom: 10,
+      fontSize: 13,
+    },
+    link: {
+      marginTop: 14,
+      color: colors.intent.infoStrong,
+      fontSize: 14,
+      fontWeight: '500',
+      textAlign: 'center',
+    },
+  });

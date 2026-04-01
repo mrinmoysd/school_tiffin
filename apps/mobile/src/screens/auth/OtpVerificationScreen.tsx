@@ -6,7 +6,7 @@ import { AppButton, AuthLayout, FormTextInput } from '../../components/ui';
 import { clearAuthErrors, sendOtp, setOtpExpiry, verifyOtp } from '../../store/auth';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'OtpVerification'>;
 
@@ -23,6 +23,8 @@ const formatSeconds = (seconds: number): string => {
 };
 
 export const OtpVerificationScreen = ({ route, navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const dispatch = useAppDispatch();
   const { phone } = route.params;
   const { verifyOtpLoading, sendOtpLoading, otpError, otpExpiresAt } = useAppSelector(
@@ -151,33 +153,34 @@ export const OtpVerificationScreen = ({ route, navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  timerRow: {
-    flexDirection: 'row',
-    marginBottom: 12,
-  },
-  timerLabel: {
-    color: themeColors.text.secondary,
-    fontSize: 14,
-  },
-  timerValue: {
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  resendButton: {
-    marginTop: 10,
-  },
-  link: {
-    marginTop: 14,
-    color: themeColors.intent.infoStrong,
-    textAlign: 'center',
-    fontWeight: '500',
-    fontSize: 14,
-  },
-  error: {
-    color: themeColors.intent.danger,
-    marginBottom: 10,
-    fontSize: 13,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    timerRow: {
+      flexDirection: 'row',
+      marginBottom: 12,
+    },
+    timerLabel: {
+      color: colors.text.secondary,
+      fontSize: 14,
+    },
+    timerValue: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '700',
+    },
+    resendButton: {
+      marginTop: 10,
+    },
+    link: {
+      marginTop: 14,
+      color: colors.intent.infoStrong,
+      textAlign: 'center',
+      fontWeight: '500',
+      fontSize: 14,
+    },
+    error: {
+      color: colors.intent.danger,
+      marginBottom: 10,
+      fontSize: 13,
+    },
+  });

@@ -17,7 +17,7 @@ import { schoolsApi, type School } from '../../api/schools';
 import { studentsApi } from '../../api/students';
 import { AppButton, FormTextInput } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddStudent'>;
 
@@ -100,6 +100,8 @@ const normalizeGradeValue = (grade: string | number | null) => {
 };
 
 export const AddStudentScreen = ({ route, navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const params = route.params ?? {};
   const isEditMode = Boolean(params.studentId);
   const [schools, setSchools] = useState<School[]>([]);
@@ -205,7 +207,7 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
   if (screenLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -441,118 +443,119 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 28,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  title: {
-    color: themeColors.text.primary,
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  subtitle: {
-    marginTop: 6,
-    marginBottom: 12,
-    color: themeColors.text.secondary,
-    fontSize: 14,
-  },
-  fieldWrapper: {
-    marginBottom: 14,
-  },
-  fieldLabel: {
-    marginBottom: 6,
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  dropdown: {
-    minHeight: 48,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate300,
-    backgroundColor: themeColors.neutral.white,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dropdownText: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    flex: 1,
-  },
-  dropdownArrow: {
-    color: themeColors.text.secondary,
-    fontSize: 13,
-    marginLeft: 8,
-  },
-  fieldError: {
-    marginTop: 6,
-    color: themeColors.intent.danger,
-    fontSize: 12,
-  },
-  multilineInput: {
-    minHeight: 90,
-    textAlignVertical: 'top',
-    paddingTop: 10,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: themeColors.overlay.scrim,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  modalCard: {
-    borderRadius: 14,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-    maxHeight: '70%',
-    width: '100%',
-    maxWidth: 380,
-    alignSelf: 'center',
-  },
-  modalCardTall: {
-    minHeight: 250,
-  },
-  modalTitle: {
-    color: themeColors.text.primary,
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-  modalOptionsList: {
-    flexGrow: 0,
-  },
-  modalOptionsListContent: {
-    paddingBottom: 4,
-  },
-  modalOption: {
-    minHeight: 42,
-    borderRadius: 10,
-    backgroundColor: themeColors.neutral.slate50,
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    marginBottom: 8,
-  },
-  modalOptionText: {
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  submitError: {
-    color: themeColors.intent.danger,
-    fontSize: 13,
-    marginBottom: 10,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    content: {
+      padding: 16,
+      paddingBottom: 28,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.neutral.slate50,
+    },
+    title: {
+      color: colors.text.primary,
+      fontSize: 22,
+      fontWeight: '700',
+    },
+    subtitle: {
+      marginTop: 6,
+      marginBottom: 12,
+      color: colors.text.secondary,
+      fontSize: 14,
+    },
+    fieldWrapper: {
+      marginBottom: 14,
+    },
+    fieldLabel: {
+      marginBottom: 6,
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    dropdown: {
+      minHeight: 48,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 12,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    dropdownText: {
+      color: colors.text.primary,
+      fontSize: 15,
+      flex: 1,
+    },
+    dropdownArrow: {
+      color: colors.text.secondary,
+      fontSize: 13,
+      marginLeft: 8,
+    },
+    fieldError: {
+      marginTop: 6,
+      color: colors.intent.danger,
+      fontSize: 12,
+    },
+    multilineInput: {
+      minHeight: 90,
+      textAlignVertical: 'top',
+      paddingTop: 10,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: colors.overlay.scrim,
+      justifyContent: 'center',
+      paddingHorizontal: 20,
+    },
+    modalCard: {
+      borderRadius: 14,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+      maxHeight: '70%',
+      width: '100%',
+      maxWidth: 380,
+      alignSelf: 'center',
+    },
+    modalCardTall: {
+      minHeight: 250,
+    },
+    modalTitle: {
+      color: colors.text.primary,
+      fontSize: 16,
+      fontWeight: '700',
+      marginBottom: 10,
+    },
+    modalOptionsList: {
+      flexGrow: 0,
+    },
+    modalOptionsListContent: {
+      paddingBottom: 4,
+    },
+    modalOption: {
+      minHeight: 42,
+      borderRadius: 10,
+      backgroundColor: colors.neutral.slate50,
+      justifyContent: 'center',
+      paddingHorizontal: 12,
+      marginBottom: 8,
+    },
+    modalOptionText: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    submitError: {
+      color: colors.intent.danger,
+      fontSize: 13,
+      marginBottom: 10,
+    },
+  });

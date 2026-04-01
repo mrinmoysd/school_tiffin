@@ -13,7 +13,7 @@ import {
 import { ApiClientError } from '../../api/client/apiClient';
 import { ordersApi, type OrderListItem, type OrderStatus } from '../../api/orders';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Orders'>;
 type OrderFilter = 'ALL' | OrderStatus;
@@ -51,26 +51,28 @@ const formatAmount = (value: number | string, currency: string) => {
   return `${currency} ${(numeric / 100).toFixed(2)}`;
 };
 
-const getStatusStyle = (status: OrderStatus) => {
+const getStatusStyle = (status: OrderStatus, colors: ReturnType<typeof useAppTheme>['colors']) => {
   switch (status) {
     case 'PAID':
-      return styles.statusPaid;
+      return { backgroundColor: colors.surface.successSubtle };
     case 'PENDING':
-      return styles.statusPending;
+      return { backgroundColor: colors.surface.warningSubtle };
     case 'PROCESSING':
-      return styles.statusProcessing;
+      return { backgroundColor: colors.surface.infoSoft };
     case 'FAILED':
-      return styles.statusFailed;
+      return { backgroundColor: colors.surface.dangerSubtle };
     case 'REFUNDED':
-      return styles.statusRefunded;
+      return { backgroundColor: colors.surface.violetSubtle };
     case 'CANCELLED':
-      return styles.statusCancelled;
+      return { backgroundColor: colors.neutral.slate200 };
     default:
-      return styles.statusPending;
+      return { backgroundColor: colors.surface.warningSubtle };
   }
 };
 
 export const OrdersScreen = ({ navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const [orders, setOrders] = useState<OrderListItem[]>([]);
   const [filter, setFilter] = useState<OrderFilter>('ALL');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
@@ -130,7 +132,7 @@ export const OrdersScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={themeColors.action.primary} />
+        <ActivityIndicator size="large" color={colors.action.primary} />
       </View>
     );
   }
@@ -175,7 +177,7 @@ export const OrdersScreen = ({ navigation }: Props) => {
           >
             <View style={styles.cardHeader}>
               <Text style={styles.orderNumber}>{item.orderNumber}</Text>
-              <View style={[styles.statusBadge, getStatusStyle(item.status)]}>
+              <View style={[styles.statusBadge, getStatusStyle(item.status, colors)]}>
                 <Text style={styles.statusText}>{item.status}</Text>
               </View>
             </View>
@@ -220,164 +222,165 @@ export const OrdersScreen = ({ navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-    padding: 16,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  filterButton: {
-    minHeight: 46,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate300,
-    backgroundColor: themeColors.neutral.white,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  filterButtonLabel: {
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  filterButtonArrow: {
-    color: themeColors.text.secondary,
-    fontSize: 13,
-    marginLeft: 8,
-  },
-  errorText: {
-    color: themeColors.intent.danger,
-    fontSize: 13,
-    marginBottom: 10,
-  },
-  listContent: {
-    paddingBottom: 24,
-    flexGrow: 1,
-  },
-  emptyCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 16,
-  },
-  emptyTitle: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  emptySubtitle: {
-    color: themeColors.text.muted,
-    fontSize: 13,
-  },
-  card: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate200,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-    marginBottom: 10,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  orderNumber: {
-    color: themeColors.text.primary,
-    fontSize: 16,
-    fontWeight: '700',
-    flex: 1,
-    marginRight: 8,
-  },
-  statusBadge: {
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  statusPending: {
-    backgroundColor: themeColors.surface.warningSubtle,
-  },
-  statusProcessing: {
-    backgroundColor: themeColors.surface.infoSoft,
-  },
-  statusPaid: {
-    backgroundColor: themeColors.surface.successSubtle,
-  },
-  statusFailed: {
-    backgroundColor: themeColors.surface.dangerSubtle,
-  },
-  statusRefunded: {
-    backgroundColor: themeColors.surface.violetSubtle,
-  },
-  statusCancelled: {
-    backgroundColor: themeColors.neutral.slate200,
-  },
-  statusText: {
-    color: themeColors.text.primary,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  metaText: {
-    color: themeColors.text.secondary,
-    fontSize: 13,
-    marginBottom: 3,
-  },
-  loadMoreButton: {
-    marginTop: 4,
-    alignSelf: 'center',
-    borderRadius: 999,
-    backgroundColor: themeColors.surface.infoSubtle,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  loadMoreText: {
-    color: themeColors.intent.infoStrong,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: themeColors.overlay.scrim,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  modalCard: {
-    borderRadius: 14,
-    backgroundColor: themeColors.neutral.white,
-    padding: 14,
-  },
-  modalTitle: {
-    color: themeColors.text.primary,
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-  modalOption: {
-    minHeight: 42,
-    borderRadius: 10,
-    backgroundColor: themeColors.neutral.slate50,
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    marginBottom: 8,
-  },
-  modalOptionSelected: {
-    backgroundColor: themeColors.surface.infoSoft,
-  },
-  modalOptionText: {
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+      padding: 16,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.neutral.slate50,
+    },
+    filterButton: {
+      minHeight: 46,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 12,
+    },
+    filterButtonLabel: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    filterButtonArrow: {
+      color: colors.text.secondary,
+      fontSize: 13,
+      marginLeft: 8,
+    },
+    errorText: {
+      color: colors.intent.danger,
+      fontSize: 13,
+      marginBottom: 10,
+    },
+    listContent: {
+      paddingBottom: 24,
+      flexGrow: 1,
+    },
+    emptyCard: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 16,
+    },
+    emptyTitle: {
+      color: colors.text.primary,
+      fontSize: 15,
+      fontWeight: '700',
+      marginBottom: 4,
+    },
+    emptySubtitle: {
+      color: colors.text.muted,
+      fontSize: 13,
+    },
+    card: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+      marginBottom: 10,
+    },
+    cardHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    orderNumber: {
+      color: colors.text.primary,
+      fontSize: 16,
+      fontWeight: '700',
+      flex: 1,
+      marginRight: 8,
+    },
+    statusBadge: {
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    statusPending: {
+      backgroundColor: colors.surface.warningSubtle,
+    },
+    statusProcessing: {
+      backgroundColor: colors.surface.infoSoft,
+    },
+    statusPaid: {
+      backgroundColor: colors.surface.successSubtle,
+    },
+    statusFailed: {
+      backgroundColor: colors.surface.dangerSubtle,
+    },
+    statusRefunded: {
+      backgroundColor: colors.surface.violetSubtle,
+    },
+    statusCancelled: {
+      backgroundColor: colors.neutral.slate200,
+    },
+    statusText: {
+      color: colors.text.primary,
+      fontSize: 11,
+      fontWeight: '700',
+    },
+    metaText: {
+      color: colors.text.secondary,
+      fontSize: 13,
+      marginBottom: 3,
+    },
+    loadMoreButton: {
+      marginTop: 4,
+      alignSelf: 'center',
+      borderRadius: 999,
+      backgroundColor: colors.surface.infoSubtle,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+    },
+    loadMoreText: {
+      color: colors.intent.infoStrong,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: colors.overlay.scrim,
+      justifyContent: 'center',
+      paddingHorizontal: 20,
+    },
+    modalCard: {
+      borderRadius: 14,
+      backgroundColor: colors.neutral.white,
+      padding: 14,
+    },
+    modalTitle: {
+      color: colors.text.primary,
+      fontSize: 16,
+      fontWeight: '700',
+      marginBottom: 10,
+    },
+    modalOption: {
+      minHeight: 42,
+      borderRadius: 10,
+      backgroundColor: colors.neutral.slate50,
+      justifyContent: 'center',
+      paddingHorizontal: 12,
+      marginBottom: 8,
+    },
+    modalOptionSelected: {
+      backgroundColor: colors.surface.infoSoft,
+    },
+    modalOptionText: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+  });

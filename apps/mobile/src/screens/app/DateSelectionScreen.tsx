@@ -4,7 +4,7 @@ import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-n
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppButton } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
-import { themeColors } from '../../theme';
+import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DateSelection'>;
 
@@ -25,6 +25,8 @@ const formatDisplayDate = (date: Date) =>
   });
 
 export const DateSelectionScreen = ({ route, navigation }: Props) => {
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const tomorrow = useMemo(() => {
     const date = new Date();
     date.setHours(0, 0, 0, 0);
@@ -96,54 +98,55 @@ export const DateSelectionScreen = ({ route, navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themeColors.neutral.slate50,
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 24,
-  },
-  title: {
-    color: themeColors.text.primary,
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  subtitle: {
-    marginTop: 6,
-    color: themeColors.text.secondary,
-    fontSize: 14,
-    marginBottom: 12,
-  },
-  fieldWrapper: {
-    marginBottom: 16,
-  },
-  fieldLabel: {
-    marginBottom: 6,
-    color: themeColors.text.primary,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  dropdown: {
-    minHeight: 48,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: themeColors.neutral.slate300,
-    backgroundColor: themeColors.neutral.white,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dropdownText: {
-    color: themeColors.text.primary,
-    fontSize: 15,
-    flex: 1,
-  },
-  dropdownArrow: {
-    color: themeColors.text.secondary,
-    fontSize: 13,
-    marginLeft: 8,
-  },
-});
+const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.neutral.slate50,
+    },
+    content: {
+      padding: 16,
+      paddingBottom: 24,
+    },
+    title: {
+      color: colors.text.primary,
+      fontSize: 22,
+      fontWeight: '700',
+    },
+    subtitle: {
+      marginTop: 6,
+      color: colors.text.secondary,
+      fontSize: 14,
+      marginBottom: 12,
+    },
+    fieldWrapper: {
+      marginBottom: 16,
+    },
+    fieldLabel: {
+      marginBottom: 6,
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '500',
+    },
+    dropdown: {
+      minHeight: 48,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 12,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    dropdownText: {
+      color: colors.text.primary,
+      fontSize: 15,
+      flex: 1,
+    },
+    dropdownArrow: {
+      color: colors.text.secondary,
+      fontSize: 13,
+      marginLeft: 8,
+    },
+  });
