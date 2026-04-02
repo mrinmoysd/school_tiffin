@@ -142,20 +142,15 @@ export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.headerRow}>
-        <Text style={styles.title}>Subscription Details</Text>
-        <Pressable
-          style={[styles.refreshTopButton, refreshing && styles.refreshTopButtonDisabled]}
-          onPress={() => void onRefresh()}
-          disabled={refreshing}
-          accessibilityRole="button"
-          accessibilityLabel="Refresh subscription details"
-        >
-          <Text style={styles.refreshTopButtonText}>
-            {refreshing ? 'Refreshing...' : 'Refresh'}
-          </Text>
-        </Pressable>
-      </View>
+      <Pressable
+        style={[styles.refreshTopButton, refreshing && styles.refreshTopButtonDisabled]}
+        onPress={() => void onRefresh()}
+        disabled={refreshing}
+        accessibilityRole="button"
+        accessibilityLabel="Refresh subscription details"
+      >
+        <Text style={styles.refreshTopButtonText}>{refreshing ? 'Refreshing...' : 'Refresh'}</Text>
+      </Pressable>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Plan</Text>
@@ -249,19 +244,9 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       alignItems: 'center',
       paddingHorizontal: 20,
     },
-    title: {
-      fontSize: 22,
-      fontWeight: '700',
-      color: colors.text.primary,
-    },
-    headerRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      marginBottom: 12,
-      gap: 10,
-    },
     refreshTopButton: {
+      alignSelf: 'flex-end',
+      marginBottom: 12,
       borderRadius: 999,
       borderWidth: 1,
       borderColor: colors.neutral.slate300,

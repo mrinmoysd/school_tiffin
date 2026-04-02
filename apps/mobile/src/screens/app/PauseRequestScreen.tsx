@@ -278,7 +278,6 @@ export const PauseRequestScreen = ({ route, navigation }: Props) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Pause Subscription</Text>
       <Text style={styles.subtitle}>
         Select a pause range within your subscription period. Past dates are disabled.
       </Text>
@@ -397,13 +396,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       paddingHorizontal: 20,
       backgroundColor: colors.neutral.slate50,
     },
-    title: {
-      color: colors.text.primary,
-      fontSize: 22,
-      fontWeight: '700',
-    },
     subtitle: {
-      marginTop: 6,
       marginBottom: 12,
       color: colors.text.secondary,
       fontSize: 14,

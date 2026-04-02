@@ -214,7 +214,6 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{isEditMode ? 'Edit Student' : 'Add Student'}</Text>
       <Text style={styles.subtitle}>Enter student details to continue.</Text>
 
       <Controller
@@ -459,13 +458,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       alignItems: 'center',
       backgroundColor: colors.neutral.slate50,
     },
-    title: {
-      color: colors.text.primary,
-      fontSize: 22,
-      fontWeight: '700',
-    },
     subtitle: {
-      marginTop: 6,
       marginBottom: 12,
       color: colors.text.secondary,
       fontSize: 14,

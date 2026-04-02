@@ -171,7 +171,6 @@ export const NotificationsScreen = () => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         ListHeaderComponent={
           <View style={styles.headerBlock}>
-            <Text style={styles.title}>Notifications</Text>
             <Text style={styles.subtitle}>
               {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
             </Text>
@@ -241,13 +240,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     headerBlock: {
       marginBottom: 12,
     },
-    title: {
-      fontSize: 22,
-      fontWeight: '700',
-      color: colors.text.primary,
-    },
     subtitle: {
-      marginTop: 6,
       fontSize: 13,
       color: colors.text.secondary,
     },

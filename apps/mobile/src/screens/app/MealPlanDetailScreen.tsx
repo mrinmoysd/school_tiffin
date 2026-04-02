@@ -166,10 +166,10 @@ export const MealPlanDetailScreen = ({ route, navigation }: Props) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{mealPlan.name}</Text>
       {mealPlan.description ? <Text style={styles.description}>{mealPlan.description}</Text> : null}
 
       <View style={styles.summaryCard}>
+        <Text style={styles.metaText}>Plan: {mealPlan.name}</Text>
         <Text style={styles.metaText}>Type: {mealPlan.planType}</Text>
         <Text style={styles.metaText}>Duration: {mealPlan.durationDays} days</Text>
         <Text style={styles.metaText}>
@@ -271,18 +271,12 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       backgroundColor: colors.neutral.slate50,
       paddingHorizontal: 24,
     },
-    title: {
-      color: colors.text.primary,
-      fontSize: 22,
-      fontWeight: '700',
-    },
     description: {
-      marginTop: 8,
       color: colors.text.secondary,
       fontSize: 14,
     },
     summaryCard: {
-      marginTop: 12,
+      marginTop: 10,
       borderRadius: 12,
       borderWidth: 1,
       borderColor: colors.neutral.slate200,

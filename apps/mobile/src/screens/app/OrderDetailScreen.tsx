@@ -106,8 +106,6 @@ export const OrderDetailScreen = ({ route }: Props) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Order Details</Text>
-
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Order</Text>
         <Text style={styles.line}>Order Number: {order.orderNumber}</Text>
@@ -207,12 +205,6 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: 20,
-    },
-    title: {
-      fontSize: 22,
-      fontWeight: '700',
-      color: colors.text.primary,
-      marginBottom: 12,
     },
     card: {
       borderRadius: 12,

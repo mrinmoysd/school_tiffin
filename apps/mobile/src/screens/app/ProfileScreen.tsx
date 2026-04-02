@@ -150,8 +150,6 @@ export const ProfileScreen = ({ navigation }: Props) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Profile</Text>
-
       <View style={styles.card}>
         <Text style={styles.cardTitle}>User Information</Text>
         <Text style={styles.line}>Name: {profile.fullName || '-'}</Text>
@@ -262,12 +260,6 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       alignItems: 'center',
       paddingHorizontal: 20,
       backgroundColor: colors.neutral.slate50,
-    },
-    title: {
-      fontSize: 22,
-      fontWeight: '700',
-      color: colors.text.primary,
-      marginBottom: 12,
     },
     card: {
       borderRadius: 12,

@@ -70,7 +70,6 @@ export const ChangePasswordScreen = ({ navigation }: Props) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Change Password</Text>
       <Text style={styles.subtitle}>Update your password to keep your account secure.</Text>
 
       <Controller
@@ -179,12 +178,6 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       paddingHorizontal: 16,
       paddingVertical: 14,
       paddingBottom: 28,
-    },
-    title: {
-      fontSize: 22,
-      fontWeight: '700',
-      color: colors.text.primary,
-      marginBottom: 4,
     },
     subtitle: {
       color: colors.text.secondary,

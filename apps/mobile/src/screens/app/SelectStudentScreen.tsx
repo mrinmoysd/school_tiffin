@@ -142,7 +142,6 @@ export const SelectStudentScreen = ({ navigation, route }: Props) => {
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <Text style={styles.title}>Select Student</Text>
       <Text style={styles.subtitle}>Choose who this subscription is for.</Text>
 
       {error ? (
@@ -301,13 +300,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       alignItems: 'center',
       backgroundColor: colors.neutral.slate50,
     },
-    title: {
-      color: colors.text.primary,
-      fontSize: 22,
-      fontWeight: '700',
-    },
     subtitle: {
-      marginTop: 6,
       color: colors.text.secondary,
       fontSize: 14,
       marginBottom: 12,

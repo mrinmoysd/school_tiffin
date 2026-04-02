@@ -218,8 +218,6 @@ export const SchoolListScreen = ({ navigation }: Props) => {
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <View style={styles.filtersContainer}>
-            <Text style={styles.screenTitle}>Schools</Text>
-
             <TextInput
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -315,12 +313,6 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       paddingBottom: 24,
     },
     filtersContainer: {
-      marginBottom: 12,
-    },
-    screenTitle: {
-      fontSize: 22,
-      fontWeight: '700',
-      color: colors.text.primary,
       marginBottom: 12,
     },
     searchInput: {

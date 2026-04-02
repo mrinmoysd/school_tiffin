@@ -139,7 +139,6 @@ export const EditProfileScreen = ({ navigation }: Props) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Edit Profile</Text>
       <Text style={styles.subtitle}>Update your basic account information.</Text>
 
       <Controller
@@ -238,12 +237,6 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       alignItems: 'center',
       paddingHorizontal: 20,
       backgroundColor: colors.neutral.slate50,
-    },
-    title: {
-      fontSize: 22,
-      fontWeight: '700',
-      color: colors.text.primary,
-      marginBottom: 4,
     },
     subtitle: {
       color: colors.text.secondary,

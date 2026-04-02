@@ -93,7 +93,11 @@ export const AppNavigator = () => {
         {isAuthenticated ? (
           <>
             <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="SchoolList" component={SchoolListScreen} />
+            <Stack.Screen
+              name="SchoolList"
+              component={SchoolListScreen}
+              options={{ title: 'Schools' }}
+            />
             <Stack.Screen
               name="SchoolDetail"
               component={SchoolDetailScreen}

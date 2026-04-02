@@ -45,7 +45,6 @@ export const DateSelectionScreen = ({ route, navigation }: Props) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Select Start Date</Text>
       <Text style={styles.subtitle}>Choose a date from tomorrow up to the next 3 months.</Text>
 
       <View style={styles.fieldWrapper}>
@@ -108,13 +107,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       padding: 16,
       paddingBottom: 24,
     },
-    title: {
-      color: colors.text.primary,
-      fontSize: 22,
-      fontWeight: '700',
-    },
     subtitle: {
-      marginTop: 6,
       color: colors.text.secondary,
       fontSize: 14,
       marginBottom: 12,

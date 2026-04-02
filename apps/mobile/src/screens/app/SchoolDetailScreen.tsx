@@ -96,7 +96,7 @@ export const SchoolDetailScreen = ({ route, navigation }: Props) => {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.schoolCard}>
-        <Text style={styles.title}>{school.name}</Text>
+        <Text style={styles.schoolName}>{school.name}</Text>
         <Text style={styles.metaText}>{school.address}</Text>
         <Text style={styles.metaText}>
           {school.city ?? 'N/A'}
@@ -197,10 +197,10 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       backgroundColor: colors.neutral.white,
       padding: 14,
     },
-    title: {
+    schoolName: {
       color: colors.text.primary,
-      fontSize: 22,
-      fontWeight: '700',
+      fontSize: 16,
+      fontWeight: '600',
       marginBottom: 8,
     },
     metaText: {

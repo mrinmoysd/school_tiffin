@@ -132,7 +132,6 @@ export const StudentsScreen = ({ navigation }: Props) => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         ListHeaderComponent={
           <View style={styles.headerBlock}>
-            <Text style={styles.title}>My Students</Text>
             <Text style={styles.subtitle}>Manage your student profiles from one place.</Text>
             <AppButton
               title="Add New Student"
@@ -228,13 +227,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     headerBlock: {
       marginBottom: 12,
     },
-    title: {
-      fontSize: 22,
-      fontWeight: '700',
-      color: colors.text.primary,
-    },
     subtitle: {
-      marginTop: 6,
       color: colors.text.secondary,
       fontSize: 13,
     },

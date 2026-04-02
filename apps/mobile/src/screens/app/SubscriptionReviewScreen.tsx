@@ -186,8 +186,6 @@ export const SubscriptionReviewScreen = ({ route, navigation }: Props) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Subscription Review</Text>
-
       <View style={styles.summaryCard}>
         <Text style={styles.summaryLine}>Student: {student.fullName}</Text>
         <Text style={styles.summaryLine}>Meal Plan: {mealPlan.name}</Text>
@@ -231,12 +229,6 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       alignItems: 'center',
       backgroundColor: colors.neutral.slate50,
       paddingHorizontal: 24,
-    },
-    title: {
-      color: colors.text.primary,
-      fontSize: 22,
-      fontWeight: '700',
-      marginBottom: 12,
     },
     summaryCard: {
       borderRadius: 12,

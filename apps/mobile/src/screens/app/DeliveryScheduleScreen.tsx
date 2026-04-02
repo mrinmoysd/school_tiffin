@@ -139,7 +139,6 @@ export const DeliveryScheduleScreen = ({ route }: Props) => {
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      <Text style={styles.title}>Delivery Schedule</Text>
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
       <View style={styles.monthHeader}>
@@ -245,12 +244,6 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: colors.neutral.slate50,
-    },
-    title: {
-      color: colors.text.primary,
-      fontSize: 22,
-      fontWeight: '700',
-      marginBottom: 10,
     },
     errorText: {
       color: colors.intent.danger,

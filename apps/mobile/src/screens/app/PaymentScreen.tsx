@@ -99,7 +99,6 @@ export const PaymentScreen = ({ route, navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Payment</Text>
       <View style={styles.card}>
         <Text style={styles.label}>Subscription ID</Text>
         <Text style={styles.value}>{route.params.subscriptionId}</Text>
@@ -129,12 +128,6 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       backgroundColor: colors.neutral.slate50,
       justifyContent: 'center',
       paddingHorizontal: 24,
-    },
-    title: {
-      color: colors.text.primary,
-      fontSize: 22,
-      fontWeight: '700',
-      marginBottom: 12,
     },
     card: {
       width: '100%',
