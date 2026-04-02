@@ -255,7 +255,10 @@ export const HomeScreen = ({ navigation }: Props) => {
       >
         <View style={styles.headerCard}>
           <View style={styles.headerTopRow}>
-            <Text style={styles.welcomeInlineText}>Welcome {greetingName}</Text>
+            <Text style={styles.welcomeInlineText}>
+              Welcome <Text style={styles.welcomeNameText}>{greetingName}</Text>,
+            </Text>
+
             <Pressable
               style={styles.profileIconButton}
               onPress={() => navigation.navigate('Profile')}
@@ -358,12 +361,12 @@ export const HomeScreen = ({ navigation }: Props) => {
 
             {!error && filteredSubscriptions.length === 0 ? (
               <View style={styles.emptyCard}>
-                <Text style={styles.emptyTitle}>No active subscriptions</Text>
-                <Text style={styles.emptySubtitle}>
+                <Text style={styles.emptyTitle}>
                   {selectedStudent
-                    ? `No active plan found for ${selectedStudent.fullName}.`
-                    : 'Subscribe to a meal plan to get started.'}
+                    ? `No active subscription for ${selectedStudent.fullName}`
+                    : 'No active subscription'}
                 </Text>
+                <Text style={styles.emptySubtitle}>No active plan yet.</Text>
               </View>
             ) : null}
 
@@ -459,10 +462,14 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     },
     welcomeInlineText: {
       flex: 1,
-      fontSize: 22,
-      fontWeight: '700',
+      fontSize: 20,
+      fontWeight: '400',
       color: colors.text.primary,
       marginRight: 12,
+    },
+    welcomeNameText: {
+      fontSize: 22,
+      fontWeight: '700',
     },
     profileIconButton: {
       width: 60,
@@ -558,13 +565,13 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     },
     studentCard: {
       width: 130,
-      minHeight: 66,
+      minHeight: 74,
       borderRadius: 12,
       borderWidth: 1,
       borderColor: colors.neutral.slate300,
       backgroundColor: colors.neutral.white,
       paddingHorizontal: 10,
-      paddingVertical: 8,
+      paddingVertical: 10,
       marginRight: 8,
       justifyContent: 'center',
     },
