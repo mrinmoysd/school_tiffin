@@ -208,25 +208,48 @@ export const ProfileScreen = ({ navigation }: Props) => {
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-        <AppButton title="Edit Profile" onPress={() => navigation.navigate('EditProfile')} />
-        <AppButton
-          title="Change Password"
-          onPress={() => navigation.navigate('ChangePassword')}
-          variant="secondary"
-          style={styles.secondaryButton}
-        />
-        <AppButton
-          title="Manage Students"
-          onPress={() => navigation.navigate('Students')}
-          variant="secondary"
-          style={styles.secondaryButton}
-        />
-        <AppButton
-          title="Notifications"
-          onPress={() => navigation.navigate('Notifications')}
-          variant="secondary"
-          style={styles.secondaryButton}
-        />
+        <View style={styles.quickActions}>
+          <Pressable
+            style={styles.quickActionCard}
+            onPress={() => navigation.navigate('EditProfile')}
+            accessibilityRole="button"
+            accessibilityLabel="Edit profile"
+          >
+            <Text style={styles.quickActionTitle}>Edit Profile</Text>
+            <Text style={styles.quickActionMeta}>Update your name and phone</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.quickActionCard}
+            onPress={() => navigation.navigate('ChangePassword')}
+            accessibilityRole="button"
+            accessibilityLabel="Change password"
+          >
+            <Text style={styles.quickActionTitle}>Password</Text>
+            <Text style={styles.quickActionMeta}>Change account password</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.quickActionCard}
+            onPress={() => navigation.navigate('Students')}
+            accessibilityRole="button"
+            accessibilityLabel="Manage students"
+          >
+            <Text style={styles.quickActionTitle}>Students</Text>
+            <Text style={styles.quickActionMeta}>Manage student profiles</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.quickActionCard}
+            onPress={() => navigation.navigate('Notifications')}
+            accessibilityRole="button"
+            accessibilityLabel="Open notifications"
+          >
+            <Text style={styles.quickActionTitle}>Notifications</Text>
+            <Text style={styles.quickActionMeta}>View recent updates</Text>
+          </Pressable>
+        </View>
+
         <AppButton
           title="Logout"
           onPress={handleLogout}
@@ -334,8 +357,33 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       fontSize: 13,
       marginBottom: 10,
     },
-    secondaryButton: {
-      marginTop: 10,
+    quickActions: {
+      marginTop: 4,
+      marginBottom: 2,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+    },
+    quickActionCard: {
+      width: '48.5%',
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 12,
+      paddingVertical: 12,
+      marginBottom: 10,
+    },
+    quickActionTitle: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '700',
+      marginBottom: 3,
+    },
+    quickActionMeta: {
+      color: colors.text.muted,
+      fontSize: 12,
+      lineHeight: 16,
     },
     logoutButton: {
       marginTop: 10,

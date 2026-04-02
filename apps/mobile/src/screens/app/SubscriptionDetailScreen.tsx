@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ApiClientError } from '../../api/client/apiClient';
 import { subscriptionsApi, type SubscriptionDetails } from '../../api/subscriptions';
@@ -176,6 +176,32 @@ export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
+        <View style={styles.quickActions}>
+          <Pressable
+            style={styles.quickActionCard}
+            onPress={() =>
+              navigation.navigate('DeliverySchedule', {
+                subscriptionId: subscription.id,
+              })
+            }
+            accessibilityRole="button"
+            accessibilityLabel="View delivery schedule"
+          >
+            <Text style={styles.quickActionTitle}>Delivery Schedule</Text>
+            <Text style={styles.quickActionMeta}>See daily plan and status</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.quickActionCard}
+            onPress={() => navigation.navigate('PauseRequest', { subscriptionId: subscription.id })}
+            accessibilityRole="button"
+            accessibilityLabel="Pause subscription"
+          >
+            <Text style={styles.quickActionTitle}>Pause Subscription</Text>
+            <Text style={styles.quickActionMeta}>Request temporary pause</Text>
+          </Pressable>
+        </View>
+
         {showPayNowButton ? (
           <AppButton
             title="Pay Now"
@@ -190,20 +216,6 @@ export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
           />
         ) : null}
 
-        <AppButton
-          title="View Delivery Schedule"
-          onPress={() =>
-            navigation.navigate('DeliverySchedule', {
-              subscriptionId: subscription.id,
-            })
-          }
-        />
-        <AppButton
-          title="Pause Subscription"
-          onPress={() => navigation.navigate('PauseRequest', { subscriptionId: subscription.id })}
-          variant="secondary"
-          style={styles.secondaryButton}
-        />
         {showCancelButton ? (
           <AppButton
             title="Cancel Subscription"
@@ -264,14 +276,39 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       fontSize: 13,
       marginBottom: 10,
     },
-    secondaryButton: {
-      marginTop: 10,
-    },
     payNowButton: {
       marginBottom: 10,
     },
+    quickActions: {
+      marginTop: 2,
+      marginBottom: 2,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+    },
+    quickActionCard: {
+      width: '48.5%',
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 12,
+      paddingVertical: 12,
+      marginBottom: 10,
+    },
+    quickActionTitle: {
+      color: colors.text.primary,
+      fontSize: 14,
+      fontWeight: '700',
+      marginBottom: 3,
+    },
+    quickActionMeta: {
+      color: colors.text.muted,
+      fontSize: 12,
+      lineHeight: 16,
+    },
     cancelButton: {
-      marginTop: 10,
+      marginTop: 4,
       backgroundColor: colors.intent.danger,
     },
   });

@@ -223,6 +223,7 @@ export const SchoolListScreen = ({ navigation }: Props) => {
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholder="Search by school name"
+              placeholderTextColor={colors.text.muted}
               style={styles.searchInput}
               autoCapitalize="words"
               autoCorrect={false}
@@ -230,7 +231,12 @@ export const SchoolListScreen = ({ navigation }: Props) => {
 
             <View style={styles.filterRow}>
               <Pressable style={styles.cityDropdown} onPress={() => setCityModalVisible(true)}>
-                <Text style={styles.cityDropdownText}>
+                <Text
+                  style={[
+                    styles.cityDropdownText,
+                    !selectedCity ? styles.cityDropdownTextPlaceholder : undefined,
+                  ]}
+                >
                   {selectedCity ? `City: ${selectedCity}` : 'City: All'}
                 </Text>
                 <Text style={styles.cityDropdownArrow}>v</Text>
@@ -344,6 +350,9 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       color: colors.text.primary,
       fontSize: 14,
       fontWeight: '500',
+    },
+    cityDropdownTextPlaceholder: {
+      color: colors.text.muted,
     },
     cityDropdownArrow: {
       color: colors.text.subtle,
