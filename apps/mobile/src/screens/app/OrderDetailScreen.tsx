@@ -1,6 +1,13 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import { ordersApi, type OrderDetail } from '../../api/orders';
 import { AppButton } from '../../components/ui';
@@ -105,7 +112,11 @@ export const OrderDetailScreen = ({ route }: Props) => {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Order</Text>
         <Text style={styles.line}>Order Number: {order.orderNumber}</Text>
@@ -177,13 +188,6 @@ export const OrderDetailScreen = ({ route }: Props) => {
         onPress={() => undefined}
         disabled
         variant="secondary"
-      />
-      <AppButton
-        title="Refresh"
-        onPress={() => void onRefresh()}
-        loading={refreshing}
-        variant="secondary"
-        style={styles.secondaryButton}
       />
     </ScrollView>
   );
@@ -266,8 +270,5 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       color: colors.intent.danger,
       fontSize: 13,
       marginBottom: 10,
-    },
-    secondaryButton: {
-      marginTop: 10,
     },
   });

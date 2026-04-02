@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -141,17 +141,11 @@ export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Pressable
-        style={[styles.refreshTopButton, refreshing && styles.refreshTopButtonDisabled]}
-        onPress={() => void onRefresh()}
-        disabled={refreshing}
-        accessibilityRole="button"
-        accessibilityLabel="Refresh subscription details"
-      >
-        <Text style={styles.refreshTopButtonText}>{refreshing ? 'Refreshing...' : 'Refresh'}</Text>
-      </Pressable>
-
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Plan</Text>
         <Text style={styles.line}>{subscription.mealPlan.name}</Text>
@@ -243,24 +237,6 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: 20,
-    },
-    refreshTopButton: {
-      alignSelf: 'flex-end',
-      marginBottom: 12,
-      borderRadius: 999,
-      borderWidth: 1,
-      borderColor: colors.neutral.slate300,
-      backgroundColor: colors.neutral.white,
-      paddingHorizontal: 12,
-      paddingVertical: 7,
-    },
-    refreshTopButtonDisabled: {
-      opacity: 0.7,
-    },
-    refreshTopButtonText: {
-      color: colors.text.primary,
-      fontSize: 12,
-      fontWeight: '700',
     },
     card: {
       borderRadius: 12,

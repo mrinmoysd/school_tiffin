@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -149,7 +150,11 @@ export const ProfileScreen = ({ navigation }: Props) => {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
       <View style={styles.card}>
         <Text style={styles.cardTitle}>User Information</Text>
         <Text style={styles.line}>Name: {profile.fullName || '-'}</Text>
@@ -223,13 +228,6 @@ export const ProfileScreen = ({ navigation }: Props) => {
       <AppButton
         title="Notifications"
         onPress={() => navigation.navigate('Notifications')}
-        variant="secondary"
-        style={styles.secondaryButton}
-      />
-      <AppButton
-        title="Refresh"
-        onPress={() => void onRefresh()}
-        loading={refreshing}
         variant="secondary"
         style={styles.secondaryButton}
       />
