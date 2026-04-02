@@ -59,6 +59,7 @@ export const lightThemeColors = {
   },
   overlay: {
     scrim: 'rgba(15, 23, 42, 0.45)',
+    edgeFadeTint: 'rgba(15, 23, 42, 0.9)',
   },
 } as const;
 
@@ -129,6 +130,7 @@ export const darkThemeColors: AppThemeColors = {
   },
   overlay: {
     scrim: 'rgba(2, 6, 23, 0.7)',
+    edgeFadeTint: 'rgba(248, 250, 252, 0.9)',
   },
 } as const;
 export const themeColors: AppThemeColors = lightThemeColors;

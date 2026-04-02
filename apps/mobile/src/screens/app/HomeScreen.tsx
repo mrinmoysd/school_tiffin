@@ -2,6 +2,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -112,6 +114,9 @@ export const HomeScreen = ({ navigation }: Props) => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [studentsViewportWidth, setStudentsViewportWidth] = useState(0);
+  const [studentsContentWidth, setStudentsContentWidth] = useState(0);
+  const [studentsScrollX, setStudentsScrollX] = useState(0);
 
   const loadHomeData = useCallback(async () => {
     try {
@@ -203,6 +208,15 @@ export const HomeScreen = ({ navigation }: Props) => {
     navigation.navigate('SchoolList');
   }, [navigation, selectedStudent]);
 
+  const hasHorizontalOverflow = studentsContentWidth - studentsViewportWidth > 1;
+  const showLeftScrollHint = hasHorizontalOverflow && studentsScrollX > 4;
+  const showRightScrollHint =
+    hasHorizontalOverflow && studentsContentWidth - (studentsViewportWidth + studentsScrollX) > 4;
+
+  const onStudentsScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    setStudentsScrollX(event.nativeEvent.contentOffset.x);
+  }, []);
+
   if (initialLoading) {
     return (
       <View style={styles.loaderContainer}>
@@ -261,30 +275,54 @@ export const HomeScreen = ({ navigation }: Props) => {
               <Text style={styles.emptySubtitle}>Tap + to add a student first.</Text>
             </View>
           ) : (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.studentsRow}
+            <View
+              style={styles.studentsScrollerWrap}
+              onLayout={event => setStudentsViewportWidth(event.nativeEvent.layout.width)}
             >
-              {students.map(student => (
-                <Pressable
-                  key={student.id}
-                  style={[
-                    styles.studentCard,
-                    selectedStudentId === student.id && styles.studentCardSelected,
-                  ]}
-                  onPress={() => setSelectedStudentId(student.id)}
-                >
-                  <Text style={styles.studentName}>{getStudentDisplayName(student.fullName)}</Text>
-                  <Text style={styles.studentSchool} numberOfLines={1} ellipsizeMode="tail">
-                    {student.school?.name
-                      ? getCompactLabel(student.school.name, 22)
-                      : 'School not set'}
-                  </Text>
-                  <Text style={styles.studentGrade}>Grade {student.grade}</Text>
-                </Pressable>
-              ))}
-            </ScrollView>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.studentsRow}
+                onContentSizeChange={width => setStudentsContentWidth(width)}
+                onScroll={onStudentsScroll}
+                scrollEventThrottle={16}
+              >
+                {students.map(student => (
+                  <Pressable
+                    key={student.id}
+                    style={[
+                      styles.studentCard,
+                      selectedStudentId === student.id && styles.studentCardSelected,
+                    ]}
+                    onPress={() => setSelectedStudentId(student.id)}
+                  >
+                    <Text style={styles.studentName}>
+                      {getStudentDisplayName(student.fullName)}
+                    </Text>
+                    <Text style={styles.studentSchool} numberOfLines={1} ellipsizeMode="tail">
+                      {student.school?.name
+                        ? getCompactLabel(student.school.name, 22)
+                        : 'School not set'}
+                    </Text>
+                    <Text style={styles.studentGrade}>Grade {student.grade}</Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+
+              {showLeftScrollHint ? (
+                <View style={[styles.scrollHintEdge, styles.scrollHintLeft]} pointerEvents="none">
+                  <View style={[styles.scrollHintBand, styles.scrollHintBandStrong]} />
+                  <View style={[styles.scrollHintBand, styles.scrollHintBandLight]} />
+                </View>
+              ) : null}
+
+              {showRightScrollHint ? (
+                <View style={[styles.scrollHintEdge, styles.scrollHintRight]} pointerEvents="none">
+                  <View style={[styles.scrollHintBand, styles.scrollHintBandLight]} />
+                  <View style={[styles.scrollHintBand, styles.scrollHintBandStrong]} />
+                </View>
+              ) : null}
+            </View>
           )}
           <View style={styles.subSection}>
             <View style={styles.subSectionHeader}>
@@ -467,6 +505,32 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     },
     studentsRow: {
       paddingRight: 8,
+    },
+    studentsScrollerWrap: {
+      position: 'relative',
+    },
+    scrollHintEdge: {
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      width: 5,
+      flexDirection: 'row',
+    },
+    scrollHintLeft: {
+      left: 0,
+    },
+    scrollHintRight: {
+      right: 0,
+    },
+    scrollHintBand: {
+      flex: 1,
+      backgroundColor: colors.overlay.edgeFadeTint,
+    },
+    scrollHintBandStrong: {
+      opacity: 0.1,
+    },
+    scrollHintBandLight: {
+      opacity: 0.06,
     },
     studentCard: {
       width: 130,

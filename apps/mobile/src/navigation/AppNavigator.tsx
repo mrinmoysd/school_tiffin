@@ -86,6 +86,7 @@ export const AppNavigator = () => {
           headerStyle: { backgroundColor: colors.neutral.white },
           headerTintColor: colors.text.primary,
           headerTitleStyle: { color: colors.text.primary },
+          headerTitleAlign: 'center',
           contentStyle: { backgroundColor: colors.neutral.slate50 },
         }}
       >

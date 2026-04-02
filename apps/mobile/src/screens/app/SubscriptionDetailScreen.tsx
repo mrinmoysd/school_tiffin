@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ApiClientError } from '../../api/client/apiClient';
 import { subscriptionsApi, type SubscriptionDetails } from '../../api/subscriptions';
@@ -29,6 +37,7 @@ const formatDate = (value?: string | null) => {
 const formatMoney = (value: number, currency: string) => `${currency} ${(value / 100).toFixed(2)}`;
 
 const canCancelSubscription = (status: string) => status !== 'COMPLETED' && status !== 'CANCELLED';
+const canPaySubscription = (status: string) => status === 'PENDING_PAYMENT';
 
 export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
   const { colors } = useAppTheme();
@@ -72,6 +81,10 @@ export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
 
   const showCancelButton = useMemo(
     () => (subscription ? canCancelSubscription(subscription.status) : false),
+    [subscription],
+  );
+  const showPayNowButton = useMemo(
+    () => (subscription ? canPaySubscription(subscription.status) : false),
     [subscription],
   );
 
@@ -129,7 +142,20 @@ export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Subscription Details</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>Subscription Details</Text>
+        <Pressable
+          style={[styles.refreshTopButton, refreshing && styles.refreshTopButtonDisabled]}
+          onPress={() => void onRefresh()}
+          disabled={refreshing}
+          accessibilityRole="button"
+          accessibilityLabel="Refresh subscription details"
+        >
+          <Text style={styles.refreshTopButtonText}>
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </Text>
+        </Pressable>
+      </View>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Plan</Text>
@@ -166,6 +192,20 @@ export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
+      {showPayNowButton ? (
+        <AppButton
+          title="Pay Now"
+          onPress={() =>
+            navigation.navigate('Payment', {
+              subscriptionId: subscription.id,
+              amount: subscription.totalPrice,
+              currency: subscription.currency,
+            })
+          }
+          style={styles.payNowButton}
+        />
+      ) : null}
+
       <AppButton
         title="View Delivery Schedule"
         onPress={() =>
@@ -188,14 +228,6 @@ export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
           style={styles.cancelButton}
         />
       ) : null}
-
-      <AppButton
-        title="Refresh"
-        onPress={() => void onRefresh()}
-        loading={refreshing}
-        variant="secondary"
-        style={styles.secondaryButton}
-      />
     </ScrollView>
   );
 };
@@ -221,7 +253,29 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       fontSize: 22,
       fontWeight: '700',
       color: colors.text.primary,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
       marginBottom: 12,
+      gap: 10,
+    },
+    refreshTopButton: {
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+    },
+    refreshTopButtonDisabled: {
+      opacity: 0.7,
+    },
+    refreshTopButtonText: {
+      color: colors.text.primary,
+      fontSize: 12,
+      fontWeight: '700',
     },
     card: {
       borderRadius: 12,
@@ -255,6 +309,9 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     },
     secondaryButton: {
       marginTop: 10,
+    },
+    payNowButton: {
+      marginBottom: 10,
     },
     cancelButton: {
       marginTop: 10,
