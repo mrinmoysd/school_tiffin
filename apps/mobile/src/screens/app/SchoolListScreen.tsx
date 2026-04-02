@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   Modal,
@@ -15,6 +14,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { schoolsApi, type School } from '../../api/schools';
 import { ApiClientError } from '../../api/client/apiClient';
+import { AppLoader, FoodDoodleBackdrop } from '../../components/ui';
 import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SchoolList'>;
@@ -200,13 +200,14 @@ export const SchoolListScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Loading schools..." />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
+      <FoodDoodleBackdrop />
       <FlatList
         data={visibleSchools}
         keyExtractor={item => item.id}
@@ -262,7 +263,7 @@ export const SchoolListScreen = ({ navigation }: Props) => {
         ListFooterComponent={
           visibleCount < filteredSchools.length ? (
             <View style={styles.footerLoader}>
-              <ActivityIndicator color={colors.action.primary} />
+              <AppLoader compact label="Loading more schools..." />
             </View>
           ) : null
         }
@@ -300,13 +301,13 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     centered: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     listContent: {
       padding: 16,
@@ -487,7 +488,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     modalOption: {
       minHeight: 42,
       borderRadius: 10,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
       justifyContent: 'center',
       paddingHorizontal: 12,
       marginBottom: 8,

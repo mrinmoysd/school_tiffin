@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../theme';
+import { FoodDoodleBackdrop } from './FoodDoodleBackdrop';
 
 interface AuthLayoutProps extends PropsWithChildren {
   title: string;
@@ -23,6 +24,7 @@ export const AuthLayout = ({ title, subtitle, children }: AuthLayoutProps) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <FoodDoodleBackdrop />
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView
           style={styles.flex}
@@ -49,7 +51,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     safeArea: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     flex: {
       flex: 1,

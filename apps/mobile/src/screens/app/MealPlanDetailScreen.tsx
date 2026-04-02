@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Dimensions,
   FlatList,
   Image,
@@ -14,6 +13,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { mealPlansApi, type MealPlanDetails, type MealPlanMenuItem } from '../../api/meal-plans';
 import { ApiClientError } from '../../api/client/apiClient';
+import { AppLoader, FoodDoodleBackdrop } from '../../components/ui';
 import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MealPlanDetail'>;
@@ -140,7 +140,7 @@ export const MealPlanDetailScreen = ({ route, navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Loading meal plan..." />
       </View>
     );
   }
@@ -165,92 +165,100 @@ export const MealPlanDetailScreen = ({ route, navigation }: Props) => {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {mealPlan.description ? <Text style={styles.description}>{mealPlan.description}</Text> : null}
+    <View style={styles.container}>
+      <FoodDoodleBackdrop />
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        {mealPlan.description ? (
+          <Text style={styles.description}>{mealPlan.description}</Text>
+        ) : null}
 
-      <View style={styles.summaryCard}>
-        <Text style={styles.metaText}>Plan: {mealPlan.name}</Text>
-        <Text style={styles.metaText}>Type: {mealPlan.planType}</Text>
-        <Text style={styles.metaText}>Duration: {mealPlan.durationDays} days</Text>
-        <Text style={styles.metaText}>
-          Price/day: {formatAmount(mealPlan.pricePerDay, mealPlan.currency)}
-        </Text>
-        <Text style={styles.metaText}>
-          Total Price: {formatAmount(mealPlan.totalPrice, mealPlan.currency)}
-        </Text>
-      </View>
-
-      {carouselImages.length > 0 ? (
-        <View style={styles.carouselSection}>
-          <Text style={styles.sectionTitle}>Meal Images</Text>
-          <FlatList
-            data={carouselImages}
-            keyExtractor={(item, index) => `${item}-${index}`}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={event => onCarouselScrollEnd(event.nativeEvent.contentOffset.x)}
-            renderItem={({ item }) => (
-              <Image source={{ uri: item }} style={styles.carouselImage} resizeMode="cover" />
-            )}
-          />
-          <View style={styles.dotsRow}>
-            {carouselImages.map((_, index) => (
-              <View key={index} style={[styles.dot, index === carouselIndex && styles.dotActive]} />
-            ))}
-          </View>
+        <View style={styles.summaryCard}>
+          <Text style={styles.metaText}>Plan: {mealPlan.name}</Text>
+          <Text style={styles.metaText}>Type: {mealPlan.planType}</Text>
+          <Text style={styles.metaText}>Duration: {mealPlan.durationDays} days</Text>
+          <Text style={styles.metaText}>
+            Price/day: {formatAmount(mealPlan.pricePerDay, mealPlan.currency)}
+          </Text>
+          <Text style={styles.metaText}>
+            Total Price: {formatAmount(mealPlan.totalPrice, mealPlan.currency)}
+          </Text>
         </View>
-      ) : null}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Menu Items</Text>
-        {groupedMenuItems.length === 0 ? (
-          <Text style={styles.helperText}>No menu items available.</Text>
-        ) : (
-          groupedMenuItems.map(group => (
-            <View key={group.title} style={styles.groupCard}>
-              <Text style={styles.groupTitle}>{group.title}</Text>
-              {group.items.map(item => (
-                <View style={styles.menuItemCard} key={item.id}>
-                  <Text style={styles.menuTitle}>{item.name}</Text>
-                  <Text style={styles.menuText}>{item.items}</Text>
-                  {item.description ? (
-                    <Text style={styles.menuMeta}>Description: {item.description}</Text>
-                  ) : null}
-                  {item.calories !== null && item.calories !== undefined ? (
-                    <Text style={styles.menuMeta}>Nutritional Info: {item.calories} kcal</Text>
-                  ) : null}
-                  {item.allergenInfo ? (
-                    <Text style={styles.menuMeta}>Allergen Info: {item.allergenInfo}</Text>
-                  ) : null}
-                </View>
+        {carouselImages.length > 0 ? (
+          <View style={styles.carouselSection}>
+            <Text style={styles.sectionTitle}>Meal Images</Text>
+            <FlatList
+              data={carouselImages}
+              keyExtractor={(item, index) => `${item}-${index}`}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={event => onCarouselScrollEnd(event.nativeEvent.contentOffset.x)}
+              renderItem={({ item }) => (
+                <Image source={{ uri: item }} style={styles.carouselImage} resizeMode="cover" />
+              )}
+            />
+            <View style={styles.dotsRow}>
+              {carouselImages.map((_, index) => (
+                <View
+                  key={index}
+                  style={[styles.dot, index === carouselIndex && styles.dotActive]}
+                />
               ))}
             </View>
-          ))
-        )}
-      </View>
+          </View>
+        ) : null}
 
-      <Pressable
-        style={[
-          styles.subscribeNowButton,
-          !mealPlan.school?.id && styles.subscribeNowButtonDisabled,
-        ]}
-        onPress={() =>
-          navigation.navigate('SelectStudent', {
-            mealPlanId: mealPlan.id,
-            schoolId: mealPlan.school?.id ?? '',
-          })
-        }
-        disabled={!mealPlan.school?.id}
-      >
-        <Text style={styles.subscribeNowLabel}>Subscribe Now</Text>
-      </Pressable>
-      {!mealPlan.school?.id ? (
-        <Text style={styles.helperText}>
-          Subscription unavailable because school information is missing for this plan.
-        </Text>
-      ) : null}
-    </ScrollView>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Menu Items</Text>
+          {groupedMenuItems.length === 0 ? (
+            <Text style={styles.helperText}>No menu items available.</Text>
+          ) : (
+            groupedMenuItems.map(group => (
+              <View key={group.title} style={styles.groupCard}>
+                <Text style={styles.groupTitle}>{group.title}</Text>
+                {group.items.map(item => (
+                  <View style={styles.menuItemCard} key={item.id}>
+                    <Text style={styles.menuTitle}>{item.name}</Text>
+                    <Text style={styles.menuText}>{item.items}</Text>
+                    {item.description ? (
+                      <Text style={styles.menuMeta}>Description: {item.description}</Text>
+                    ) : null}
+                    {item.calories !== null && item.calories !== undefined ? (
+                      <Text style={styles.menuMeta}>Nutritional Info: {item.calories} kcal</Text>
+                    ) : null}
+                    {item.allergenInfo ? (
+                      <Text style={styles.menuMeta}>Allergen Info: {item.allergenInfo}</Text>
+                    ) : null}
+                  </View>
+                ))}
+              </View>
+            ))
+          )}
+        </View>
+
+        <Pressable
+          style={[
+            styles.subscribeNowButton,
+            !mealPlan.school?.id && styles.subscribeNowButtonDisabled,
+          ]}
+          onPress={() =>
+            navigation.navigate('SelectStudent', {
+              mealPlanId: mealPlan.id,
+              schoolId: mealPlan.school?.id ?? '',
+            })
+          }
+          disabled={!mealPlan.school?.id}
+        >
+          <Text style={styles.subscribeNowLabel}>Subscribe Now</Text>
+        </Pressable>
+        {!mealPlan.school?.id ? (
+          <Text style={styles.helperText}>
+            Subscription unavailable because school information is missing for this plan.
+          </Text>
+        ) : null}
+      </ScrollView>
+    </View>
   );
 };
 
@@ -258,7 +266,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     content: {
       padding: 16,
@@ -268,7 +276,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
       paddingHorizontal: 24,
     },
     description: {
@@ -338,7 +346,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     },
     menuItemCard: {
       borderRadius: 10,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
       padding: 10,
       marginBottom: 8,
     },

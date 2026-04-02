@@ -1,16 +1,9 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import { ordersApi, type OrderDetail } from '../../api/orders';
-import { AppButton } from '../../components/ui';
+import { AppButton, AppLoader, FoodDoodleBackdrop } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -97,7 +90,7 @@ export const OrderDetailScreen = ({ route }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Loading order details..." />
       </View>
     );
   }
@@ -112,84 +105,88 @@ export const OrderDetailScreen = ({ route }: Props) => {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Order</Text>
-        <Text style={styles.line}>Order Number: {order.orderNumber}</Text>
-        <Text style={styles.muted}>Status: {normalizeStatus(order.status)}</Text>
-        <Text style={styles.muted}>Created: {formatDateTime(order.createdAt)}</Text>
-        <Text style={styles.muted}>Paid At: {formatDateTime(order.paidAt)}</Text>
-        <Text style={styles.muted}>Cancelled At: {formatDateTime(order.cancelledAt)}</Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Subscription</Text>
-        <Text style={styles.line}>Subscription No: {order.subscription.subscriptionNumber}</Text>
-        <Text style={styles.muted}>Student: {order.subscription.student.fullName}</Text>
-        <Text style={styles.muted}>Subscription ID: {order.subscriptionId}</Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Amount Breakdown</Text>
-        <Text style={styles.muted}>Base Amount: {formatMoney(order.amount, order.currency)}</Text>
-        <Text style={styles.muted}>Tax: {formatMoney(order.taxAmount, order.currency)}</Text>
-        <Text style={styles.muted}>
-          Discount: {formatMoney(order.discountAmount, order.currency)}
-        </Text>
-        <Text style={styles.line}>
-          Final Amount: {formatMoney(order.finalAmount, order.currency)}
-        </Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Payment</Text>
-        <Text style={styles.muted}>Payment Method: {order.paymentMethod || '-'}</Text>
-        <Text style={styles.muted}>Payment Status: {normalizeStatus(order.status)}</Text>
-        <Text style={styles.muted}>Latest Transaction ID: {latestTransactionId}</Text>
-
-        {order.transactions.length > 0 ? (
-          <View style={styles.transactionsSection}>
-            <Text style={styles.transactionsTitle}>Transactions</Text>
-            {order.transactions.map(transaction => (
-              <View style={styles.transactionItem} key={transaction.id}>
-                <Text style={styles.transactionLine}>
-                  ID: {transaction.gatewayTransactionId || transaction.transactionId}
-                </Text>
-                <Text style={styles.transactionMeta}>
-                  {transaction.paymentGateway.toUpperCase()} | {normalizeStatus(transaction.status)}
-                </Text>
-                <Text style={styles.transactionMeta}>
-                  {formatMoney(transaction.amount, transaction.currency)} |{' '}
-                  {formatDateTime(transaction.createdAt)}
-                </Text>
-              </View>
-            ))}
-          </View>
-        ) : (
-          <Text style={styles.muted}>No transactions recorded yet.</Text>
-        )}
-      </View>
-
-      {order.notes ? (
+    <View style={styles.container}>
+      <FoodDoodleBackdrop />
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Notes</Text>
-          <Text style={styles.muted}>{order.notes}</Text>
+          <Text style={styles.cardTitle}>Order</Text>
+          <Text style={styles.line}>Order Number: {order.orderNumber}</Text>
+          <Text style={styles.muted}>Status: {normalizeStatus(order.status)}</Text>
+          <Text style={styles.muted}>Created: {formatDateTime(order.createdAt)}</Text>
+          <Text style={styles.muted}>Paid At: {formatDateTime(order.paidAt)}</Text>
+          <Text style={styles.muted}>Cancelled At: {formatDateTime(order.cancelledAt)}</Text>
         </View>
-      ) : null}
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Subscription</Text>
+          <Text style={styles.line}>Subscription No: {order.subscription.subscriptionNumber}</Text>
+          <Text style={styles.muted}>Student: {order.subscription.student.fullName}</Text>
+          <Text style={styles.muted}>Subscription ID: {order.subscriptionId}</Text>
+        </View>
 
-      <AppButton
-        title="Download Receipt (Coming Soon)"
-        onPress={() => undefined}
-        disabled
-        variant="secondary"
-      />
-    </ScrollView>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Amount Breakdown</Text>
+          <Text style={styles.muted}>Base Amount: {formatMoney(order.amount, order.currency)}</Text>
+          <Text style={styles.muted}>Tax: {formatMoney(order.taxAmount, order.currency)}</Text>
+          <Text style={styles.muted}>
+            Discount: {formatMoney(order.discountAmount, order.currency)}
+          </Text>
+          <Text style={styles.line}>
+            Final Amount: {formatMoney(order.finalAmount, order.currency)}
+          </Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Payment</Text>
+          <Text style={styles.muted}>Payment Method: {order.paymentMethod || '-'}</Text>
+          <Text style={styles.muted}>Payment Status: {normalizeStatus(order.status)}</Text>
+          <Text style={styles.muted}>Latest Transaction ID: {latestTransactionId}</Text>
+
+          {order.transactions.length > 0 ? (
+            <View style={styles.transactionsSection}>
+              <Text style={styles.transactionsTitle}>Transactions</Text>
+              {order.transactions.map(transaction => (
+                <View style={styles.transactionItem} key={transaction.id}>
+                  <Text style={styles.transactionLine}>
+                    ID: {transaction.gatewayTransactionId || transaction.transactionId}
+                  </Text>
+                  <Text style={styles.transactionMeta}>
+                    {transaction.paymentGateway.toUpperCase()} |{' '}
+                    {normalizeStatus(transaction.status)}
+                  </Text>
+                  <Text style={styles.transactionMeta}>
+                    {formatMoney(transaction.amount, transaction.currency)} |{' '}
+                    {formatDateTime(transaction.createdAt)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.muted}>No transactions recorded yet.</Text>
+          )}
+        </View>
+
+        {order.notes ? (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Notes</Text>
+            <Text style={styles.muted}>{order.notes}</Text>
+          </View>
+        ) : null}
+
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+        <AppButton
+          title="Download Receipt (Coming Soon)"
+          onPress={() => undefined}
+          disabled
+          variant="secondary"
+        />
+      </ScrollView>
+    </View>
   );
 };
 
@@ -197,7 +194,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     content: {
       paddingHorizontal: 16,
@@ -249,7 +246,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     },
     transactionItem: {
       borderRadius: 10,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
       borderWidth: 1,
       borderColor: colors.neutral.slate200,
       padding: 10,

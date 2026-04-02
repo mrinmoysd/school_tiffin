@@ -1,20 +1,11 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi, type Student } from '../../api/students';
-import { AppButton } from '../../components/ui';
+import { AppButton, AppLoader, FoodDoodleBackdrop } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -118,13 +109,14 @@ export const StudentsScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Loading students..." />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
+      <FoodDoodleBackdrop />
       <FlatList
         data={students}
         keyExtractor={item => item.id}
@@ -211,13 +203,13 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     centered: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     content: {
       paddingHorizontal: 16,

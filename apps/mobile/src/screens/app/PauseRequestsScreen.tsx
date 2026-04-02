@@ -1,21 +1,13 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import {
   subscriptionsApi,
   type PauseRequestListItem,
   type PauseRequestStatus,
 } from '../../api/subscriptions';
+import { AppLoader, FoodDoodleBackdrop } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -139,13 +131,14 @@ export const PauseRequestsScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Loading pause requests..." />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
+      <FoodDoodleBackdrop />
       <View style={styles.filtersRow}>
         {FILTER_OPTIONS.map(option => (
           <Pressable
@@ -231,14 +224,14 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
       padding: 16,
     },
     centered: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     filtersRow: {
       flexDirection: 'row',

@@ -1,23 +1,14 @@
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import {
   subscriptionsApi,
   type SubscriptionDetails,
   type SubscriptionScheduleDay,
 } from '../../api/subscriptions';
-import { AppButton, FormTextInput } from '../../components/ui';
+import { AppButton, AppLoader, FoodDoodleBackdrop, FormTextInput } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -260,7 +251,7 @@ export const PauseRequestScreen = ({ route, navigation }: Props) => {
   if (screenLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Loading pause details..." />
       </View>
     );
   }
@@ -277,105 +268,108 @@ export const PauseRequestScreen = ({ route, navigation }: Props) => {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.subtitle}>
-        Select a pause range within your subscription period. Past dates are disabled.
-      </Text>
-
-      <View style={styles.infoCard}>
-        <Text style={styles.infoLabel}>Subscription</Text>
-        <Text style={styles.infoValue}>{subscription.subscriptionNumber}</Text>
-        <Text style={styles.infoMuted}>Student: {subscription.student.fullName}</Text>
-        <Text style={styles.infoMuted}>
-          Current End Date: {formatDisplayDate(subscriptionEndDate)}
+    <View style={styles.container}>
+      <FoodDoodleBackdrop />
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.subtitle}>
+          Select a pause range within your subscription period. Past dates are disabled.
         </Text>
-      </View>
 
-      <View style={styles.fieldWrapper}>
-        <Text style={styles.fieldLabel}>Pause From</Text>
-        <Pressable style={styles.dateField} onPress={() => setPickerField('startDate')}>
-          <Text style={styles.dateFieldText}>{formatDisplayDate(startDate)}</Text>
-          <Text style={styles.dateFieldArrow}>v</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.fieldWrapper}>
-        <Text style={styles.fieldLabel}>Pause To</Text>
-        <Pressable style={styles.dateField} onPress={() => setPickerField('endDate')}>
-          <Text style={styles.dateFieldText}>{formatDisplayDate(endDate)}</Text>
-          <Text style={styles.dateFieldArrow}>v</Text>
-        </Pressable>
-      </View>
-
-      <FormTextInput
-        label="Reason (optional)"
-        value={reason}
-        onChangeText={setReason}
-        placeholder="Add reason for pause request"
-        multiline
-        numberOfLines={3}
-        style={styles.reasonInput}
-      />
-
-      {impact ? (
-        <View style={styles.previewCard}>
-          <Text style={styles.previewTitle}>Impact Preview</Text>
-          <Text style={styles.previewText}>Paused Days: {impact.affectedDays}</Text>
-          <Text style={styles.previewText}>
-            Current End Date: {formatDisplayDate(impact.currentEndDate)}
-          </Text>
-          <Text style={styles.previewText}>
-            New End Date: {formatDisplayDate(impact.newEndDate)}
+        <View style={styles.infoCard}>
+          <Text style={styles.infoLabel}>Subscription</Text>
+          <Text style={styles.infoValue}>{subscription.subscriptionNumber}</Text>
+          <Text style={styles.infoMuted}>Student: {subscription.student.fullName}</Text>
+          <Text style={styles.infoMuted}>
+            Current End Date: {formatDisplayDate(subscriptionEndDate)}
           </Text>
         </View>
-      ) : null}
 
-      {validationError ? <Text style={styles.errorText}>{validationError}</Text> : null}
-      {screenError ? <Text style={styles.errorText}>{screenError}</Text> : null}
+        <View style={styles.fieldWrapper}>
+          <Text style={styles.fieldLabel}>Pause From</Text>
+          <Pressable style={styles.dateField} onPress={() => setPickerField('startDate')}>
+            <Text style={styles.dateFieldText}>{formatDisplayDate(startDate)}</Text>
+            <Text style={styles.dateFieldArrow}>v</Text>
+          </Pressable>
+        </View>
 
-      <AppButton
-        title="Submit Request"
-        onPress={() => void handleSubmit()}
-        loading={submitLoading}
-      />
+        <View style={styles.fieldWrapper}>
+          <Text style={styles.fieldLabel}>Pause To</Text>
+          <Pressable style={styles.dateField} onPress={() => setPickerField('endDate')}>
+            <Text style={styles.dateFieldText}>{formatDisplayDate(endDate)}</Text>
+            <Text style={styles.dateFieldArrow}>v</Text>
+          </Pressable>
+        </View>
 
-      {pickerField ? (
-        <DateTimePicker
-          value={pickerField === 'startDate' ? startDate : endDate}
-          mode="date"
-          display={Platform.OS === 'android' ? 'calendar' : 'default'}
-          minimumDate={pickerField === 'startDate' ? today : endPickerMinimumDate}
-          maximumDate={subscriptionEndDate}
-          onChange={(event: DateTimePickerEvent, date?: Date) => {
-            if (Platform.OS === 'android') {
-              setPickerField(null);
-            }
-
-            if (event.type === 'dismissed' || !date) {
-              return;
-            }
-
-            const normalized = stripTime(date);
-
-            if (pickerField === 'startDate') {
-              setStartDate(normalized);
-              if (endDate <= normalized) {
-                const nextEnd = addDays(normalized, 1);
-                setEndDate(nextEnd <= subscriptionEndDate ? nextEnd : subscriptionEndDate);
-              }
-            } else {
-              setEndDate(normalized);
-            }
-
-            setValidationError(null);
-
-            if (Platform.OS === 'ios') {
-              setPickerField(null);
-            }
-          }}
+        <FormTextInput
+          label="Reason (optional)"
+          value={reason}
+          onChangeText={setReason}
+          placeholder="Add reason for pause request"
+          multiline
+          numberOfLines={3}
+          style={styles.reasonInput}
         />
-      ) : null}
-    </ScrollView>
+
+        {impact ? (
+          <View style={styles.previewCard}>
+            <Text style={styles.previewTitle}>Impact Preview</Text>
+            <Text style={styles.previewText}>Paused Days: {impact.affectedDays}</Text>
+            <Text style={styles.previewText}>
+              Current End Date: {formatDisplayDate(impact.currentEndDate)}
+            </Text>
+            <Text style={styles.previewText}>
+              New End Date: {formatDisplayDate(impact.newEndDate)}
+            </Text>
+          </View>
+        ) : null}
+
+        {validationError ? <Text style={styles.errorText}>{validationError}</Text> : null}
+        {screenError ? <Text style={styles.errorText}>{screenError}</Text> : null}
+
+        <AppButton
+          title="Submit Request"
+          onPress={() => void handleSubmit()}
+          loading={submitLoading}
+        />
+
+        {pickerField ? (
+          <DateTimePicker
+            value={pickerField === 'startDate' ? startDate : endDate}
+            mode="date"
+            display={Platform.OS === 'android' ? 'calendar' : 'default'}
+            minimumDate={pickerField === 'startDate' ? today : endPickerMinimumDate}
+            maximumDate={subscriptionEndDate}
+            onChange={(event: DateTimePickerEvent, date?: Date) => {
+              if (Platform.OS === 'android') {
+                setPickerField(null);
+              }
+
+              if (event.type === 'dismissed' || !date) {
+                return;
+              }
+
+              const normalized = stripTime(date);
+
+              if (pickerField === 'startDate') {
+                setStartDate(normalized);
+                if (endDate <= normalized) {
+                  const nextEnd = addDays(normalized, 1);
+                  setEndDate(nextEnd <= subscriptionEndDate ? nextEnd : subscriptionEndDate);
+                }
+              } else {
+                setEndDate(normalized);
+              }
+
+              setValidationError(null);
+
+              if (Platform.OS === 'ios') {
+                setPickerField(null);
+              }
+            }}
+          />
+        ) : null}
+      </ScrollView>
+    </View>
   );
 };
 
@@ -383,7 +377,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     content: {
       padding: 16,
@@ -394,7 +388,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: 20,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     subtitle: {
       marginBottom: 12,

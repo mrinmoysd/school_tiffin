@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import {
-  ActivityIndicator,
   Platform,
   Pressable,
   RefreshControl,
@@ -12,7 +11,7 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { AppButton } from '../../components/ui';
+import { AppButton, AppLoader, FoodDoodleBackdrop } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { studentsApi, type Student } from '../../api/students';
 import { ApiClientError } from '../../api/client/apiClient';
@@ -131,156 +130,159 @@ export const SelectStudentScreen = ({ navigation, route }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Loading students..." />
       </View>
     );
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      <Text style={styles.subtitle}>Choose who this subscription is for.</Text>
+    <View style={styles.container}>
+      <FoodDoodleBackdrop />
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        <Text style={styles.subtitle}>Choose who this subscription is for.</Text>
 
-      {error ? (
-        <View style={styles.errorCard}>
-          <Text style={styles.errorText}>{error}</Text>
-          <Pressable onPress={() => void loadStudents()}>
-            <Text style={styles.retryText}>Retry</Text>
-          </Pressable>
-        </View>
-      ) : null}
-
-      <View style={styles.studentsSection}>
-        {eligibleStudents.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>No students found for this school</Text>
-            <Text style={styles.emptySubtitle}>
-              Add a student enrolled in this school to continue.
-            </Text>
+        {error ? (
+          <View style={styles.errorCard}>
+            <Text style={styles.errorText}>{error}</Text>
+            <Pressable onPress={() => void loadStudents()}>
+              <Text style={styles.retryText}>Retry</Text>
+            </Pressable>
           </View>
-        ) : (
-          eligibleStudents.map(student => {
-            const selected = selectedStudentId === student.id;
+        ) : null}
 
-            return (
-              <Pressable
-                key={student.id}
-                style={[styles.studentCard, selected && styles.studentCardSelected]}
-                onPress={() => setSelectedStudentId(student.id)}
-              >
-                <View style={styles.studentRow}>
-                  <View style={[styles.radioOuter, selected && styles.radioOuterSelected]}>
-                    {selected ? <View style={styles.radioInner} /> : null}
+        <View style={styles.studentsSection}>
+          {eligibleStudents.length === 0 ? (
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyTitle}>No students found for this school</Text>
+              <Text style={styles.emptySubtitle}>
+                Add a student enrolled in this school to continue.
+              </Text>
+            </View>
+          ) : (
+            eligibleStudents.map(student => {
+              const selected = selectedStudentId === student.id;
+
+              return (
+                <Pressable
+                  key={student.id}
+                  style={[styles.studentCard, selected && styles.studentCardSelected]}
+                  onPress={() => setSelectedStudentId(student.id)}
+                >
+                  <View style={styles.studentRow}>
+                    <View style={[styles.radioOuter, selected && styles.radioOuterSelected]}>
+                      {selected ? <View style={styles.radioInner} /> : null}
+                    </View>
+
+                    <View style={styles.studentInfo}>
+                      <Text style={styles.studentName}>{student.fullName}</Text>
+                      <Text style={styles.studentMeta}>Grade: {formatGrade(student.grade)}</Text>
+                      <Text style={styles.studentMeta}>
+                        School: {student.school?.name ?? 'Not assigned'}
+                      </Text>
+
+                      <Pressable
+                        onPress={() =>
+                          navigation.navigate('AddStudent', {
+                            mealPlanId: route.params.mealPlanId,
+                            schoolId: route.params.schoolId,
+                            studentId: student.id,
+                          })
+                        }
+                      >
+                        <Text style={styles.editLink}>Edit</Text>
+                      </Pressable>
+                    </View>
                   </View>
-
-                  <View style={styles.studentInfo}>
-                    <Text style={styles.studentName}>{student.fullName}</Text>
-                    <Text style={styles.studentMeta}>Grade: {formatGrade(student.grade)}</Text>
-                    <Text style={styles.studentMeta}>
-                      School: {student.school?.name ?? 'Not assigned'}
-                    </Text>
-
-                    <Pressable
-                      onPress={() =>
-                        navigation.navigate('AddStudent', {
-                          mealPlanId: route.params.mealPlanId,
-                          schoolId: route.params.schoolId,
-                          studentId: student.id,
-                        })
-                      }
-                    >
-                      <Text style={styles.editLink}>Edit</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              </Pressable>
-            );
-          })
-        )}
-      </View>
-
-      <AppButton
-        title="Add New Student"
-        variant="secondary"
-        onPress={() =>
-          navigation.navigate('AddStudent', {
-            mealPlanId: route.params.mealPlanId,
-            schoolId: route.params.schoolId,
-          })
-        }
-      />
-
-      {selectedStudentId ? (
-        <View style={styles.dateWrapper}>
-          <Text style={styles.dateLabel}>Start Date</Text>
-          <Pressable style={styles.datePickerButton} onPress={() => setDatePickerVisible(true)}>
-            <Text style={styles.datePickerText}>
-              {selectedStartDate ? formatDisplayDate(selectedStartDate) : 'Select date'}
-            </Text>
-            <Text style={styles.datePickerArrow}>v</Text>
-          </Pressable>
-
-          {datePickerVisible ? (
-            <DateTimePicker
-              value={
-                selectedStartDate
-                  ? (() => {
-                      const [yearString, monthString, dayString] = selectedStartDate.split('-');
-                      return new Date(
-                        Number(yearString),
-                        Number(monthString) - 1,
-                        Number(dayString),
-                      );
-                    })()
-                  : tomorrow
-              }
-              mode="date"
-              display={Platform.OS === 'android' ? 'calendar' : 'default'}
-              minimumDate={tomorrow}
-              maximumDate={maxSelectableDate}
-              onChange={(event: DateTimePickerEvent, date?: Date) => {
-                if (Platform.OS === 'android') {
-                  setDatePickerVisible(false);
-                }
-
-                if (event.type === 'dismissed') {
-                  return;
-                }
-
-                if (date) {
-                  setSelectedStartDate(formatDateForInput(date));
-                }
-
-                if (Platform.OS === 'ios') {
-                  setDatePickerVisible(false);
-                }
-              }}
-            />
-          ) : null}
+                </Pressable>
+              );
+            })
+          )}
         </View>
-      ) : null}
 
-      <AppButton
-        title="Continue to Review"
-        onPress={() => {
-          if (!selectedStudentId || !selectedStartDate) {
-            return;
+        <AppButton
+          title="Add New Student"
+          variant="secondary"
+          onPress={() =>
+            navigation.navigate('AddStudent', {
+              mealPlanId: route.params.mealPlanId,
+              schoolId: route.params.schoolId,
+            })
           }
+        />
 
-          navigation.navigate('SubscriptionReview', {
-            mealPlanId: route.params.mealPlanId,
-            schoolId: route.params.schoolId,
-            studentId: selectedStudentId,
-            startDate: selectedStartDate,
-          });
-        }}
-        disabled={!selectedStudentId || !selectedStartDate}
-        style={styles.continueButton}
-      />
-    </ScrollView>
+        {selectedStudentId ? (
+          <View style={styles.dateWrapper}>
+            <Text style={styles.dateLabel}>Start Date</Text>
+            <Pressable style={styles.datePickerButton} onPress={() => setDatePickerVisible(true)}>
+              <Text style={styles.datePickerText}>
+                {selectedStartDate ? formatDisplayDate(selectedStartDate) : 'Select date'}
+              </Text>
+              <Text style={styles.datePickerArrow}>v</Text>
+            </Pressable>
+
+            {datePickerVisible ? (
+              <DateTimePicker
+                value={
+                  selectedStartDate
+                    ? (() => {
+                        const [yearString, monthString, dayString] = selectedStartDate.split('-');
+                        return new Date(
+                          Number(yearString),
+                          Number(monthString) - 1,
+                          Number(dayString),
+                        );
+                      })()
+                    : tomorrow
+                }
+                mode="date"
+                display={Platform.OS === 'android' ? 'calendar' : 'default'}
+                minimumDate={tomorrow}
+                maximumDate={maxSelectableDate}
+                onChange={(event: DateTimePickerEvent, date?: Date) => {
+                  if (Platform.OS === 'android') {
+                    setDatePickerVisible(false);
+                  }
+
+                  if (event.type === 'dismissed') {
+                    return;
+                  }
+
+                  if (date) {
+                    setSelectedStartDate(formatDateForInput(date));
+                  }
+
+                  if (Platform.OS === 'ios') {
+                    setDatePickerVisible(false);
+                  }
+                }}
+              />
+            ) : null}
+          </View>
+        ) : null}
+
+        <AppButton
+          title="Continue to Review"
+          onPress={() => {
+            if (!selectedStudentId || !selectedStartDate) {
+              return;
+            }
+
+            navigation.navigate('SubscriptionReview', {
+              mealPlanId: route.params.mealPlanId,
+              schoolId: route.params.schoolId,
+              studentId: selectedStudentId,
+              startDate: selectedStartDate,
+            });
+          }}
+          disabled={!selectedStudentId || !selectedStartDate}
+          style={styles.continueButton}
+        />
+      </ScrollView>
+    </View>
   );
 };
 
@@ -288,7 +290,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     content: {
       padding: 16,
@@ -298,7 +300,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     subtitle: {
       color: colors.text.secondary,

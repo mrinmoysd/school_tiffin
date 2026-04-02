@@ -1,7 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
@@ -16,6 +15,7 @@ import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi, type Student } from '../../api/students';
 import { subscriptionsApi, type Subscription } from '../../api/subscriptions';
 import { usersApi } from '../../api/users';
+import { AppLoader, FoodDoodleBackdrop } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppSelector } from '../../store/hooks';
 import { useAppTheme } from '../../theme';
@@ -220,13 +220,14 @@ export const HomeScreen = ({ navigation }: Props) => {
   if (initialLoading) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Loading home menu..." />
       </View>
     );
   }
 
   return (
     <View style={styles.screen}>
+      <FoodDoodleBackdrop />
       <ScrollView
         style={styles.container}
         contentContainerStyle={[
@@ -406,11 +407,11 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     screen: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     contentContainer: {
       padding: 16,
@@ -420,7 +421,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     headerCard: {
       paddingHorizontal: 4,

@@ -1,17 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ApiClientError } from '../../api/client/apiClient';
 import { subscriptionsApi, type SubscriptionDetails } from '../../api/subscriptions';
-import { AppButton } from '../../components/ui';
+import { AppButton, AppLoader, FoodDoodleBackdrop } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -126,7 +118,7 @@ export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Loading subscription..." />
       </View>
     );
   }
@@ -141,83 +133,87 @@ export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Plan</Text>
-        <Text style={styles.line}>{subscription.mealPlan.name}</Text>
-        <Text style={styles.muted}>
-          {subscription.mealPlan.description || 'No plan description available.'}
-        </Text>
-      </View>
+    <View style={styles.container}>
+      <FoodDoodleBackdrop />
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Plan</Text>
+          <Text style={styles.line}>{subscription.mealPlan.name}</Text>
+          <Text style={styles.muted}>
+            {subscription.mealPlan.description || 'No plan description available.'}
+          </Text>
+        </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Student</Text>
-        <Text style={styles.line}>{subscription.student.fullName}</Text>
-        <Text style={styles.muted}>Grade: {subscription.student.grade ?? '-'}</Text>
-        <Text style={styles.muted}>School: {subscription.student.school.name}</Text>
-        <Text style={styles.muted}>
-          {subscription.student.school.city || '-'} {subscription.student.school.address || ''}
-        </Text>
-      </View>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Student</Text>
+          <Text style={styles.line}>{subscription.student.fullName}</Text>
+          <Text style={styles.muted}>Grade: {subscription.student.grade ?? '-'}</Text>
+          <Text style={styles.muted}>School: {subscription.student.school.name}</Text>
+          <Text style={styles.muted}>
+            {subscription.student.school.city || '-'} {subscription.student.school.address || ''}
+          </Text>
+        </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Subscription</Text>
-        <Text style={styles.muted}>Subscription No: {subscription.subscriptionNumber}</Text>
-        <Text style={styles.muted}>Status: {subscription.status}</Text>
-        <Text style={styles.muted}>Start: {formatDate(subscription.startDate)}</Text>
-        <Text style={styles.muted}>End: {formatDate(subscription.endDate)}</Text>
-        <Text style={styles.muted}>
-          Deliveries: {subscription.totalDays - subscription.remainingDays}/{subscription.totalDays}
-        </Text>
-        <Text style={styles.muted}>Remaining Days: {subscription.remainingDays}</Text>
-        <Text style={styles.line}>
-          Amount Paid: {formatMoney(subscription.totalPrice, subscription.currency)}
-        </Text>
-      </View>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Subscription</Text>
+          <Text style={styles.muted}>Subscription No: {subscription.subscriptionNumber}</Text>
+          <Text style={styles.muted}>Status: {subscription.status}</Text>
+          <Text style={styles.muted}>Start: {formatDate(subscription.startDate)}</Text>
+          <Text style={styles.muted}>End: {formatDate(subscription.endDate)}</Text>
+          <Text style={styles.muted}>
+            Deliveries: {subscription.totalDays - subscription.remainingDays}/
+            {subscription.totalDays}
+          </Text>
+          <Text style={styles.muted}>Remaining Days: {subscription.remainingDays}</Text>
+          <Text style={styles.line}>
+            Amount Paid: {formatMoney(subscription.totalPrice, subscription.currency)}
+          </Text>
+        </View>
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      {showPayNowButton ? (
+        {showPayNowButton ? (
+          <AppButton
+            title="Pay Now"
+            onPress={() =>
+              navigation.navigate('Payment', {
+                subscriptionId: subscription.id,
+                amount: subscription.totalPrice,
+                currency: subscription.currency,
+              })
+            }
+            style={styles.payNowButton}
+          />
+        ) : null}
+
         <AppButton
-          title="Pay Now"
+          title="View Delivery Schedule"
           onPress={() =>
-            navigation.navigate('Payment', {
+            navigation.navigate('DeliverySchedule', {
               subscriptionId: subscription.id,
-              amount: subscription.totalPrice,
-              currency: subscription.currency,
             })
           }
-          style={styles.payNowButton}
         />
-      ) : null}
-
-      <AppButton
-        title="View Delivery Schedule"
-        onPress={() =>
-          navigation.navigate('DeliverySchedule', {
-            subscriptionId: subscription.id,
-          })
-        }
-      />
-      <AppButton
-        title="Pause Subscription"
-        onPress={() => navigation.navigate('PauseRequest', { subscriptionId: subscription.id })}
-        variant="secondary"
-        style={styles.secondaryButton}
-      />
-      {showCancelButton ? (
         <AppButton
-          title="Cancel Subscription"
-          onPress={handleCancel}
-          loading={cancelling}
-          style={styles.cancelButton}
+          title="Pause Subscription"
+          onPress={() => navigation.navigate('PauseRequest', { subscriptionId: subscription.id })}
+          variant="secondary"
+          style={styles.secondaryButton}
         />
-      ) : null}
-    </ScrollView>
+        {showCancelButton ? (
+          <AppButton
+            title="Cancel Subscription"
+            onPress={handleCancel}
+            loading={cancelling}
+            style={styles.cancelButton}
+          />
+        ) : null}
+      </ScrollView>
+    </View>
   );
 };
 
@@ -225,7 +221,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     content: {
       paddingHorizontal: 16,

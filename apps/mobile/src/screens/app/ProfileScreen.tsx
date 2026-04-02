@@ -1,20 +1,11 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi } from '../../api/students';
 import { usersApi, type UserProfile } from '../../api/users';
-import { AppButton } from '../../components/ui';
+import { AppButton, AppLoader, FoodDoodleBackdrop } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { logout } from '../../store/auth';
 import { useAppDispatch } from '../../store/hooks';
@@ -135,7 +126,7 @@ export const ProfileScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Loading profile..." />
       </View>
     );
   }
@@ -150,94 +141,100 @@ export const ProfileScreen = ({ navigation }: Props) => {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>User Information</Text>
-        <Text style={styles.line}>Name: {profile.fullName || '-'}</Text>
-        <Text style={styles.muted}>Email: {profile.email || '-'}</Text>
-        <Text style={styles.muted}>Phone: {getDisplayPhone(profile)}</Text>
-        <Text style={styles.muted}>Member Since: {formatDate(profile.createdAt)}</Text>
-      </View>
+    <View style={styles.container}>
+      <FoodDoodleBackdrop />
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>User Information</Text>
+          <Text style={styles.line}>Name: {profile.fullName || '-'}</Text>
+          <Text style={styles.muted}>Email: {profile.email || '-'}</Text>
+          <Text style={styles.muted}>Phone: {getDisplayPhone(profile)}</Text>
+          <Text style={styles.muted}>Member Since: {formatDate(profile.createdAt)}</Text>
+        </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Verification</Text>
-        <View style={styles.badgesRow}>
-          <View
-            style={[styles.badge, verification.email ? styles.badgeSuccess : styles.badgeMuted]}
-          >
-            <Text style={styles.badgeText}>
-              Email {verification.email ? 'Verified' : 'Not Verified'}
-            </Text>
-          </View>
-          <View
-            style={[styles.badge, verification.phone ? styles.badgeSuccess : styles.badgeMuted]}
-          >
-            <Text style={styles.badgeText}>
-              Phone {verification.phone ? 'Verified' : 'Not Verified'}
-            </Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Verification</Text>
+          <View style={styles.badgesRow}>
+            <View
+              style={[styles.badge, verification.email ? styles.badgeSuccess : styles.badgeMuted]}
+            >
+              <Text style={styles.badgeText}>
+                Email {verification.email ? 'Verified' : 'Not Verified'}
+              </Text>
+            </View>
+            <View
+              style={[styles.badge, verification.phone ? styles.badgeSuccess : styles.badgeMuted]}
+            >
+              <Text style={styles.badgeText}>
+                Phone {verification.phone ? 'Verified' : 'Not Verified'}
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>My Students</Text>
-        <Text style={styles.line}>Total Students: {studentsCount}</Text>
-      </View>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>My Students</Text>
+          <Text style={styles.line}>Total Students: {studentsCount}</Text>
+        </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Theme</Text>
-        <View style={styles.themeOptionsRow}>
-          {themeOptions.map(option => (
-            <Pressable
-              key={option.key}
-              onPress={() => setPreference(option.key)}
-              style={[styles.themeOption, preference === option.key && styles.themeOptionSelected]}
-            >
-              <Text
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Theme</Text>
+          <View style={styles.themeOptionsRow}>
+            {themeOptions.map(option => (
+              <Pressable
+                key={option.key}
+                onPress={() => setPreference(option.key)}
                 style={[
-                  styles.themeOptionText,
-                  preference === option.key && styles.themeOptionTextSelected,
+                  styles.themeOption,
+                  preference === option.key && styles.themeOptionSelected,
                 ]}
               >
-                {option.label}
-              </Text>
-            </Pressable>
-          ))}
+                <Text
+                  style={[
+                    styles.themeOptionText,
+                    preference === option.key && styles.themeOptionTextSelected,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
-      </View>
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      <AppButton title="Edit Profile" onPress={() => navigation.navigate('EditProfile')} />
-      <AppButton
-        title="Change Password"
-        onPress={() => navigation.navigate('ChangePassword')}
-        variant="secondary"
-        style={styles.secondaryButton}
-      />
-      <AppButton
-        title="Manage Students"
-        onPress={() => navigation.navigate('Students')}
-        variant="secondary"
-        style={styles.secondaryButton}
-      />
-      <AppButton
-        title="Notifications"
-        onPress={() => navigation.navigate('Notifications')}
-        variant="secondary"
-        style={styles.secondaryButton}
-      />
-      <AppButton
-        title="Logout"
-        onPress={handleLogout}
-        loading={logoutLoading}
-        style={styles.logoutButton}
-      />
-    </ScrollView>
+        <AppButton title="Edit Profile" onPress={() => navigation.navigate('EditProfile')} />
+        <AppButton
+          title="Change Password"
+          onPress={() => navigation.navigate('ChangePassword')}
+          variant="secondary"
+          style={styles.secondaryButton}
+        />
+        <AppButton
+          title="Manage Students"
+          onPress={() => navigation.navigate('Students')}
+          variant="secondary"
+          style={styles.secondaryButton}
+        />
+        <AppButton
+          title="Notifications"
+          onPress={() => navigation.navigate('Notifications')}
+          variant="secondary"
+          style={styles.secondaryButton}
+        />
+        <AppButton
+          title="Logout"
+          onPress={handleLogout}
+          loading={logoutLoading}
+          style={styles.logoutButton}
+        />
+      </ScrollView>
+    </View>
   );
 };
 
@@ -245,7 +242,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     content: {
       paddingHorizontal: 16,
@@ -257,7 +254,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: 20,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     card: {
       borderRadius: 12,
@@ -314,7 +311,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       borderRadius: 999,
       borderWidth: 1,
       borderColor: colors.neutral.slate300,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
       paddingHorizontal: 12,
       paddingVertical: 8,
       marginRight: 8,

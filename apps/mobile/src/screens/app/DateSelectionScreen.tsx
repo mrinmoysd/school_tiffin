@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppButton } from '../../components/ui';
+import { AppButton, FoodDoodleBackdrop } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -44,56 +44,59 @@ export const DateSelectionScreen = ({ route, navigation }: Props) => {
   const [pickerVisible, setPickerVisible] = useState(false);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.subtitle}>Choose a date from tomorrow up to the next 3 months.</Text>
+    <View style={styles.container}>
+      <FoodDoodleBackdrop />
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.subtitle}>Choose a date from tomorrow up to the next 3 months.</Text>
 
-      <View style={styles.fieldWrapper}>
-        <Text style={styles.fieldLabel}>Start Date</Text>
-        <Pressable style={styles.dropdown} onPress={() => setPickerVisible(true)}>
-          <Text style={styles.dropdownText}>{formatDisplayDate(selectedDate)}</Text>
-          <Text style={styles.dropdownArrow}>v</Text>
-        </Pressable>
-      </View>
+        <View style={styles.fieldWrapper}>
+          <Text style={styles.fieldLabel}>Start Date</Text>
+          <Pressable style={styles.dropdown} onPress={() => setPickerVisible(true)}>
+            <Text style={styles.dropdownText}>{formatDisplayDate(selectedDate)}</Text>
+            <Text style={styles.dropdownArrow}>v</Text>
+          </Pressable>
+        </View>
 
-      {pickerVisible ? (
-        <DateTimePicker
-          value={selectedDate}
-          mode="date"
-          display={Platform.OS === 'android' ? 'calendar' : 'default'}
-          minimumDate={tomorrow}
-          maximumDate={maxSelectableDate}
-          onChange={(event: DateTimePickerEvent, date?: Date) => {
-            if (Platform.OS === 'android') {
-              setPickerVisible(false);
-            }
+        {pickerVisible ? (
+          <DateTimePicker
+            value={selectedDate}
+            mode="date"
+            display={Platform.OS === 'android' ? 'calendar' : 'default'}
+            minimumDate={tomorrow}
+            maximumDate={maxSelectableDate}
+            onChange={(event: DateTimePickerEvent, date?: Date) => {
+              if (Platform.OS === 'android') {
+                setPickerVisible(false);
+              }
 
-            if (event.type === 'dismissed') {
-              return;
-            }
+              if (event.type === 'dismissed') {
+                return;
+              }
 
-            if (date) {
-              setSelectedDate(date);
-            }
+              if (date) {
+                setSelectedDate(date);
+              }
 
-            if (Platform.OS === 'ios') {
-              setPickerVisible(false);
-            }
-          }}
+              if (Platform.OS === 'ios') {
+                setPickerVisible(false);
+              }
+            }}
+          />
+        ) : null}
+
+        <AppButton
+          title="Continue to Review"
+          onPress={() =>
+            navigation.navigate('SubscriptionReview', {
+              mealPlanId: route.params.mealPlanId,
+              schoolId: route.params.schoolId,
+              studentId: route.params.studentId,
+              startDate: formatDateForInput(selectedDate),
+            })
+          }
         />
-      ) : null}
-
-      <AppButton
-        title="Continue to Review"
-        onPress={() =>
-          navigation.navigate('SubscriptionReview', {
-            mealPlanId: route.params.mealPlanId,
-            schoolId: route.params.schoolId,
-            studentId: route.params.studentId,
-            startDate: formatDateForInput(selectedDate),
-          })
-        }
-      />
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
@@ -101,7 +104,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     content: {
       padding: 16,

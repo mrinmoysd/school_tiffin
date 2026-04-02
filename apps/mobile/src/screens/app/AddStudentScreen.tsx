@@ -2,20 +2,11 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import {
-  ActivityIndicator,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import { schoolsApi, type School } from '../../api/schools';
 import { studentsApi } from '../../api/students';
-import { AppButton, FormTextInput } from '../../components/ui';
+import { AppButton, AppLoader, FoodDoodleBackdrop, FormTextInput } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -207,238 +198,241 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
   if (screenLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Loading student form..." />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.subtitle}>Enter student details to continue.</Text>
+    <View style={styles.container}>
+      <FoodDoodleBackdrop />
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.subtitle}>Enter student details to continue.</Text>
 
-      <Controller
-        control={control}
-        name="fullName"
-        rules={{
-          required: 'Full name is required',
-          minLength: {
-            value: 2,
-            message: 'Full name must be at least 2 characters',
-          },
-        }}
-        render={({ field: { value, onChange, onBlur }, fieldState: { error: fieldError } }) => (
-          <FormTextInput
-            label="Full Name"
-            value={value}
-            onChangeText={onChange}
-            onBlur={onBlur}
-            error={fieldError?.message}
-          />
-        )}
-      />
+        <Controller
+          control={control}
+          name="fullName"
+          rules={{
+            required: 'Full name is required',
+            minLength: {
+              value: 2,
+              message: 'Full name must be at least 2 characters',
+            },
+          }}
+          render={({ field: { value, onChange, onBlur }, fieldState: { error: fieldError } }) => (
+            <FormTextInput
+              label="Full Name"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={fieldError?.message}
+            />
+          )}
+        />
 
-      <Controller
-        control={control}
-        name="dateOfBirth"
-        rules={{
-          required: 'Date of birth is required',
-          validate: value => isValidDateString(value.trim()) || 'Enter date in YYYY-MM-DD format',
-        }}
-        render={({ field: { value, onChange, onBlur }, fieldState: { error: fieldError } }) => {
-          const selectedDate = parseInputDate(value);
+        <Controller
+          control={control}
+          name="dateOfBirth"
+          rules={{
+            required: 'Date of birth is required',
+            validate: value => isValidDateString(value.trim()) || 'Enter date in YYYY-MM-DD format',
+          }}
+          render={({ field: { value, onChange, onBlur }, fieldState: { error: fieldError } }) => {
+            const selectedDate = parseInputDate(value);
 
-          return (
+            return (
+              <View style={styles.fieldWrapper}>
+                <Text style={styles.fieldLabel}>Date of Birth</Text>
+                <Pressable
+                  style={styles.dropdown}
+                  onPress={() => {
+                    setDobDraftDate(selectedDate ?? new Date());
+                    setDobPickerVisible(true);
+                  }}
+                >
+                  <Text style={styles.dropdownText}>
+                    {selectedDate ? formatDateForInput(selectedDate) : 'Select date'}
+                  </Text>
+                  <Text style={styles.dropdownArrow}>v</Text>
+                </Pressable>
+                {fieldError ? <Text style={styles.fieldError}>{fieldError.message}</Text> : null}
+
+                {dobPickerVisible ? (
+                  <DateTimePicker
+                    value={dobDraftDate}
+                    mode="date"
+                    display={Platform.OS === 'android' ? 'calendar' : 'default'}
+                    maximumDate={new Date()}
+                    onChange={(event: DateTimePickerEvent, date?: Date) => {
+                      if (Platform.OS === 'android') {
+                        setDobPickerVisible(false);
+                      }
+
+                      if (event.type === 'dismissed') {
+                        return;
+                      }
+
+                      if (date) {
+                        setDobDraftDate(date);
+                        onChange(formatDateForInput(date));
+                        onBlur();
+                      }
+
+                      if (Platform.OS === 'ios') {
+                        setDobPickerVisible(false);
+                      }
+                    }}
+                  />
+                ) : null}
+              </View>
+            );
+          }}
+        />
+
+        <Controller
+          control={control}
+          name="grade"
+          rules={{
+            required: 'Grade is required',
+          }}
+          render={({ field: { value, onChange }, fieldState: { error: fieldError } }) => (
             <View style={styles.fieldWrapper}>
-              <Text style={styles.fieldLabel}>Date of Birth</Text>
-              <Pressable
-                style={styles.dropdown}
-                onPress={() => {
-                  setDobDraftDate(selectedDate ?? new Date());
-                  setDobPickerVisible(true);
-                }}
-              >
-                <Text style={styles.dropdownText}>
-                  {selectedDate ? formatDateForInput(selectedDate) : 'Select date'}
-                </Text>
+              <Text style={styles.fieldLabel}>Grade</Text>
+              <Pressable style={styles.dropdown} onPress={() => setGradeModalVisible(true)}>
+                <Text style={styles.dropdownText}>{value || 'Select grade'}</Text>
                 <Text style={styles.dropdownArrow}>v</Text>
               </Pressable>
               {fieldError ? <Text style={styles.fieldError}>{fieldError.message}</Text> : null}
 
-              {dobPickerVisible ? (
-                <DateTimePicker
-                  value={dobDraftDate}
-                  mode="date"
-                  display={Platform.OS === 'android' ? 'calendar' : 'default'}
-                  maximumDate={new Date()}
-                  onChange={(event: DateTimePickerEvent, date?: Date) => {
-                    if (Platform.OS === 'android') {
-                      setDobPickerVisible(false);
-                    }
-
-                    if (event.type === 'dismissed') {
-                      return;
-                    }
-
-                    if (date) {
-                      setDobDraftDate(date);
-                      onChange(formatDateForInput(date));
-                      onBlur();
-                    }
-
-                    if (Platform.OS === 'ios') {
-                      setDobPickerVisible(false);
-                    }
-                  }}
-                />
-              ) : null}
+              <Modal
+                visible={gradeModalVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setGradeModalVisible(false)}
+              >
+                <Pressable style={styles.modalOverlay} onPress={() => setGradeModalVisible(false)}>
+                  <Pressable
+                    style={[styles.modalCard, styles.modalCardTall]}
+                    onPress={() => undefined}
+                  >
+                    <Text style={styles.modalTitle}>Select Grade</Text>
+                    <ScrollView
+                      style={styles.modalOptionsList}
+                      contentContainerStyle={styles.modalOptionsListContent}
+                      showsVerticalScrollIndicator
+                    >
+                      {GRADE_OPTIONS.map(option => (
+                        <Pressable
+                          key={option}
+                          style={styles.modalOption}
+                          onPress={() => {
+                            onChange(option);
+                            setGradeModalVisible(false);
+                          }}
+                        >
+                          <Text style={styles.modalOptionText}>{option}</Text>
+                        </Pressable>
+                      ))}
+                    </ScrollView>
+                  </Pressable>
+                </Pressable>
+              </Modal>
             </View>
-          );
-        }}
-      />
+          )}
+        />
 
-      <Controller
-        control={control}
-        name="grade"
-        rules={{
-          required: 'Grade is required',
-        }}
-        render={({ field: { value, onChange }, fieldState: { error: fieldError } }) => (
-          <View style={styles.fieldWrapper}>
-            <Text style={styles.fieldLabel}>Grade</Text>
-            <Pressable style={styles.dropdown} onPress={() => setGradeModalVisible(true)}>
-              <Text style={styles.dropdownText}>{value || 'Select grade'}</Text>
-              <Text style={styles.dropdownArrow}>v</Text>
-            </Pressable>
-            {fieldError ? <Text style={styles.fieldError}>{fieldError.message}</Text> : null}
-
-            <Modal
-              visible={gradeModalVisible}
-              transparent
-              animationType="fade"
-              onRequestClose={() => setGradeModalVisible(false)}
-            >
-              <Pressable style={styles.modalOverlay} onPress={() => setGradeModalVisible(false)}>
-                <Pressable
-                  style={[styles.modalCard, styles.modalCardTall]}
-                  onPress={() => undefined}
-                >
-                  <Text style={styles.modalTitle}>Select Grade</Text>
-                  <ScrollView
-                    style={styles.modalOptionsList}
-                    contentContainerStyle={styles.modalOptionsListContent}
-                    showsVerticalScrollIndicator
-                  >
-                    {GRADE_OPTIONS.map(option => (
-                      <Pressable
-                        key={option}
-                        style={styles.modalOption}
-                        onPress={() => {
-                          onChange(option);
-                          setGradeModalVisible(false);
-                        }}
-                      >
-                        <Text style={styles.modalOptionText}>{option}</Text>
-                      </Pressable>
-                    ))}
-                  </ScrollView>
-                </Pressable>
+        <Controller
+          control={control}
+          name="schoolId"
+          rules={{
+            required: 'School selection is required',
+          }}
+          render={({ field: { value, onChange }, fieldState: { error: fieldError } }) => (
+            <View style={styles.fieldWrapper}>
+              <Text style={styles.fieldLabel}>School</Text>
+              <Pressable style={styles.dropdown} onPress={() => setSchoolModalVisible(true)}>
+                <Text style={styles.dropdownText}>{selectedSchoolName || 'Select school'}</Text>
+                <Text style={styles.dropdownArrow}>v</Text>
               </Pressable>
-            </Modal>
-          </View>
-        )}
-      />
+              {fieldError ? <Text style={styles.fieldError}>{fieldError.message}</Text> : null}
 
-      <Controller
-        control={control}
-        name="schoolId"
-        rules={{
-          required: 'School selection is required',
-        }}
-        render={({ field: { value, onChange }, fieldState: { error: fieldError } }) => (
-          <View style={styles.fieldWrapper}>
-            <Text style={styles.fieldLabel}>School</Text>
-            <Pressable style={styles.dropdown} onPress={() => setSchoolModalVisible(true)}>
-              <Text style={styles.dropdownText}>{selectedSchoolName || 'Select school'}</Text>
-              <Text style={styles.dropdownArrow}>v</Text>
-            </Pressable>
-            {fieldError ? <Text style={styles.fieldError}>{fieldError.message}</Text> : null}
-
-            <Modal
-              visible={schoolModalVisible}
-              transparent
-              animationType="fade"
-              onRequestClose={() => setSchoolModalVisible(false)}
-            >
-              <Pressable style={styles.modalOverlay} onPress={() => setSchoolModalVisible(false)}>
-                <Pressable style={styles.modalCard} onPress={() => undefined}>
-                  <Text style={styles.modalTitle}>Select School</Text>
-                  <ScrollView
-                    style={styles.modalOptionsList}
-                    contentContainerStyle={styles.modalOptionsListContent}
-                    showsVerticalScrollIndicator
-                  >
-                    {schools.map(school => (
-                      <Pressable
-                        key={school.id}
-                        style={styles.modalOption}
-                        onPress={() => {
-                          onChange(school.id);
-                          setSchoolModalVisible(false);
-                        }}
-                      >
-                        <Text style={styles.modalOptionText}>{school.name}</Text>
-                      </Pressable>
-                    ))}
-                  </ScrollView>
+              <Modal
+                visible={schoolModalVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setSchoolModalVisible(false)}
+              >
+                <Pressable style={styles.modalOverlay} onPress={() => setSchoolModalVisible(false)}>
+                  <Pressable style={styles.modalCard} onPress={() => undefined}>
+                    <Text style={styles.modalTitle}>Select School</Text>
+                    <ScrollView
+                      style={styles.modalOptionsList}
+                      contentContainerStyle={styles.modalOptionsListContent}
+                      showsVerticalScrollIndicator
+                    >
+                      {schools.map(school => (
+                        <Pressable
+                          key={school.id}
+                          style={styles.modalOption}
+                          onPress={() => {
+                            onChange(school.id);
+                            setSchoolModalVisible(false);
+                          }}
+                        >
+                          <Text style={styles.modalOptionText}>{school.name}</Text>
+                        </Pressable>
+                      ))}
+                    </ScrollView>
+                  </Pressable>
                 </Pressable>
-              </Pressable>
-            </Modal>
-          </View>
-        )}
-      />
+              </Modal>
+            </View>
+          )}
+        />
 
-      <Controller
-        control={control}
-        name="allergies"
-        render={({ field: { value, onChange, onBlur } }) => (
-          <FormTextInput
-            label="Allergies (optional)"
-            value={value}
-            onChangeText={onChange}
-            onBlur={onBlur}
-            placeholder="e.g. peanuts"
-            multiline
-            numberOfLines={3}
-            style={styles.multilineInput}
-          />
-        )}
-      />
+        <Controller
+          control={control}
+          name="allergies"
+          render={({ field: { value, onChange, onBlur } }) => (
+            <FormTextInput
+              label="Allergies (optional)"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              placeholder="e.g. peanuts"
+              multiline
+              numberOfLines={3}
+              style={styles.multilineInput}
+            />
+          )}
+        />
 
-      <Controller
-        control={control}
-        name="dietaryPreferences"
-        render={({ field: { value, onChange, onBlur } }) => (
-          <FormTextInput
-            label="Dietary Preferences (optional)"
-            value={value}
-            onChangeText={onChange}
-            onBlur={onBlur}
-            placeholder="e.g. vegetarian"
-            multiline
-            numberOfLines={3}
-            style={styles.multilineInput}
-          />
-        )}
-      />
+        <Controller
+          control={control}
+          name="dietaryPreferences"
+          render={({ field: { value, onChange, onBlur } }) => (
+            <FormTextInput
+              label="Dietary Preferences (optional)"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              placeholder="e.g. vegetarian"
+              multiline
+              numberOfLines={3}
+              style={styles.multilineInput}
+            />
+          )}
+        />
 
-      {error ? <Text style={styles.submitError}>{error}</Text> : null}
+        {error ? <Text style={styles.submitError}>{error}</Text> : null}
 
-      <AppButton
-        title={isEditMode ? 'Update Student' : 'Create Student'}
-        onPress={handleSubmit(onSubmit)}
-        loading={submitLoading}
-      />
-    </ScrollView>
+        <AppButton
+          title={isEditMode ? 'Update Student' : 'Create Student'}
+          onPress={handleSubmit(onSubmit)}
+          loading={submitLoading}
+        />
+      </ScrollView>
+    </View>
   );
 };
 
@@ -446,7 +440,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     content: {
       padding: 16,
@@ -456,7 +450,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     subtitle: {
       marginBottom: 12,
@@ -536,7 +530,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     modalOption: {
       minHeight: 42,
       borderRadius: 10,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
       justifyContent: 'center',
       paddingHorizontal: 12,
       marginBottom: 8,

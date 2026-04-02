@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { linking } from './linking';
@@ -37,6 +37,7 @@ import {
 } from '../screens/auth';
 import { useAppSelector } from '../store/hooks';
 import { useAppTheme } from '../theme';
+import { AppLoader } from '../components/ui';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -74,7 +75,7 @@ export const AppNavigator = () => {
   if (bootstrapLoading) {
     return (
       <View style={[styles.loaderContainer, { backgroundColor: colors.neutral.slate50 }]}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Setting up your tiffin app..." />
       </View>
     );
   }

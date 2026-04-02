@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppButton } from '../../components/ui';
+import { AppButton, AppLoader, FoodDoodleBackdrop } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { studentsApi, type Student } from '../../api/students';
 import { mealPlansApi, type MealPlanDetails } from '../../api/meal-plans';
@@ -171,7 +171,7 @@ export const SubscriptionReviewScreen = ({ route, navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Preparing subscription review..." />
       </View>
     );
   }
@@ -185,31 +185,34 @@ export const SubscriptionReviewScreen = ({ route, navigation }: Props) => {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.summaryCard}>
-        <Text style={styles.summaryLine}>Student: {student.fullName}</Text>
-        <Text style={styles.summaryLine}>Meal Plan: {mealPlan.name}</Text>
-        <Text style={styles.summaryLine}>Start Date: {formatDate(startDate)}</Text>
-        <Text style={styles.summaryLine}>
-          End Date: {endDate ? formatDate(endDate) : 'Calculating...'}
-        </Text>
-        <Text style={styles.summaryLine}>Total Days: {mealPlan.durationDays}</Text>
-        <Text style={styles.summaryLine}>
-          Price/day: {mealPlan.currency} {mealPlan.pricePerDay}
-        </Text>
-        <Text style={styles.summaryTotal}>
-          Total: {mealPlan.currency} {mealPlan.totalPrice}
-        </Text>
-      </View>
+    <View style={styles.container}>
+      <FoodDoodleBackdrop />
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryLine}>Student: {student.fullName}</Text>
+          <Text style={styles.summaryLine}>Meal Plan: {mealPlan.name}</Text>
+          <Text style={styles.summaryLine}>Start Date: {formatDate(startDate)}</Text>
+          <Text style={styles.summaryLine}>
+            End Date: {endDate ? formatDate(endDate) : 'Calculating...'}
+          </Text>
+          <Text style={styles.summaryLine}>Total Days: {mealPlan.durationDays}</Text>
+          <Text style={styles.summaryLine}>
+            Price/day: {mealPlan.currency} {mealPlan.pricePerDay}
+          </Text>
+          <Text style={styles.summaryTotal}>
+            Total: {mealPlan.currency} {mealPlan.totalPrice}
+          </Text>
+        </View>
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      <AppButton
-        title="Proceed to Payment"
-        onPress={() => void onProceedToPayment()}
-        loading={submitting}
-      />
-    </ScrollView>
+        <AppButton
+          title="Proceed to Payment"
+          onPress={() => void onProceedToPayment()}
+          loading={submitting}
+        />
+      </ScrollView>
+    </View>
   );
 };
 
@@ -217,7 +220,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     content: {
       padding: 16,
@@ -227,7 +230,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
       paddingHorizontal: 24,
     },
     summaryCard: {

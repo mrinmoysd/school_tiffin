@@ -1,17 +1,9 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Modal,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { FlatList, Modal, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import { ordersApi, type OrderListItem, type OrderStatus } from '../../api/orders';
+import { AppLoader, FoodDoodleBackdrop } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -132,13 +124,14 @@ export const OrdersScreen = ({ navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Loading orders..." />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
+      <FoodDoodleBackdrop />
       <Pressable style={styles.filterButton} onPress={() => setFilterModalVisible(true)}>
         <Text style={styles.filterButtonLabel}>Status: {selectedFilterLabel}</Text>
         <Text style={styles.filterButtonArrow}>v</Text>
@@ -226,14 +219,14 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
       padding: 16,
     },
     centered: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     filterButton: {
       minHeight: 46,
@@ -370,7 +363,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     modalOption: {
       minHeight: 42,
       borderRadius: 10,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
       justifyContent: 'center',
       paddingHorizontal: 12,
       marginBottom: 8,

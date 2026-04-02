@@ -1,18 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { ApiClientError } from '../../api/client/apiClient';
 import { schoolsApi, type SchoolDetails } from '../../api/schools';
 import { mealPlansApi, type MealPlanSummary } from '../../api/meal-plans';
+import { AppLoader, FoodDoodleBackdrop } from '../../components/ui';
 import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SchoolDetail'>;
@@ -65,7 +58,7 @@ export const SchoolDetailScreen = ({ route, navigation }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Loading school details..." />
       </View>
     );
   }
@@ -90,86 +83,89 @@ export const SchoolDetailScreen = ({ route, navigation }: Props) => {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.schoolCard}>
-        <Text style={styles.schoolName}>{school.name}</Text>
-        <Text style={styles.metaText}>{school.address}</Text>
-        <Text style={styles.metaText}>
-          {school.city ?? 'N/A'}
-          {school.state ? `, ${school.state}` : ''}
-          {school.pincode ? ` - ${school.pincode}` : ''}
-        </Text>
-        <Text style={styles.metaText}>Contact: {school.contactPhone ?? 'N/A'}</Text>
-        <Text style={styles.metaText}>Email: {school.contactEmail ?? 'N/A'}</Text>
-        <Text style={styles.metaText}>
-          Operating Days: {formatOperatingDays(school.operatingDays)}
-        </Text>
-        <Text style={styles.metaText}>
-          Delivery Instructions: {school.deliveryInstructions?.trim() || 'Not provided'}
-        </Text>
-      </View>
+    <View style={styles.container}>
+      <FoodDoodleBackdrop />
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.schoolCard}>
+          <Text style={styles.schoolName}>{school.name}</Text>
+          <Text style={styles.metaText}>{school.address}</Text>
+          <Text style={styles.metaText}>
+            {school.city ?? 'N/A'}
+            {school.state ? `, ${school.state}` : ''}
+            {school.pincode ? ` - ${school.pincode}` : ''}
+          </Text>
+          <Text style={styles.metaText}>Contact: {school.contactPhone ?? 'N/A'}</Text>
+          <Text style={styles.metaText}>Email: {school.contactEmail ?? 'N/A'}</Text>
+          <Text style={styles.metaText}>
+            Operating Days: {formatOperatingDays(school.operatingDays)}
+          </Text>
+          <Text style={styles.metaText}>
+            Delivery Instructions: {school.deliveryInstructions?.trim() || 'Not provided'}
+          </Text>
+        </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Meal Plans</Text>
-        {mealPlans.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.helperText}>No active meal plans available for this school.</Text>
-          </View>
-        ) : (
-          mealPlans.map(plan => (
-            <View style={styles.planCard} key={plan.id}>
-              {plan.imageUrl ? (
-                <Image
-                  source={{ uri: plan.imageUrl }}
-                  style={styles.planImage}
-                  resizeMode="cover"
-                />
-              ) : (
-                <View style={styles.planImageFallback}>
-                  <Text style={styles.planImageFallbackText}>
-                    {plan.name.slice(0, 1).toUpperCase()}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Meal Plans</Text>
+          {mealPlans.length === 0 ? (
+            <View style={styles.emptyCard}>
+              <Text style={styles.helperText}>No active meal plans available for this school.</Text>
+            </View>
+          ) : (
+            mealPlans.map(plan => (
+              <View style={styles.planCard} key={plan.id}>
+                {plan.imageUrl ? (
+                  <Image
+                    source={{ uri: plan.imageUrl }}
+                    style={styles.planImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={styles.planImageFallback}>
+                    <Text style={styles.planImageFallbackText}>
+                      {plan.name.slice(0, 1).toUpperCase()}
+                    </Text>
+                  </View>
+                )}
+
+                <View style={styles.planBody}>
+                  <Text style={styles.planName}>{plan.name}</Text>
+                  <Text style={styles.planMeta}>Type: {plan.planType}</Text>
+                  <Text style={styles.planMeta}>Duration: {plan.durationDays} days</Text>
+                  <Text style={styles.planMeta}>
+                    Price/day: {formatAmount(plan.pricePerDay, plan.currency)}
                   </Text>
-                </View>
-              )}
 
-              <View style={styles.planBody}>
-                <Text style={styles.planName}>{plan.name}</Text>
-                <Text style={styles.planMeta}>Type: {plan.planType}</Text>
-                <Text style={styles.planMeta}>Duration: {plan.durationDays} days</Text>
-                <Text style={styles.planMeta}>
-                  Price/day: {formatAmount(plan.pricePerDay, plan.currency)}
-                </Text>
+                  <View style={styles.actionRow}>
+                    <Pressable
+                      style={[styles.actionButton, styles.menuButton]}
+                      onPress={() => navigation.navigate('MealPlanDetail', { mealPlanId: plan.id })}
+                    >
+                      <Text style={styles.menuButtonLabel}>View Menu</Text>
+                    </Pressable>
 
-                <View style={styles.actionRow}>
-                  <Pressable
-                    style={[styles.actionButton, styles.menuButton]}
-                    onPress={() => navigation.navigate('MealPlanDetail', { mealPlanId: plan.id })}
-                  >
-                    <Text style={styles.menuButtonLabel}>View Menu</Text>
-                  </Pressable>
-
-                  <Pressable
-                    style={[styles.actionButton, styles.subscribeButton]}
-                    onPress={() =>
-                      navigation.navigate('SelectStudent', {
-                        mealPlanId: plan.id,
-                        schoolId: school.id,
-                      })
-                    }
-                  >
-                    <Text style={styles.subscribeButtonLabel}>Subscribe</Text>
-                  </Pressable>
+                    <Pressable
+                      style={[styles.actionButton, styles.subscribeButton]}
+                      onPress={() =>
+                        navigation.navigate('SelectStudent', {
+                          mealPlanId: plan.id,
+                          schoolId: school.id,
+                        })
+                      }
+                    >
+                      <Text style={styles.subscribeButtonLabel}>Subscribe</Text>
+                    </Pressable>
+                  </View>
                 </View>
               </View>
-            </View>
-          ))
-        )}
-      </View>
-    </ScrollView>
+            ))
+          )}
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
@@ -177,7 +173,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     content: {
       padding: 16,
@@ -187,7 +183,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
       paddingHorizontal: 24,
     },
     schoolCard: {

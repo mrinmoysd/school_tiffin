@@ -4,7 +4,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import RazorpayCheckout, { RazorpayFailureData } from 'react-native-razorpay';
 import { paymentsApi } from '../../api/payments';
 import { ApiClientError } from '../../api/client/apiClient';
-import { AppButton } from '../../components/ui';
+import { AppButton, FoodDoodleBackdrop } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -99,6 +99,7 @@ export const PaymentScreen = ({ route, navigation }: Props) => {
 
   return (
     <View style={styles.container}>
+      <FoodDoodleBackdrop />
       <View style={styles.card}>
         <Text style={styles.label}>Subscription ID</Text>
         <Text style={styles.value}>{route.params.subscriptionId}</Text>
@@ -125,7 +126,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
       justifyContent: 'center',
       paddingHorizontal: 24,
     },

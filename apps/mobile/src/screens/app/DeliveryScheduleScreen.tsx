@@ -1,16 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ApiClientError } from '../../api/client/apiClient';
 import { subscriptionsApi, type SubscriptionScheduleDay } from '../../api/subscriptions';
+import { AppLoader, FoodDoodleBackdrop } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -128,104 +121,109 @@ export const DeliveryScheduleScreen = ({ route }: Props) => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Loading delivery schedule..." />
       </View>
     );
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+    <View style={styles.container}>
+      <FoodDoodleBackdrop />
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      <View style={styles.monthHeader}>
-        <Pressable
-          style={styles.monthNavButton}
-          onPress={() =>
-            setVisibleMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
-          }
-        >
-          <Text style={styles.monthNavLabel}>{'<'}</Text>
-        </Pressable>
-        <Text style={styles.monthLabel}>{visibleMonthLabel}</Text>
-        <Pressable
-          style={styles.monthNavButton}
-          onPress={() =>
-            setVisibleMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))
-          }
-        >
-          <Text style={styles.monthNavLabel}>{'>'}</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.calendarCard}>
-        <View style={styles.weekHeaderRow}>
-          {WEEK_DAYS.map(day => (
-            <Text key={day} style={styles.weekHeaderText}>
-              {day}
-            </Text>
-          ))}
+        <View style={styles.monthHeader}>
+          <Pressable
+            style={styles.monthNavButton}
+            onPress={() =>
+              setVisibleMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
+            }
+          >
+            <Text style={styles.monthNavLabel}>{'<'}</Text>
+          </Pressable>
+          <Text style={styles.monthLabel}>{visibleMonthLabel}</Text>
+          <Pressable
+            style={styles.monthNavButton}
+            onPress={() =>
+              setVisibleMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))
+            }
+          >
+            <Text style={styles.monthNavLabel}>{'>'}</Text>
+          </Pressable>
         </View>
 
-        <View style={styles.grid}>
-          {monthGrid.map(date => {
-            const dateKey = toDateKey(date);
-            const isCurrentMonth = date.getMonth() === visibleMonth.getMonth();
-            const dayEntry = scheduleByDate.get(dateKey);
-            const isSelected = selectedDate === dateKey;
+        <View style={styles.calendarCard}>
+          <View style={styles.weekHeaderRow}>
+            {WEEK_DAYS.map(day => (
+              <Text key={day} style={styles.weekHeaderText}>
+                {day}
+              </Text>
+            ))}
+          </View>
 
-            return (
-              <Pressable
-                key={dateKey}
-                style={[styles.dayCell, isSelected && styles.dayCellSelected]}
-                onPress={() => setSelectedDate(dateKey)}
-              >
-                <Text style={[styles.dayText, !isCurrentMonth && styles.dayTextMuted]}>
-                  {date.getDate()}
-                </Text>
-                {dayEntry ? (
-                  <View
-                    style={[
-                      styles.dayDot,
-                      { backgroundColor: getStatusColor(dayEntry.status, colors) },
-                    ]}
-                  />
-                ) : null}
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
+          <View style={styles.grid}>
+            {monthGrid.map(date => {
+              const dateKey = toDateKey(date);
+              const isCurrentMonth = date.getMonth() === visibleMonth.getMonth();
+              const dayEntry = scheduleByDate.get(dateKey);
+              const isSelected = selectedDate === dateKey;
 
-      <View style={styles.legendCard}>
-        <Text style={styles.legendTitle}>Legend</Text>
-        <View style={styles.legendRow}>
-          <View style={[styles.legendDot, { backgroundColor: colors.intent.infoStrong }]} />
-          <Text style={styles.legendText}>Scheduled</Text>
+              return (
+                <Pressable
+                  key={dateKey}
+                  style={[styles.dayCell, isSelected && styles.dayCellSelected]}
+                  onPress={() => setSelectedDate(dateKey)}
+                >
+                  <Text style={[styles.dayText, !isCurrentMonth && styles.dayTextMuted]}>
+                    {date.getDate()}
+                  </Text>
+                  {dayEntry ? (
+                    <View
+                      style={[
+                        styles.dayDot,
+                        { backgroundColor: getStatusColor(dayEntry.status, colors) },
+                      ]}
+                    />
+                  ) : null}
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
-        <View style={styles.legendRow}>
-          <View style={[styles.legendDot, { backgroundColor: colors.intent.success }]} />
-          <Text style={styles.legendText}>Delivered</Text>
-        </View>
-        <View style={styles.legendRow}>
-          <View style={[styles.legendDot, { backgroundColor: colors.intent.warning }]} />
-          <Text style={styles.legendText}>Paused</Text>
-        </View>
-      </View>
 
-      <View style={styles.detailsCard}>
-        <Text style={styles.detailsTitle}>Day Details</Text>
-        <Text style={styles.detailText}>Date: {selectedDate ? formatDate(selectedDate) : '-'}</Text>
-        <Text style={styles.detailText}>Status: {selectedDay?.status ?? 'No delivery'}</Text>
-        <Text style={styles.detailText}>
-          Delivery Time:{' '}
-          {selectedDay?.deliveredAt ? new Date(selectedDay.deliveredAt).toLocaleString() : '-'}
-        </Text>
-      </View>
-    </ScrollView>
+        <View style={styles.legendCard}>
+          <Text style={styles.legendTitle}>Legend</Text>
+          <View style={styles.legendRow}>
+            <View style={[styles.legendDot, { backgroundColor: colors.intent.infoStrong }]} />
+            <Text style={styles.legendText}>Scheduled</Text>
+          </View>
+          <View style={styles.legendRow}>
+            <View style={[styles.legendDot, { backgroundColor: colors.intent.success }]} />
+            <Text style={styles.legendText}>Delivered</Text>
+          </View>
+          <View style={styles.legendRow}>
+            <View style={[styles.legendDot, { backgroundColor: colors.intent.warning }]} />
+            <Text style={styles.legendText}>Paused</Text>
+          </View>
+        </View>
+
+        <View style={styles.detailsCard}>
+          <Text style={styles.detailsTitle}>Day Details</Text>
+          <Text style={styles.detailText}>
+            Date: {selectedDate ? formatDate(selectedDate) : '-'}
+          </Text>
+          <Text style={styles.detailText}>Status: {selectedDay?.status ?? 'No delivery'}</Text>
+          <Text style={styles.detailText}>
+            Delivery Time:{' '}
+            {selectedDay?.deliveredAt ? new Date(selectedDay.deliveredAt).toLocaleString() : '-'}
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
@@ -233,7 +231,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     content: {
       padding: 16,
@@ -243,7 +241,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     errorText: {
       color: colors.intent.danger,

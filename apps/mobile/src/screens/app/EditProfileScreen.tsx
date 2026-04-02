@@ -1,10 +1,10 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import { type UserProfile, usersApi } from '../../api/users';
-import { AppButton, FormTextInput } from '../../components/ui';
+import { AppButton, AppLoader, FoodDoodleBackdrop, FormTextInput } from '../../components/ui';
 import { INDIAN_PHONE_REGEX } from '../../constants/validation';
 import { RootStackParamList } from '../../navigation/types';
 import { setAuthUser } from '../../store/auth';
@@ -132,91 +132,94 @@ export const EditProfileScreen = ({ navigation }: Props) => {
   if (initialLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.action.primary} />
+        <AppLoader label="Loading your profile..." />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.subtitle}>Update your basic account information.</Text>
+    <View style={styles.container}>
+      <FoodDoodleBackdrop />
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.subtitle}>Update your basic account information.</Text>
 
-      <Controller
-        control={control}
-        name="fullName"
-        rules={{
-          required: 'Full name is required',
-          minLength: {
-            value: 2,
-            message: 'Full name must be at least 2 characters',
-          },
-        }}
-        render={({ field: { value, onChange, onBlur }, fieldState: { error: fieldError } }) => (
-          <FormTextInput
-            label="Full Name"
-            value={value}
-            onBlur={onBlur}
-            onChangeText={onChange}
-            placeholder="Enter full name"
-            error={fieldError?.message}
-            autoCapitalize="words"
-            returnKeyType="next"
-          />
-        )}
-      />
+        <Controller
+          control={control}
+          name="fullName"
+          rules={{
+            required: 'Full name is required',
+            minLength: {
+              value: 2,
+              message: 'Full name must be at least 2 characters',
+            },
+          }}
+          render={({ field: { value, onChange, onBlur }, fieldState: { error: fieldError } }) => (
+            <FormTextInput
+              label="Full Name"
+              value={value}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              placeholder="Enter full name"
+              error={fieldError?.message}
+              autoCapitalize="words"
+              returnKeyType="next"
+            />
+          )}
+        />
 
-      <FormTextInput
-        label="Email"
-        value={emailValue}
-        editable={false}
-        selectTextOnFocus={false}
-        placeholder="Email"
-      />
+        <FormTextInput
+          label="Email"
+          value={emailValue}
+          editable={false}
+          selectTextOnFocus={false}
+          placeholder="Email"
+        />
 
-      <Controller
-        control={control}
-        name="phone"
-        rules={{
-          validate: value =>
-            value.trim().length === 0 ||
-            INDIAN_PHONE_REGEX.test(value.trim()) ||
-            'Enter a valid 10-digit mobile number',
-        }}
-        render={({ field: { value, onChange, onBlur }, fieldState: { error: fieldError } }) => (
-          <FormTextInput
-            label="Phone Number"
-            value={value}
-            onBlur={onBlur}
-            onChangeText={text => onChange(text.replace(/\D/g, '').slice(0, 10))}
-            placeholder="9876543210"
-            keyboardType="phone-pad"
-            maxLength={10}
-            error={fieldError?.message}
-          />
-        )}
-      />
+        <Controller
+          control={control}
+          name="phone"
+          rules={{
+            validate: value =>
+              value.trim().length === 0 ||
+              INDIAN_PHONE_REGEX.test(value.trim()) ||
+              'Enter a valid 10-digit mobile number',
+          }}
+          render={({ field: { value, onChange, onBlur }, fieldState: { error: fieldError } }) => (
+            <FormTextInput
+              label="Phone Number"
+              value={value}
+              onBlur={onBlur}
+              onChangeText={text => onChange(text.replace(/\D/g, '').slice(0, 10))}
+              placeholder="9876543210"
+              keyboardType="phone-pad"
+              maxLength={10}
+              error={fieldError?.message}
+            />
+          )}
+        />
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      <AppButton
-        title="Save Changes"
-        onPress={() => void handleSubmit(onSubmit)()}
-        loading={submitLoading}
-      />
-      <AppButton
-        title="Cancel"
-        variant="secondary"
-        style={styles.cancelButton}
-        onPress={() => {
-          if (navigation.canGoBack()) {
-            navigation.goBack();
-            return;
-          }
+        <AppButton
+          title="Save Changes"
+          onPress={() => void handleSubmit(onSubmit)()}
+          loading={submitLoading}
+        />
+        <AppButton
+          title="Cancel"
+          variant="secondary"
+          style={styles.cancelButton}
+          onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+              return;
+            }
 
-          navigation.navigate('Profile');
-        }}
-      />
-    </ScrollView>
+            navigation.navigate('Profile');
+          }}
+        />
+      </ScrollView>
+    </View>
   );
 };
 
@@ -224,7 +227,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     content: {
       paddingHorizontal: 16,
@@ -236,7 +239,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: 20,
-      backgroundColor: colors.neutral.slate50,
+      backgroundColor: 'transparent',
     },
     subtitle: {
       color: colors.text.secondary,
