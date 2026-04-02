@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppButton, AuthLayout, CheckboxField, FormTextInput } from '../../components/ui';
+import { AppButton, AuthLayout, FormTextInput } from '../../components/ui';
 import { EMAIL_REGEX } from '../../constants/validation';
 import { clearAuthErrors, login } from '../../store/auth';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
@@ -14,7 +14,6 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 interface LoginFormValues {
   email: string;
   password: string;
-  rememberMe: boolean;
 }
 
 export const LoginScreen = ({ navigation }: Props) => {
@@ -27,7 +26,6 @@ export const LoginScreen = ({ navigation }: Props) => {
     defaultValues: {
       email: '',
       password: '',
-      rememberMe: true,
     },
   });
 
@@ -84,14 +82,6 @@ export const LoginScreen = ({ navigation }: Props) => {
             autoCorrect={false}
             error={error?.message}
           />
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="rememberMe"
-        render={({ field: { value, onChange } }) => (
-          <CheckboxField label="Remember me" value={value} onValueChange={onChange} />
         )}
       />
 

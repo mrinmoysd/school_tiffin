@@ -60,9 +60,10 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       flexGrow: 1,
       paddingHorizontal: 20,
       paddingBottom: 20,
+      justifyContent: 'center',
     },
     header: {
-      marginTop: 24,
+      alignItems: 'center',
       marginBottom: 20,
     },
     title: {
@@ -70,13 +71,16 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       fontWeight: '700',
       color: colors.text.primary,
       marginBottom: 8,
+      textAlign: 'center',
     },
     subtitle: {
       fontSize: 15,
       lineHeight: 22,
       color: colors.text.secondary,
+      textAlign: 'center',
     },
     formWrapper: {
+      width: '100%',
       backgroundColor: colors.neutral.white,
       borderRadius: 16,
       padding: 16,
