@@ -38,10 +38,10 @@ export const FoodDoodleBackdrop = () => {
   );
 
   return (
-    <View pointerEvents="none" style={styles.container}>
+    <View pointerEvents="none" style={[styles.container, { opacity: isDark ? 0.75 : 0.5 }]}>
       {DOODLES.map((doodle, index) => {
         const color = palette[index % palette.length];
-        const borderColor = isDark ? colors.neutral.slate300 : colors.neutral.slate200;
+        const borderColor = isDark ? colors.neutral.slate200 : colors.neutral.slate200;
         const sharedStyle: ViewStyle = {
           top: doodle.top,
           left: doodle.left,
@@ -50,6 +50,7 @@ export const FoodDoodleBackdrop = () => {
           height: doodle.size,
           transform: [{ rotate: doodle.rotate }],
           borderColor,
+          borderWidth: isDark ? 2 : 1,
           backgroundColor: isDark ? 'transparent' : color,
         };
 
@@ -82,7 +83,6 @@ export const FoodDoodleBackdrop = () => {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    opacity: 0.5,
     zIndex: 0,
   },
   circle: {
