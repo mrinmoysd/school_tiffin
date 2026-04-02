@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -33,7 +34,22 @@ const BOTTOM_NAV_ITEMS: BottomNavItem[] = [
   { label: 'Profile', route: 'Profile' },
 ];
 
-const TAB_BAR_BASE_HEIGHT = 58;
+const TAB_BAR_BASE_HEIGHT = 66;
+
+const getBottomTabIcon = (label: BottomNavItem['label']): keyof typeof Ionicons.glyphMap => {
+  switch (label) {
+    case 'Schools':
+      return 'school-outline';
+    case 'Orders':
+      return 'receipt-outline';
+    case 'Subscription':
+      return 'calendar-outline';
+    case 'Profile':
+      return 'person-outline';
+    default:
+      return 'ellipse-outline';
+  }
+};
 
 const getGreetingName = (fullName: string | null | undefined, email: string | null | undefined) => {
   if (fullName && fullName.trim().length > 0) {
@@ -390,9 +406,16 @@ export const HomeScreen = ({ navigation }: Props) => {
           {BOTTOM_NAV_ITEMS.map(item => (
             <Pressable
               key={item.label}
-              style={styles.bottomTab}
+              style={({ pressed }) => [styles.bottomTab, pressed && styles.bottomTabPressed]}
               onPress={() => navigation.navigate(item.route)}
             >
+              <View style={styles.bottomTabBadge}>
+                <Ionicons
+                  name={getBottomTabIcon(item.label)}
+                  size={18}
+                  color={colors.text.secondary}
+                />
+              </View>
               <Text style={styles.bottomTabLabel}>{item.label}</Text>
             </Pressable>
           ))}
@@ -637,26 +660,52 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     },
     bottomBar: {
       position: 'absolute',
-      left: 0,
-      right: 0,
+      left: 12,
+      right: 12,
       bottom: 0,
       backgroundColor: colors.neutral.white,
       borderTopWidth: 1,
       borderTopColor: colors.neutral.slate200,
+      borderRadius: 18,
+      shadowColor: colors.neutral.slate400,
+      shadowOpacity: 0.18,
+      shadowRadius: 14,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 6,
     },
     bottomBarRow: {
       minHeight: TAB_BAR_BASE_HEIGHT,
       flexDirection: 'row',
+      paddingHorizontal: 8,
+      paddingTop: 6,
     },
     bottomTab: {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      paddingHorizontal: 4,
+      paddingHorizontal: 6,
+      borderRadius: 12,
+      marginHorizontal: 2,
+      paddingVertical: 4,
+    },
+    bottomTabPressed: {
+      backgroundColor: colors.neutral.slate100,
+    },
+    bottomTabBadge: {
+      minWidth: 38,
+      height: 30,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      backgroundColor: colors.neutral.slate50,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 4,
+      paddingHorizontal: 8,
     },
     bottomTabLabel: {
       color: colors.text.primary,
-      fontSize: 13,
+      fontSize: 11,
       fontWeight: '700',
     },
   });
