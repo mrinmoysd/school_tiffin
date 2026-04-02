@@ -1,10 +1,16 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import { type UserProfile, usersApi } from '../../api/users';
-import { AppButton, AppLoader, FoodDoodleBackdrop, FormTextInput } from '../../components/ui';
+import {
+  AppButton,
+  AppLoader,
+  FoodDoodleBackdrop,
+  FormTextInput,
+  useAppAlert,
+} from '../../components/ui';
 import { INDIAN_PHONE_REGEX } from '../../constants/validation';
 import { RootStackParamList } from '../../navigation/types';
 import { setAuthUser } from '../../store/auth';
@@ -50,6 +56,7 @@ const toAuthUser = (profile: UserProfile) => ({
 });
 
 export const EditProfileScreen = ({ navigation }: Props) => {
+  const { alert } = useAppAlert();
   const { colors } = useAppTheme();
   const styles = createStyles(colors);
   const dispatch = useAppDispatch();
@@ -105,7 +112,7 @@ export const EditProfileScreen = ({ navigation }: Props) => {
 
       dispatch(setAuthUser(toAuthUser(updatedProfile)));
 
-      Alert.alert('Profile Updated', 'Your profile details have been updated.', [
+      alert('Profile Updated', 'Your profile details have been updated.', [
         {
           text: 'OK',
           onPress: () => {

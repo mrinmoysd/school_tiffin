@@ -1,9 +1,9 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
-import { AppButton, FoodDoodleBackdrop, FormTextInput } from '../../components/ui';
+import { AppButton, FoodDoodleBackdrop, FormTextInput, useAppAlert } from '../../components/ui';
 import { PASSWORD_STRENGTH_MESSAGE, PASSWORD_STRENGTH_REGEX } from '../../constants/validation';
 import { RootStackParamList } from '../../navigation/types';
 import { authService } from '../../business/auth';
@@ -18,6 +18,7 @@ interface ChangePasswordFormValues {
 }
 
 export const ChangePasswordScreen = ({ navigation }: Props) => {
+  const { alert } = useAppAlert();
   const { colors } = useAppTheme();
   const styles = createStyles(colors);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -44,7 +45,7 @@ export const ChangePasswordScreen = ({ navigation }: Props) => {
         newPassword: values.newPassword,
       });
 
-      Alert.alert('Success', response.message || 'Password changed successfully.', [
+      alert('Success', response.message || 'Password changed successfully.', [
         {
           text: 'OK',
           onPress: () => {

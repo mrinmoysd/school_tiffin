@@ -1,11 +1,11 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi } from '../../api/students';
 import { usersApi, type UserProfile } from '../../api/users';
-import { AppButton, AppLoader, FoodDoodleBackdrop } from '../../components/ui';
+import { AppButton, AppLoader, FoodDoodleBackdrop, useAppAlert } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { logout } from '../../store/auth';
 import { useAppDispatch } from '../../store/hooks';
@@ -40,6 +40,7 @@ const getVerificationStatus = (profile: UserProfile | null) => ({
 
 export const ProfileScreen = ({ navigation }: Props) => {
   const dispatch = useAppDispatch();
+  const { alert } = useAppAlert();
   const { colors, preference, setPreference } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const hasFocusedOnceRef = useRef(false);
@@ -100,7 +101,7 @@ export const ProfileScreen = ({ navigation }: Props) => {
   };
 
   const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
+    alert('Logout', 'Are you sure you want to logout?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Logout',

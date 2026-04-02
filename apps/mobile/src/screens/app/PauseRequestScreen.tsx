@@ -1,14 +1,20 @@
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import {
   subscriptionsApi,
   type SubscriptionDetails,
   type SubscriptionScheduleDay,
 } from '../../api/subscriptions';
-import { AppButton, AppLoader, FoodDoodleBackdrop, FormTextInput } from '../../components/ui';
+import {
+  AppButton,
+  AppLoader,
+  FoodDoodleBackdrop,
+  FormTextInput,
+  useAppAlert,
+} from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -77,6 +83,7 @@ const countAffectedDays = (
   }).length;
 
 export const PauseRequestScreen = ({ route, navigation }: Props) => {
+  const { alert } = useAppAlert();
   const { colors } = useAppTheme();
   const styles = createStyles(colors);
   const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
@@ -218,7 +225,7 @@ export const PauseRequestScreen = ({ route, navigation }: Props) => {
         reason: reason.trim() || undefined,
       });
 
-      Alert.alert(
+      alert(
         'Pause request submitted',
         `Affected days: ${response.impact.daysAffected}\nNew end date: ${formatDisplayDate(parseDate(response.impact.newEndDate))}`,
         [

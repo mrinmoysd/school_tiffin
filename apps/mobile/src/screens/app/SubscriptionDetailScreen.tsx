@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ApiClientError } from '../../api/client/apiClient';
 import { subscriptionsApi, type SubscriptionDetails } from '../../api/subscriptions';
-import { AppButton, AppLoader, FoodDoodleBackdrop } from '../../components/ui';
+import { AppButton, AppLoader, FoodDoodleBackdrop, useAppAlert } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -32,6 +32,7 @@ const canCancelSubscription = (status: string) => status !== 'COMPLETED' && stat
 const canPaySubscription = (status: string) => status === 'PENDING_PAYMENT';
 
 export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
+  const { alert } = useAppAlert();
   const { colors } = useAppTheme();
   const styles = createStyles(colors);
   const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
@@ -85,7 +86,7 @@ export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
       return;
     }
 
-    Alert.alert('Cancel subscription', 'Are you sure you want to cancel this subscription?', [
+    alert('Cancel subscription', 'Are you sure you want to cancel this subscription?', [
       { text: 'No', style: 'cancel' },
       {
         text: 'Yes, cancel',
@@ -96,7 +97,7 @@ export const SubscriptionDetailScreen = ({ route, navigation }: Props) => {
 
           try {
             const result = await subscriptionsApi.cancelSubscription(subscription.id);
-            Alert.alert(
+            alert(
               'Cancelled',
               `${result.message}\nRefund: ${formatMoney(result.refundAmount, subscription.currency)}`,
             );

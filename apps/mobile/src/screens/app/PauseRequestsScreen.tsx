@@ -1,13 +1,13 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import {
   subscriptionsApi,
   type PauseRequestListItem,
   type PauseRequestStatus,
 } from '../../api/subscriptions';
-import { AppLoader, FoodDoodleBackdrop } from '../../components/ui';
+import { AppLoader, FoodDoodleBackdrop, useAppAlert } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -58,6 +58,7 @@ const getStatusBadgeStyle = (
 };
 
 export const PauseRequestsScreen = ({ navigation }: Props) => {
+  const { alert } = useAppAlert();
   const { colors } = useAppTheme();
   const styles = createStyles(colors);
   const [filter, setFilter] = useState<FilterKey>('ALL');
@@ -101,7 +102,7 @@ export const PauseRequestsScreen = ({ navigation }: Props) => {
   }, [loadRequests]);
 
   const handleCancelRequest = (request: PauseRequestListItem) => {
-    Alert.alert('Cancel pause request', 'Are you sure you want to cancel this pending request?', [
+    alert('Cancel pause request', 'Are you sure you want to cancel this pending request?', [
       { text: 'No', style: 'cancel' },
       {
         text: 'Yes, cancel',
@@ -112,7 +113,7 @@ export const PauseRequestsScreen = ({ navigation }: Props) => {
 
           try {
             const response = await subscriptionsApi.cancelPauseRequest(request.id);
-            Alert.alert('Cancelled', response.message);
+            alert('Cancelled', response.message);
             await loadRequests();
           } catch (requestError) {
             if (requestError instanceof ApiClientError) {

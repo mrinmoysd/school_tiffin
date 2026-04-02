@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import RazorpayCheckout, { RazorpayFailureData } from 'react-native-razorpay';
 import { paymentsApi } from '../../api/payments';
 import { ApiClientError } from '../../api/client/apiClient';
-import { AppButton, FoodDoodleBackdrop } from '../../components/ui';
+import { AppButton, FoodDoodleBackdrop, useAppAlert } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -33,6 +33,7 @@ const isRazorpayFailure = (value: unknown): value is RazorpayFailureData =>
   typeof value === 'object' && value !== null && ('description' in value || 'reason' in value);
 
 export const PaymentScreen = ({ route, navigation }: Props) => {
+  const { alert } = useAppAlert();
   const { colors } = useAppTheme();
   const styles = createStyles(colors);
   const [processing, setProcessing] = useState(false);
@@ -75,7 +76,7 @@ export const PaymentScreen = ({ route, navigation }: Props) => {
       });
 
       setStatusMessage('Payment successful. Subscription has been activated.');
-      Alert.alert('Payment successful', 'Your subscription is now active.', [
+      alert('Payment successful', 'Your subscription is now active.', [
         {
           text: 'View subscription',
           onPress: () =>

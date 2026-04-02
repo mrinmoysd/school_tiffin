@@ -10,6 +10,7 @@ import { useAppDispatch } from './src/store/hooks';
 import { store } from './src/store';
 import { setUnauthorizedHandler } from './src/api/client/apiClient';
 import { ThemeProvider, useAppTheme } from './src/theme';
+import { AppAlertProvider } from './src/components/ui';
 
 type NavigationBarModule = {
   setButtonStyleAsync: (style: 'light' | 'dark') => Promise<void>;
@@ -79,7 +80,9 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Provider store={store}>
         <ThemeProvider>
-          <AppShell />
+          <AppAlertProvider>
+            <AppShell />
+          </AppAlertProvider>
         </ThemeProvider>
       </Provider>
     </GestureHandlerRootView>

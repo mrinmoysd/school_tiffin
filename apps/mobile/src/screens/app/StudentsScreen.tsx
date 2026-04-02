@@ -1,11 +1,11 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useRef, useState } from 'react';
-import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi, type Student } from '../../api/students';
-import { AppButton, AppLoader, FoodDoodleBackdrop } from '../../components/ui';
+import { AppButton, AppLoader, FoodDoodleBackdrop, useAppAlert } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -20,6 +20,7 @@ const formatGrade = (grade: Student['grade']) => {
 };
 
 export const StudentsScreen = ({ navigation }: Props) => {
+  const { alert } = useAppAlert();
   const { colors } = useAppTheme();
   const styles = createStyles(colors);
   const hasFocusedOnceRef = useRef(false);
@@ -77,7 +78,7 @@ export const StudentsScreen = ({ navigation }: Props) => {
   };
 
   const onDeleteStudent = (student: Student) => {
-    Alert.alert(
+    alert(
       'Delete Student',
       `Are you sure you want to delete ${student.fullName}? This action cannot be undone.`,
       [
