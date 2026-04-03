@@ -1,7 +1,8 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import { type UserProfile, usersApi } from '../../api/users';
 import { pickAndUploadImage } from '../../business/uploads';
@@ -173,15 +174,20 @@ export const EditProfileScreen = ({ navigation }: Props) => {
       <FoodDoodleBackdrop />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.avatarSection}>
-          <ProfileAvatar imageUrl={profileImageUrl} name={watch('fullName')} size={92} />
+          <Pressable
+            style={styles.avatarPressable}
+            onPress={() => void onPickProfileImage()}
+            disabled={imageUploadLoading}
+            accessibilityRole="button"
+            accessibilityLabel="Choose profile photo"
+          >
+            <ProfileAvatar imageUrl={profileImageUrl} name={watch('fullName')} size={92} />
+            <View style={styles.cameraBadge}>
+              <Ionicons name="camera" size={14} color={colors.neutral.white} />
+            </View>
+          </Pressable>
         </View>
-        <AppButton
-          title={imageUploadLoading ? 'Uploading...' : 'Choose Photo'}
-          variant="secondary"
-          onPress={() => void onPickProfileImage()}
-          loading={imageUploadLoading}
-          style={styles.photoButton}
-        />
+        {imageUploadLoading ? <Text style={styles.uploadingText}>Uploading photo...</Text> : null}
 
         <Controller
           control={control}
@@ -284,10 +290,29 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     },
     avatarSection: {
       alignItems: 'center',
-      marginBottom: 10,
+      marginBottom: 6,
     },
-    photoButton: {
+    avatarPressable: {
+      position: 'relative',
+      borderRadius: 999,
+    },
+    cameraBadge: {
+      position: 'absolute',
+      right: -2,
+      bottom: -2,
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: colors.action.primary,
+      borderWidth: 2,
+      borderColor: colors.neutral.white,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    uploadingText: {
       marginBottom: 14,
+      color: colors.text.secondary,
+      fontSize: 12,
     },
     errorText: {
       color: colors.intent.danger,

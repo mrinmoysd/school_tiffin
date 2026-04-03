@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useRef, useState } from 'react';
@@ -5,13 +6,7 @@ import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'rea
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi, type Student } from '../../api/students';
-import {
-  AppButton,
-  AppLoader,
-  FoodDoodleBackdrop,
-  ProfileAvatar,
-  useAppAlert,
-} from '../../components/ui';
+import { AppLoader, FoodDoodleBackdrop, ProfileAvatar, useAppAlert } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -131,13 +126,25 @@ export const StudentsScreen = ({ navigation }: Props) => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         ListHeaderComponent={
           <View style={styles.headerBlock}>
-            <Text style={styles.subtitle}>Manage your student profiles from one place.</Text>
-            <AppButton
-              title="Add New Student"
-              onPress={() => navigation.navigate('AddStudent', {})}
-              style={styles.addButton}
-            />
-            <Text style={styles.swipeHint}>Swipe left on a student row for quick actions.</Text>
+            <View style={styles.headerRow}>
+              <Pressable
+                style={styles.addStudentButton}
+                onPress={() => navigation.navigate('AddStudent', {})}
+                accessibilityRole="button"
+                accessibilityLabel="Add new student"
+              >
+                <Ionicons name="person-add-outline" size={18} color={colors.neutral.white} />
+                <Text style={styles.addStudentButtonText}>Add Student</Text>
+              </Pressable>
+            </View>
+            <View style={styles.hintRow}>
+              <View style={styles.hintLine} />
+              <View style={styles.hintContent}>
+                <Ionicons name="information-circle-outline" size={14} color={colors.text.muted} />
+                <Text style={styles.swipeHint}>Swipe left on a student row for quick actions</Text>
+              </View>
+              <View style={styles.hintLine} />
+            </View>
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
           </View>
         }
@@ -184,24 +191,6 @@ export const StudentsScreen = ({ navigation }: Props) => {
                     <Text style={styles.studentMeta}>School: {item.school?.name ?? '-'}</Text>
                   </View>
                 </View>
-
-                <View style={styles.actionRow}>
-                  <Pressable
-                    style={[styles.inlineAction, styles.inlineEdit]}
-                    onPress={() => onEditStudent(item)}
-                  >
-                    <Text style={styles.inlineEditText}>Edit</Text>
-                  </Pressable>
-                  <Pressable
-                    style={[styles.inlineAction, styles.inlineDelete]}
-                    onPress={() => onDeleteStudent(item)}
-                    disabled={isDeleting}
-                  >
-                    <Text style={styles.inlineDeleteText}>
-                      {isDeleting ? 'Deleting...' : 'Delete'}
-                    </Text>
-                  </Pressable>
-                </View>
               </View>
             </Swipeable>
           );
@@ -231,17 +220,45 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     headerBlock: {
       marginBottom: 12,
     },
-    subtitle: {
-      color: colors.text.secondary,
-      fontSize: 13,
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 10,
     },
-    addButton: {
-      marginTop: 12,
+    addStudentButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.action.primary,
+      borderRadius: 999,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+    },
+    addStudentButtonText: {
+      color: colors.neutral.white,
+      fontSize: 13,
+      fontWeight: '700',
+      marginLeft: 7,
+    },
+    hintRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 2,
+    },
+    hintLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: colors.neutral.slate300,
+    },
+    hintContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 10,
     },
     swipeHint: {
-      marginTop: 10,
       color: colors.text.muted,
       fontSize: 12,
+      marginLeft: 4,
     },
     errorText: {
       marginTop: 8,
@@ -272,6 +289,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       borderWidth: 1,
       borderColor: colors.neutral.slate200,
       padding: 14,
+      minHeight: 100,
       marginBottom: 10,
     },
     studentTopRow: {
@@ -292,34 +310,6 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       color: colors.text.secondary,
       fontSize: 13,
       marginBottom: 4,
-    },
-    actionRow: {
-      marginTop: 10,
-      flexDirection: 'row',
-    },
-    inlineAction: {
-      height: 36,
-      borderRadius: 10,
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingHorizontal: 12,
-    },
-    inlineEdit: {
-      backgroundColor: colors.surface.infoSubtle,
-      marginRight: 8,
-    },
-    inlineDelete: {
-      backgroundColor: colors.surface.dangerSubtle,
-    },
-    inlineEditText: {
-      color: colors.intent.infoStrong,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-    inlineDeleteText: {
-      color: colors.intent.danger,
-      fontSize: 13,
-      fontWeight: '700',
     },
     swipeActions: {
       flexDirection: 'row',

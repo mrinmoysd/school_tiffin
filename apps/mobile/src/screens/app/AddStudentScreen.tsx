@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -243,17 +244,21 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
     <View style={styles.container}>
       <FoodDoodleBackdrop />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.subtitle}>Enter student details to continue.</Text>
         <View style={styles.avatarSection}>
-          <ProfileAvatar imageUrl={studentImageUrl} name={watch('fullName')} size={88} />
+          <Pressable
+            style={styles.avatarPressable}
+            onPress={() => void onPickStudentImage()}
+            disabled={imageUploadLoading}
+            accessibilityRole="button"
+            accessibilityLabel="Choose student photo"
+          >
+            <ProfileAvatar imageUrl={studentImageUrl} name={watch('fullName')} size={88} />
+            <View style={styles.cameraBadge}>
+              <Ionicons name="camera" size={14} color={colors.neutral.white} />
+            </View>
+          </Pressable>
         </View>
-        <AppButton
-          title={imageUploadLoading ? 'Uploading...' : 'Choose Student Photo'}
-          variant="secondary"
-          onPress={() => void onPickStudentImage()}
-          loading={imageUploadLoading}
-          style={styles.photoButton}
-        />
+        {imageUploadLoading ? <Text style={styles.uploadingText}>Uploading photo...</Text> : null}
 
         <Controller
           control={control}
@@ -499,17 +504,31 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       alignItems: 'center',
       backgroundColor: 'transparent',
     },
-    subtitle: {
-      marginBottom: 12,
-      color: colors.text.secondary,
-      fontSize: 14,
-    },
     avatarSection: {
       alignItems: 'center',
-      marginBottom: 10,
+      marginBottom: 4,
     },
-    photoButton: {
+    avatarPressable: {
+      position: 'relative',
+      borderRadius: 999,
+    },
+    cameraBadge: {
+      position: 'absolute',
+      right: -2,
+      bottom: -2,
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: colors.action.primary,
+      borderWidth: 2,
+      borderColor: colors.neutral.white,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    uploadingText: {
       marginBottom: 12,
+      color: colors.text.secondary,
+      fontSize: 12,
     },
     fieldWrapper: {
       marginBottom: 14,
