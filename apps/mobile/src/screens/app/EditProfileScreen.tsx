@@ -2,7 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import { type UserProfile, usersApi } from '../../api/users';
 import { pickAndUploadImage } from '../../business/uploads';
@@ -187,7 +187,6 @@ export const EditProfileScreen = ({ navigation }: Props) => {
             </View>
           </Pressable>
         </View>
-        {imageUploadLoading ? <Text style={styles.uploadingText}>Uploading photo...</Text> : null}
 
         <Controller
           control={control}
@@ -266,6 +265,14 @@ export const EditProfileScreen = ({ navigation }: Props) => {
           }}
         />
       </ScrollView>
+      {imageUploadLoading ? (
+        <View style={styles.uploadOverlay}>
+          <View style={styles.uploadOverlayCard}>
+            <ActivityIndicator size="small" color={colors.action.primary} />
+            <Text style={styles.uploadOverlayText}>Uploading picture...</Text>
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 };
@@ -309,11 +316,6 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    uploadingText: {
-      marginBottom: 14,
-      color: colors.text.secondary,
-      fontSize: 12,
-    },
     errorText: {
       color: colors.intent.danger,
       fontSize: 13,
@@ -321,5 +323,29 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     },
     cancelButton: {
       marginTop: 10,
+    },
+    uploadOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: colors.overlay.scrim,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 24,
+    },
+    uploadOverlayCard: {
+      minWidth: 190,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    uploadOverlayText: {
+      marginTop: 8,
+      color: colors.text.primary,
+      fontSize: 13,
+      fontWeight: '600',
     },
   });

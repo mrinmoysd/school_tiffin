@@ -258,7 +258,6 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
             </View>
           </Pressable>
         </View>
-        {imageUploadLoading ? <Text style={styles.uploadingText}>Uploading photo...</Text> : null}
 
         <Controller
           control={control}
@@ -524,11 +523,6 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       borderColor: colors.neutral.white,
       alignItems: 'center',
       justifyContent: 'center',
-    },
-    uploadingText: {
-      marginBottom: 12,
-      color: colors.text.secondary,
-      fontSize: 12,
     },
     fieldWrapper: {
       marginBottom: 14,

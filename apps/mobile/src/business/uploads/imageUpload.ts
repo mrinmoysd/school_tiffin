@@ -65,7 +65,7 @@ const pickImageFromLibrary = async (fallbackPrefix: string): Promise<PickedImage
   }
 
   const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    mediaTypes: ['images'],
     quality: 0.9,
     allowsEditing: true,
   });
