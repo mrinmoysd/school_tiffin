@@ -33,7 +33,7 @@ const isRazorpayFailure = (value: unknown): value is RazorpayFailureData =>
   typeof value === 'object' && value !== null && ('description' in value || 'reason' in value);
 
 export const PaymentScreen = ({ route, navigation }: Props) => {
-  const { alert } = useAppAlert();
+  const { showToast } = useAppAlert();
   const { colors } = useAppTheme();
   const styles = createStyles(colors);
   const [processing, setProcessing] = useState(false);
@@ -76,15 +76,10 @@ export const PaymentScreen = ({ route, navigation }: Props) => {
       });
 
       setStatusMessage('Payment successful. Subscription has been activated.');
-      alert('Payment successful', 'Your subscription is now active.', [
-        {
-          text: 'View subscription',
-          onPress: () =>
-            navigation.replace('SubscriptionDetail', {
-              subscriptionId: route.params.subscriptionId,
-            }),
-        },
-      ]);
+      showToast('Payment successful. Subscription is now active.');
+      navigation.replace('SubscriptionDetail', {
+        subscriptionId: route.params.subscriptionId,
+      });
     } catch (requestError) {
       if (requestError instanceof ApiClientError) {
         setError(requestError.message);

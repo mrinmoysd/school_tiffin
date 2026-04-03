@@ -1,4 +1,12 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAppTheme } from '../../theme';
 
@@ -28,6 +36,11 @@ type AppAlertContextValue = {
     actions?: AppAlertAction[],
     options?: AppAlertOptions,
   ) => void;
+  showToast: (message: string, durationMs?: number) => void;
+};
+
+type ToastConfig = {
+  message: string;
 };
 
 const AppAlertContext = createContext<AppAlertContextValue | undefined>(undefined);
@@ -36,6 +49,8 @@ export const AppAlertProvider = ({ children }: { children: React.ReactNode }) =>
   const { colors } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [config, setConfig] = useState<AppAlertConfig | null>(null);
+  const [toast, setToast] = useState<ToastConfig | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const closeAlert = useCallback(() => {
     setConfig(null);
@@ -51,6 +66,27 @@ export const AppAlertProvider = ({ children }: { children: React.ReactNode }) =>
     });
   }, []);
 
+  const showToast = useCallback<AppAlertContextValue['showToast']>((message, durationMs = 2400) => {
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+    }
+
+    setToast({ message });
+    toastTimerRef.current = setTimeout(() => {
+      setToast(null);
+      toastTimerRef.current = null;
+    }, durationMs);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    },
+    [],
+  );
+
   const onActionPress = useCallback(
     (action: AppAlertAction) => {
       closeAlert();
@@ -61,7 +97,7 @@ export const AppAlertProvider = ({ children }: { children: React.ReactNode }) =>
     [closeAlert],
   );
 
-  const value = useMemo<AppAlertContextValue>(() => ({ alert }), [alert]);
+  const value = useMemo<AppAlertContextValue>(() => ({ alert, showToast }), [alert, showToast]);
 
   return (
     <AppAlertContext.Provider value={value}>
@@ -119,6 +155,14 @@ export const AppAlertProvider = ({ children }: { children: React.ReactNode }) =>
           </Pressable>
         </Pressable>
       </Modal>
+
+      {toast ? (
+        <View pointerEvents="none" style={styles.toastOverlay}>
+          <View style={styles.toastCard}>
+            <Text style={styles.toastText}>{toast.message}</Text>
+          </View>
+        </View>
+      ) : null}
     </AppAlertContext.Provider>
   );
 };
@@ -194,5 +238,30 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     },
     actionTextDestructive: {
       color: colors.text.dangerStrong,
+    },
+    toastOverlay: {
+      position: 'absolute',
+      left: 14,
+      right: 14,
+      bottom: 24,
+      alignItems: 'center',
+    },
+    toastCard: {
+      minHeight: 42,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate300,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      justifyContent: 'center',
+      alignItems: 'center',
+      maxWidth: '100%',
+    },
+    toastText: {
+      color: colors.text.primary,
+      fontSize: 13,
+      fontWeight: '600',
+      textAlign: 'center',
     },
   });

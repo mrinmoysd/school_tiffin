@@ -18,7 +18,7 @@ interface ChangePasswordFormValues {
 }
 
 export const ChangePasswordScreen = ({ navigation }: Props) => {
-  const { alert } = useAppAlert();
+  const { showToast } = useAppAlert();
   const { colors } = useAppTheme();
   const styles = createStyles(colors);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -45,19 +45,13 @@ export const ChangePasswordScreen = ({ navigation }: Props) => {
         newPassword: values.newPassword,
       });
 
-      alert('Success', response.message || 'Password changed successfully.', [
-        {
-          text: 'OK',
-          onPress: () => {
-            if (navigation.canGoBack()) {
-              navigation.goBack();
-              return;
-            }
+      showToast(response.message || 'Password changed successfully.');
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+        return;
+      }
 
-            navigation.navigate('Profile');
-          },
-        },
-      ]);
+      navigation.navigate('Profile');
     } catch (requestError) {
       if (requestError instanceof ApiClientError) {
         setError(requestError.message);

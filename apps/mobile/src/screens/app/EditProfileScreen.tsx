@@ -58,7 +58,7 @@ const toAuthUser = (profile: UserProfile) => ({
 });
 
 export const EditProfileScreen = ({ navigation }: Props) => {
-  const { alert } = useAppAlert();
+  const { showToast } = useAppAlert();
   const { colors } = useAppTheme();
   const styles = createStyles(colors);
   const dispatch = useAppDispatch();
@@ -118,19 +118,13 @@ export const EditProfileScreen = ({ navigation }: Props) => {
 
       dispatch(setAuthUser(toAuthUser(updatedProfile)));
 
-      alert('Profile Updated', 'Your profile details have been updated.', [
-        {
-          text: 'OK',
-          onPress: () => {
-            if (navigation.canGoBack()) {
-              navigation.goBack();
-              return;
-            }
+      showToast('Profile updated successfully.');
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+        return;
+      }
 
-            navigation.navigate('Profile');
-          },
-        },
-      ]);
+      navigation.navigate('Profile');
     } catch (requestError) {
       if (requestError instanceof ApiClientError) {
         setError(requestError.message);

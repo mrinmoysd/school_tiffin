@@ -58,7 +58,7 @@ const getStatusBadgeStyle = (
 };
 
 export const PauseRequestsScreen = ({ navigation }: Props) => {
-  const { alert } = useAppAlert();
+  const { alert, showToast } = useAppAlert();
   const { colors } = useAppTheme();
   const styles = createStyles(colors);
   const [filter, setFilter] = useState<FilterKey>('ALL');
@@ -113,7 +113,7 @@ export const PauseRequestsScreen = ({ navigation }: Props) => {
 
           try {
             const response = await subscriptionsApi.cancelPauseRequest(request.id);
-            alert('Cancelled', response.message);
+            showToast(response.message || 'Pause request cancelled.');
             await loadRequests();
           } catch (requestError) {
             if (requestError instanceof ApiClientError) {

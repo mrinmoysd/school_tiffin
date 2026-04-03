@@ -83,7 +83,7 @@ const countAffectedDays = (
   }).length;
 
 export const PauseRequestScreen = ({ route, navigation }: Props) => {
-  const { alert } = useAppAlert();
+  const { showToast } = useAppAlert();
   const { colors } = useAppTheme();
   const styles = createStyles(colors);
   const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
@@ -225,25 +225,15 @@ export const PauseRequestScreen = ({ route, navigation }: Props) => {
         reason: reason.trim() || undefined,
       });
 
-      alert(
-        'Pause request submitted',
-        `Affected days: ${response.impact.daysAffected}\nNew end date: ${formatDisplayDate(parseDate(response.impact.newEndDate))}`,
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              if (navigation.canGoBack()) {
-                navigation.goBack();
-                return;
-              }
+      showToast(`Pause request submitted. ${response.impact.daysAffected} days affected.`);
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+        return;
+      }
 
-              navigation.navigate('SubscriptionDetail', {
-                subscriptionId: route.params.subscriptionId,
-              });
-            },
-          },
-        ],
-      );
+      navigation.navigate('SubscriptionDetail', {
+        subscriptionId: route.params.subscriptionId,
+      });
     } catch (requestError) {
       if (requestError instanceof ApiClientError) {
         setScreenError(requestError.message);
