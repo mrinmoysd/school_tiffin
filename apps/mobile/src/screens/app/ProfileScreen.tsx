@@ -241,16 +241,6 @@ export const ProfileScreen = ({ navigation }: Props) => {
 
           <Pressable
             style={styles.quickActionCard}
-            onPress={() => navigation.navigate('Students')}
-            accessibilityRole="button"
-            accessibilityLabel="Manage students"
-          >
-            <Text style={styles.quickActionTitle}>Students</Text>
-            <Text style={styles.quickActionMeta}>Manage student profiles</Text>
-          </Pressable>
-
-          <Pressable
-            style={styles.quickActionCard}
             onPress={() => navigation.navigate('Notifications')}
             accessibilityRole="button"
             accessibilityLabel="Open notifications"

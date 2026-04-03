@@ -23,15 +23,15 @@ import { useAppTheme } from '../../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 type BottomNavItem = {
-  label: 'Schools' | 'Orders' | 'Subscription' | 'Profile';
-  route: 'SchoolList' | 'Orders' | 'SubscriptionsList' | 'Profile';
+  label: 'Schools' | 'Students' | 'Orders' | 'Subscription';
+  route: 'SchoolList' | 'Students' | 'Orders' | 'SubscriptionsList';
 };
 
 const BOTTOM_NAV_ITEMS: BottomNavItem[] = [
   { label: 'Schools', route: 'SchoolList' },
+  { label: 'Students', route: 'Students' },
   { label: 'Orders', route: 'Orders' },
   { label: 'Subscription', route: 'SubscriptionsList' },
-  { label: 'Profile', route: 'Profile' },
 ];
 
 const TAB_BAR_BASE_HEIGHT = 66;
@@ -40,12 +40,12 @@ const getBottomTabIcon = (label: BottomNavItem['label']): keyof typeof Ionicons.
   switch (label) {
     case 'Schools':
       return 'school-outline';
+    case 'Students':
+      return 'people-outline';
     case 'Orders':
       return 'receipt-outline';
     case 'Subscription':
       return 'calendar-outline';
-    case 'Profile':
-      return 'person-outline';
     default:
       return 'ellipse-outline';
   }
@@ -257,9 +257,12 @@ export const HomeScreen = ({ navigation }: Props) => {
       >
         <View style={styles.headerCard}>
           <View style={styles.headerTopRow}>
-            <Text style={styles.welcomeInlineText}>
-              Welcome <Text style={styles.welcomeNameText}>{greetingName}</Text>,
-            </Text>
+            <View style={styles.welcomeBlock}>
+              <Text style={styles.welcomeInlineText}>
+                Welcome <Text style={styles.welcomeNameText}>{greetingName}</Text>,
+              </Text>
+              <Text style={styles.taglineText}>Where Mom’s Taste Meets Convenience.</Text>
+            </View>
 
             <Pressable
               style={styles.profileIconButton}
@@ -469,16 +472,24 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       alignItems: 'center',
       marginBottom: 6,
     },
-    welcomeInlineText: {
+    welcomeBlock: {
       flex: 1,
+      marginRight: 12,
+    },
+    welcomeInlineText: {
       fontSize: 20,
       fontWeight: '400',
       color: colors.text.primary,
-      marginRight: 12,
     },
     welcomeNameText: {
       fontSize: 22,
       fontWeight: '700',
+    },
+    taglineText: {
+      marginTop: 4,
+      color: colors.text.muted,
+      fontSize: 12,
+      fontWeight: '500',
     },
     profileIconButton: {
       width: 60,
