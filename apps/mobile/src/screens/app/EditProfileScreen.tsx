@@ -138,11 +138,13 @@ export const EditProfileScreen = ({ navigation }: Props) => {
   };
 
   const onPickProfileImage = async () => {
-    setImageUploadLoading(true);
     setError(null);
 
     try {
-      const uploadedImageUrl = await pickAndUploadImage('users');
+      const uploadedImageUrl = await pickAndUploadImage('users', {
+        onUploadStart: () => setImageUploadLoading(true),
+        onUploadEnd: () => setImageUploadLoading(false),
+      });
       if (!uploadedImageUrl) {
         return;
       }
@@ -156,8 +158,6 @@ export const EditProfileScreen = ({ navigation }: Props) => {
       } else {
         setError('Failed to upload profile image.');
       }
-    } finally {
-      setImageUploadLoading(false);
     }
   };
 

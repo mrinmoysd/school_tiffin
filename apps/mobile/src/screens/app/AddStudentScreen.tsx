@@ -3,7 +3,16 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import { schoolsApi, type School } from '../../api/schools';
 import { studentsApi } from '../../api/students';
@@ -209,11 +218,13 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
   };
 
   const onPickStudentImage = async () => {
-    setImageUploadLoading(true);
     setError(null);
 
     try {
-      const uploadedImageUrl = await pickAndUploadImage('students');
+      const uploadedImageUrl = await pickAndUploadImage('students', {
+        onUploadStart: () => setImageUploadLoading(true),
+        onUploadEnd: () => setImageUploadLoading(false),
+      });
       if (!uploadedImageUrl) {
         return;
       }
@@ -227,8 +238,6 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
       } else {
         setError('Failed to upload student image.');
       }
-    } finally {
-      setImageUploadLoading(false);
     }
   };
 
@@ -483,6 +492,14 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
           disabled={imageUploadLoading}
         />
       </ScrollView>
+      {imageUploadLoading ? (
+        <View style={styles.uploadOverlay}>
+          <View style={styles.uploadOverlayCard}>
+            <ActivityIndicator size="small" color={colors.action.primary} />
+            <Text style={styles.uploadOverlayText}>Uploading picture...</Text>
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 };
@@ -611,5 +628,29 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       color: colors.intent.danger,
       fontSize: 13,
       marginBottom: 10,
+    },
+    uploadOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: colors.overlay.scrim,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 24,
+    },
+    uploadOverlayCard: {
+      minWidth: 190,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.neutral.slate200,
+      backgroundColor: colors.neutral.white,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    uploadOverlayText: {
+      marginTop: 8,
+      color: colors.text.primary,
+      fontSize: 13,
+      fontWeight: '600',
     },
   });

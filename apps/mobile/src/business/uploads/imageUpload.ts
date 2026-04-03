@@ -5,6 +5,10 @@ const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image
 const MAX_IMAGE_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
 type UploadFolder = 'users' | 'students';
+type PickAndUploadOptions = {
+  onUploadStart?: () => void;
+  onUploadEnd?: () => void;
+};
 
 type PickedImage = {
   uri: string;
@@ -89,20 +93,29 @@ const pickImageFromLibrary = async (fallbackPrefix: string): Promise<PickedImage
   return file;
 };
 
-export const pickAndUploadImage = async (folder: UploadFolder): Promise<string | null> => {
+export const pickAndUploadImage = async (
+  folder: UploadFolder,
+  options?: PickAndUploadOptions,
+): Promise<string | null> => {
   const selectedImage = await pickImageFromLibrary(folder === 'users' ? 'profile' : 'student');
   if (!selectedImage) {
     return null;
   }
 
-  const upload = await uploadsApi.uploadImage({
-    folder,
-    file: {
-      uri: selectedImage.uri,
-      name: selectedImage.name,
-      type: selectedImage.type,
-    },
-  });
+  options?.onUploadStart?.();
 
-  return upload.url || upload.key;
+  try {
+    const upload = await uploadsApi.uploadImage({
+      folder,
+      file: {
+        uri: selectedImage.uri,
+        name: selectedImage.name,
+        type: selectedImage.type,
+      },
+    });
+
+    return upload.url || upload.key;
+  } finally {
+    options?.onUploadEnd?.();
+  }
 };

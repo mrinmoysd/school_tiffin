@@ -122,7 +122,9 @@ export const AppNavigator = () => {
             <Stack.Screen
               name="AddStudent"
               component={AddStudentScreen}
-              options={{ title: 'Add Student' }}
+              options={({ route }) => ({
+                title: route.params?.studentId ? 'Edit Student' : 'Add Student',
+              })}
             />
             <Stack.Screen
               name="DateSelection"
