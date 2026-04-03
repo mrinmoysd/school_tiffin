@@ -5,7 +5,13 @@ import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'r
 import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi } from '../../api/students';
 import { usersApi, type UserProfile } from '../../api/users';
-import { AppButton, AppLoader, FoodDoodleBackdrop, useAppAlert } from '../../components/ui';
+import {
+  AppButton,
+  AppLoader,
+  FoodDoodleBackdrop,
+  ProfileAvatar,
+  useAppAlert,
+} from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { logout } from '../../store/auth';
 import { useAppDispatch } from '../../store/hooks';
@@ -151,6 +157,9 @@ export const ProfileScreen = ({ navigation }: Props) => {
       >
         <View style={styles.card}>
           <Text style={styles.cardTitle}>User Information</Text>
+          <View style={styles.avatarRow}>
+            <ProfileAvatar imageUrl={profile.profileImageUrl} name={profile.fullName} size={76} />
+          </View>
           <Text style={styles.line}>Name: {profile.fullName || '-'}</Text>
           <Text style={styles.muted}>Email: {profile.email || '-'}</Text>
           <Text style={styles.muted}>Phone: {getDisplayPhone(profile)}</Text>
@@ -299,6 +308,10 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       fontSize: 14,
       fontWeight: '600',
       marginBottom: 4,
+    },
+    avatarRow: {
+      marginBottom: 12,
+      alignItems: 'center',
     },
     muted: {
       color: colors.text.subtle,

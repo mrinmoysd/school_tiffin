@@ -16,7 +16,7 @@ import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi, type Student } from '../../api/students';
 import { subscriptionsApi, type Subscription } from '../../api/subscriptions';
 import { usersApi } from '../../api/users';
-import { AppLoader, FoodDoodleBackdrop } from '../../components/ui';
+import { AppLoader, FoodDoodleBackdrop, ProfileAvatar } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppSelector } from '../../store/hooks';
 import { useAppTheme } from '../../theme';
@@ -123,6 +123,7 @@ export const HomeScreen = ({ navigation }: Props) => {
   const [greetingName, setGreetingName] = useState(() =>
     getGreetingName(user?.fullName, user?.email),
   );
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
   const [students, setStudents] = useState<Student[]>([]);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
@@ -188,6 +189,7 @@ export const HomeScreen = ({ navigation }: Props) => {
       try {
         const profile = await usersApi.getCurrentUserProfile();
         setGreetingName(getGreetingName(profile.fullName, profile.email));
+        setProfileImageUrl(profile.profileImageUrl ?? null);
       } catch {
         // Keep best available local user name if profile call fails.
       }
@@ -265,7 +267,7 @@ export const HomeScreen = ({ navigation }: Props) => {
               accessibilityRole="button"
               accessibilityLabel="Open profile"
             >
-              <Text style={styles.profileIconText}>{greetingName.charAt(0)}</Text>
+              <ProfileAvatar imageUrl={profileImageUrl} name={greetingName} size={60} />
             </Pressable>
           </View>
         </View>
@@ -316,6 +318,13 @@ export const HomeScreen = ({ navigation }: Props) => {
                     ]}
                     onPress={() => setSelectedStudentId(student.id)}
                   >
+                    <View style={styles.studentAvatarWrap}>
+                      <ProfileAvatar
+                        imageUrl={student.profileImageUrl}
+                        name={student.fullName}
+                        size={32}
+                      />
+                    </View>
                     <Text style={styles.studentName}>
                       {getStudentDisplayName(student.fullName)}
                     </Text>
@@ -475,16 +484,8 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       width: 60,
       height: 60,
       borderRadius: 20,
-      backgroundColor: colors.neutral.white,
-      borderWidth: 1,
-      borderColor: colors.neutral.slate300,
       alignItems: 'center',
       justifyContent: 'center',
-    },
-    profileIconText: {
-      fontSize: 20,
-      fontWeight: '700',
-      color: colors.text.primary,
     },
     section: {
       marginBottom: 16,
@@ -565,7 +566,7 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
     },
     studentCard: {
       width: 130,
-      minHeight: 74,
+      minHeight: 84,
       borderRadius: 12,
       borderWidth: 1,
       borderColor: colors.neutral.slate300,
@@ -574,6 +575,10 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       paddingVertical: 10,
       marginRight: 8,
       justifyContent: 'center',
+    },
+    studentAvatarWrap: {
+      marginBottom: 6,
+      alignItems: 'flex-start',
     },
     studentCardSelected: {
       borderColor: colors.action.primary,

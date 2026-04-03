@@ -4,11 +4,13 @@ import { Controller, useForm } from 'react-hook-form';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ApiClientError } from '../../api/client/apiClient';
 import { type UserProfile, usersApi } from '../../api/users';
+import { pickAndUploadImage } from '../../business/uploads';
 import {
   AppButton,
   AppLoader,
   FoodDoodleBackdrop,
   FormTextInput,
+  ProfileAvatar,
   useAppAlert,
 } from '../../components/ui';
 import { INDIAN_PHONE_REGEX } from '../../constants/validation';
@@ -62,7 +64,9 @@ export const EditProfileScreen = ({ navigation }: Props) => {
   const dispatch = useAppDispatch();
   const [initialLoading, setInitialLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [imageUploadLoading, setImageUploadLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
   const { control, handleSubmit, reset, watch } = useForm<EditProfileFormValues>({
     defaultValues: {
@@ -85,6 +89,7 @@ export const EditProfileScreen = ({ navigation }: Props) => {
         email: profile.email ?? '',
         phone: normalizePhoneForInput(profile.phoneNumber ?? profile.phone),
       });
+      setProfileImageUrl(profile.profileImageUrl ?? null);
     } catch (requestError) {
       if (requestError instanceof ApiClientError) {
         setError(requestError.message);
@@ -108,6 +113,7 @@ export const EditProfileScreen = ({ navigation }: Props) => {
       const updatedProfile = await usersApi.updateCurrentUserProfile({
         fullName: values.fullName.trim(),
         phone: normalizePhoneForApi(values.phone),
+        ...(profileImageUrl ? { profileImageUrl } : {}),
       });
 
       dispatch(setAuthUser(toAuthUser(updatedProfile)));
@@ -136,6 +142,30 @@ export const EditProfileScreen = ({ navigation }: Props) => {
     }
   };
 
+  const onPickProfileImage = async () => {
+    setImageUploadLoading(true);
+    setError(null);
+
+    try {
+      const uploadedImageUrl = await pickAndUploadImage('users');
+      if (!uploadedImageUrl) {
+        return;
+      }
+
+      setProfileImageUrl(uploadedImageUrl);
+    } catch (requestError) {
+      if (requestError instanceof ApiClientError) {
+        setError(requestError.message);
+      } else if (requestError instanceof Error) {
+        setError(requestError.message);
+      } else {
+        setError('Failed to upload profile image.');
+      }
+    } finally {
+      setImageUploadLoading(false);
+    }
+  };
+
   if (initialLoading) {
     return (
       <View style={styles.centered}>
@@ -148,7 +178,16 @@ export const EditProfileScreen = ({ navigation }: Props) => {
     <View style={styles.container}>
       <FoodDoodleBackdrop />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.subtitle}>Update your basic account information.</Text>
+        <View style={styles.avatarSection}>
+          <ProfileAvatar imageUrl={profileImageUrl} name={watch('fullName')} size={92} />
+        </View>
+        <AppButton
+          title={imageUploadLoading ? 'Uploading...' : 'Choose Photo'}
+          variant="secondary"
+          onPress={() => void onPickProfileImage()}
+          loading={imageUploadLoading}
+          style={styles.photoButton}
+        />
 
         <Controller
           control={control}
@@ -211,6 +250,7 @@ export const EditProfileScreen = ({ navigation }: Props) => {
           title="Save Changes"
           onPress={() => void handleSubmit(onSubmit)()}
           loading={submitLoading}
+          disabled={imageUploadLoading}
         />
         <AppButton
           title="Cancel"
@@ -248,9 +288,11 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       paddingHorizontal: 20,
       backgroundColor: 'transparent',
     },
-    subtitle: {
-      color: colors.text.secondary,
-      fontSize: 13,
+    avatarSection: {
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    photoButton: {
       marginBottom: 14,
     },
     errorText: {

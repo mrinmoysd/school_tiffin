@@ -5,7 +5,13 @@ import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'rea
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi, type Student } from '../../api/students';
-import { AppButton, AppLoader, FoodDoodleBackdrop, useAppAlert } from '../../components/ui';
+import {
+  AppButton,
+  AppLoader,
+  FoodDoodleBackdrop,
+  ProfileAvatar,
+  useAppAlert,
+} from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -170,9 +176,14 @@ export const StudentsScreen = ({ navigation }: Props) => {
               )}
             >
               <View style={styles.studentCard}>
-                <Text style={styles.studentName}>{item.fullName}</Text>
-                <Text style={styles.studentMeta}>Grade: {formatGrade(item.grade)}</Text>
-                <Text style={styles.studentMeta}>School: {item.school?.name ?? '-'}</Text>
+                <View style={styles.studentTopRow}>
+                  <ProfileAvatar imageUrl={item.profileImageUrl} name={item.fullName} size={52} />
+                  <View style={styles.studentInfo}>
+                    <Text style={styles.studentName}>{item.fullName}</Text>
+                    <Text style={styles.studentMeta}>Grade: {formatGrade(item.grade)}</Text>
+                    <Text style={styles.studentMeta}>School: {item.school?.name ?? '-'}</Text>
+                  </View>
+                </View>
 
                 <View style={styles.actionRow}>
                   <Pressable
@@ -262,6 +273,14 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       borderColor: colors.neutral.slate200,
       padding: 14,
       marginBottom: 10,
+    },
+    studentTopRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    studentInfo: {
+      marginLeft: 10,
+      flex: 1,
     },
     studentName: {
       color: colors.text.primary,

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppButton, AppLoader, FoodDoodleBackdrop } from '../../components/ui';
+import { AppButton, AppLoader, FoodDoodleBackdrop, ProfileAvatar } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { studentsApi, type Student } from '../../api/students';
 import { mealPlansApi, type MealPlanDetails } from '../../api/meal-plans';
@@ -189,8 +189,13 @@ export const SubscriptionReviewScreen = ({ route, navigation }: Props) => {
       <FoodDoodleBackdrop />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryLine}>Student: {student.fullName}</Text>
-          <Text style={styles.summaryLine}>Meal Plan: {mealPlan.name}</Text>
+          <View style={styles.studentHeader}>
+            <ProfileAvatar imageUrl={student.profileImageUrl} name={student.fullName} size={56} />
+            <View style={styles.studentHeaderText}>
+              <Text style={styles.summaryLine}>Student: {student.fullName}</Text>
+              <Text style={styles.summaryLine}>Meal Plan: {mealPlan.name}</Text>
+            </View>
+          </View>
           <Text style={styles.summaryLine}>Start Date: {formatDate(startDate)}</Text>
           <Text style={styles.summaryLine}>
             End Date: {endDate ? formatDate(endDate) : 'Calculating...'}
@@ -245,6 +250,15 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       color: colors.text.subtle,
       fontSize: 14,
       marginBottom: 4,
+    },
+    studentHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 6,
+    },
+    studentHeaderText: {
+      marginLeft: 10,
+      flex: 1,
     },
     summaryTotal: {
       marginTop: 6,

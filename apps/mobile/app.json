@@ -17,7 +17,10 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Allow School Tiffin to access your photos so you can upload profile pictures."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -33,6 +36,12 @@
     },
     "plugins": [
       "expo-asset",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow School Tiffin to access your photos so you can upload profile pictures."
+        }
+      ],
       "@react-native-community/datetimepicker",
       [
         "expo-navigation-bar",

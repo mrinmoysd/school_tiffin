@@ -6,7 +6,14 @@ import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from '
 import { ApiClientError } from '../../api/client/apiClient';
 import { schoolsApi, type School } from '../../api/schools';
 import { studentsApi } from '../../api/students';
-import { AppButton, AppLoader, FoodDoodleBackdrop, FormTextInput } from '../../components/ui';
+import { pickAndUploadImage } from '../../business/uploads';
+import {
+  AppButton,
+  AppLoader,
+  FoodDoodleBackdrop,
+  FormTextInput,
+  ProfileAvatar,
+} from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
 
@@ -98,7 +105,9 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
   const [schools, setSchools] = useState<School[]>([]);
   const [screenLoading, setScreenLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [imageUploadLoading, setImageUploadLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [studentImageUrl, setStudentImageUrl] = useState<string | null>(null);
   const [gradeModalVisible, setGradeModalVisible] = useState(false);
   const [schoolModalVisible, setSchoolModalVisible] = useState(false);
   const [dobPickerVisible, setDobPickerVisible] = useState(false);
@@ -135,8 +144,10 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
         setValue('fullName', student.fullName ?? '');
         setValue('grade', normalizeGradeValue(student.grade));
         setValue('schoolId', student.school?.id ?? params.schoolId ?? '');
+        setStudentImageUrl(student.profileImageUrl ?? null);
       } else {
         setValue('schoolId', params.schoolId ?? '');
+        setStudentImageUrl(null);
       }
     } catch (requestError) {
       if (requestError instanceof ApiClientError) {
@@ -162,6 +173,7 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
         fullName: values.fullName.trim(),
         grade: values.grade.trim(),
         schoolId: values.schoolId,
+        ...(studentImageUrl ? { profileImageUrl: studentImageUrl } : {}),
       };
 
       if (isEditMode && params.studentId) {
@@ -195,6 +207,30 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
     }
   };
 
+  const onPickStudentImage = async () => {
+    setImageUploadLoading(true);
+    setError(null);
+
+    try {
+      const uploadedImageUrl = await pickAndUploadImage('students');
+      if (!uploadedImageUrl) {
+        return;
+      }
+
+      setStudentImageUrl(uploadedImageUrl);
+    } catch (requestError) {
+      if (requestError instanceof ApiClientError) {
+        setError(requestError.message);
+      } else if (requestError instanceof Error) {
+        setError(requestError.message);
+      } else {
+        setError('Failed to upload student image.');
+      }
+    } finally {
+      setImageUploadLoading(false);
+    }
+  };
+
   if (screenLoading) {
     return (
       <View style={styles.centered}>
@@ -208,6 +244,16 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
       <FoodDoodleBackdrop />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Text style={styles.subtitle}>Enter student details to continue.</Text>
+        <View style={styles.avatarSection}>
+          <ProfileAvatar imageUrl={studentImageUrl} name={watch('fullName')} size={88} />
+        </View>
+        <AppButton
+          title={imageUploadLoading ? 'Uploading...' : 'Choose Student Photo'}
+          variant="secondary"
+          onPress={() => void onPickStudentImage()}
+          loading={imageUploadLoading}
+          style={styles.photoButton}
+        />
 
         <Controller
           control={control}
@@ -430,6 +476,7 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
           title={isEditMode ? 'Update Student' : 'Create Student'}
           onPress={handleSubmit(onSubmit)}
           loading={submitLoading}
+          disabled={imageUploadLoading}
         />
       </ScrollView>
     </View>
@@ -456,6 +503,13 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       marginBottom: 12,
       color: colors.text.secondary,
       fontSize: 14,
+    },
+    avatarSection: {
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    photoButton: {
+      marginBottom: 12,
     },
     fieldWrapper: {
       marginBottom: 14,

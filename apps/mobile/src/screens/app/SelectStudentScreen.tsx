@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { AppButton, AppLoader, FoodDoodleBackdrop } from '../../components/ui';
+import { AppButton, AppLoader, FoodDoodleBackdrop, ProfileAvatar } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { studentsApi, type Student } from '../../api/students';
 import { ApiClientError } from '../../api/client/apiClient';
@@ -178,11 +178,22 @@ export const SelectStudentScreen = ({ navigation, route }: Props) => {
                     </View>
 
                     <View style={styles.studentInfo}>
-                      <Text style={styles.studentName}>{student.fullName}</Text>
-                      <Text style={styles.studentMeta}>Grade: {formatGrade(student.grade)}</Text>
-                      <Text style={styles.studentMeta}>
-                        School: {student.school?.name ?? 'Not assigned'}
-                      </Text>
+                      <View style={styles.studentHeader}>
+                        <ProfileAvatar
+                          imageUrl={student.profileImageUrl}
+                          name={student.fullName}
+                          size={48}
+                        />
+                        <View style={styles.studentText}>
+                          <Text style={styles.studentName}>{student.fullName}</Text>
+                          <Text style={styles.studentMeta}>
+                            Grade: {formatGrade(student.grade)}
+                          </Text>
+                          <Text style={styles.studentMeta}>
+                            School: {student.school?.name ?? 'Not assigned'}
+                          </Text>
+                        </View>
+                      </View>
 
                       <Pressable
                         onPress={() =>
@@ -381,6 +392,14 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       backgroundColor: colors.intent.info,
     },
     studentInfo: {
+      marginLeft: 10,
+      flex: 1,
+    },
+    studentHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    studentText: {
       marginLeft: 10,
       flex: 1,
     },

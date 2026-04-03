@@ -86,11 +86,19 @@ export const apiRequest = async <T>(endpoint: string, init: ApiRequestInit = {})
     throw new ApiClientError('Authentication required. Please login again.', 401);
   }
 
+  const requestHeaders = (requestInit.headers as Record<string, string> | undefined) ?? {};
+  const hasContentTypeHeader = Object.keys(requestHeaders).some(
+    header => header.toLowerCase() === 'content-type',
+  );
+  const isMultipartBody = typeof FormData !== 'undefined' && requestInit.body instanceof FormData;
+
   const headers: Record<string, string> = {
     Accept: 'application/json',
-    ...(requestInit.body ? { 'Content-Type': 'application/json' } : {}),
+    ...(!isMultipartBody && requestInit.body && !hasContentTypeHeader
+      ? { 'Content-Type': 'application/json' }
+      : {}),
     ...(tokens?.accessToken ? { Authorization: `Bearer ${tokens.accessToken}` } : {}),
-    ...(requestInit.headers as Record<string, string>),
+    ...requestHeaders,
   };
 
   let response: Response;
