@@ -36,11 +36,12 @@ type AppAlertContextValue = {
     actions?: AppAlertAction[],
     options?: AppAlertOptions,
   ) => void;
-  showToast: (message: string, durationMs?: number) => void;
+  showToast: (message: string, variant?: 'success' | 'error', durationMs?: number) => void;
 };
 
 type ToastConfig = {
   message: string;
+  variant: 'success' | 'error';
 };
 
 const AppAlertContext = createContext<AppAlertContextValue | undefined>(undefined);
@@ -66,17 +67,20 @@ export const AppAlertProvider = ({ children }: { children: React.ReactNode }) =>
     });
   }, []);
 
-  const showToast = useCallback<AppAlertContextValue['showToast']>((message, durationMs = 2400) => {
-    if (toastTimerRef.current) {
-      clearTimeout(toastTimerRef.current);
-    }
+  const showToast = useCallback<AppAlertContextValue['showToast']>(
+    (message, variant = 'success', durationMs = 2400) => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
 
-    setToast({ message });
-    toastTimerRef.current = setTimeout(() => {
-      setToast(null);
-      toastTimerRef.current = null;
-    }, durationMs);
-  }, []);
+      setToast({ message, variant });
+      toastTimerRef.current = setTimeout(() => {
+        setToast(null);
+        toastTimerRef.current = null;
+      }, durationMs);
+    },
+    [],
+  );
 
   useEffect(
     () => () => {
@@ -158,8 +162,10 @@ export const AppAlertProvider = ({ children }: { children: React.ReactNode }) =>
 
       {toast ? (
         <View pointerEvents="none" style={styles.toastOverlay}>
-          <View style={styles.toastCard}>
-            <Text style={styles.toastText}>{toast.message}</Text>
+          <View style={[styles.toastCard, toast.variant === 'error' && styles.toastCardError]}>
+            <Text style={[styles.toastText, toast.variant === 'error' && styles.toastTextError]}>
+              {toast.message}
+            </Text>
           </View>
         </View>
       ) : null}
@@ -250,18 +256,25 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       minHeight: 42,
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: colors.neutral.slate300,
-      backgroundColor: colors.neutral.white,
+      borderColor: colors.intent.success,
+      backgroundColor: colors.intent.success,
       paddingHorizontal: 14,
       paddingVertical: 10,
       justifyContent: 'center',
       alignItems: 'center',
       maxWidth: '100%',
     },
+    toastCardError: {
+      borderColor: colors.intent.danger,
+      backgroundColor: colors.intent.danger,
+    },
     toastText: {
-      color: colors.text.primary,
+      color: colors.neutral.white,
       fontSize: 13,
       fontWeight: '600',
       textAlign: 'center',
+    },
+    toastTextError: {
+      color: colors.neutral.white,
     },
   });

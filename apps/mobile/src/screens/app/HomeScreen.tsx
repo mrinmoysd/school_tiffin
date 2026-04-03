@@ -270,7 +270,9 @@ export const HomeScreen = ({ navigation }: Props) => {
               accessibilityRole="button"
               accessibilityLabel="Open profile"
             >
-              <ProfileAvatar imageUrl={profileImageUrl} name={greetingName} size={60} />
+              <View style={styles.profileAvatarRing}>
+                <ProfileAvatar imageUrl={profileImageUrl} name={greetingName} size={56} />
+              </View>
             </Pressable>
           </View>
         </View>
@@ -495,6 +497,16 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       width: 60,
       height: 60,
       borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    profileAvatarRing: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      borderWidth: 2,
+      borderColor: colors.action.primary,
+      backgroundColor: colors.surface.infoSofter,
       alignItems: 'center',
       justifyContent: 'center',
     },

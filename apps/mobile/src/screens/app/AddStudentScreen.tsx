@@ -23,6 +23,7 @@ import {
   FoodDoodleBackdrop,
   FormTextInput,
   ProfileAvatar,
+  useAppAlert,
 } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
@@ -108,6 +109,7 @@ const normalizeGradeValue = (grade: string | number | null) => {
 };
 
 export const AddStudentScreen = ({ route, navigation }: Props) => {
+  const { showToast } = useAppAlert();
   const { colors } = useAppTheme();
   const styles = createStyles(colors);
   const params = route.params ?? {};
@@ -188,8 +190,10 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
 
       if (isEditMode && params.studentId) {
         await studentsApi.updateStudent(params.studentId, payload);
+        showToast('Student updated successfully.');
       } else {
         await studentsApi.createStudent(payload);
+        showToast('Student added successfully.');
       }
 
       if (navigation.canGoBack()) {
