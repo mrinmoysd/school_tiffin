@@ -26,6 +26,7 @@ import { pauseRequestService } from '@/services';
 import { PauseRequest, PauseRequestFilters, PauseRequestStatus } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs, { Dayjs } from 'dayjs';
 
@@ -332,22 +333,24 @@ const PauseRequestsPage = () => {
             onRetry={refetch}
           />
         ) : (
-          <Table
-            columns={columns}
-            dataSource={pauseRequests}
-            rowKey="id"
-            tableLayout="fixed"
-            scroll={{ x: 'max-content' }}
-            pagination={{
-              total: pauseRequests?.length,
-              pageSize: 10,
-              showSizeChanger: true,
-              showTotal: total => `Total ${total} requests`,
-            }}
-            rowClassName={record =>
-              record.status === PauseRequestStatus.PENDING ? 'bg-orange-50' : ''
-            }
-          />
+          <HorizontalScrollContainer>
+            <Table
+              columns={columns}
+              dataSource={pauseRequests}
+              rowKey="id"
+              tableLayout="fixed"
+              scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+              pagination={{
+                total: pauseRequests?.length,
+                pageSize: 10,
+                showSizeChanger: true,
+                showTotal: total => `Total ${total} requests`,
+              }}
+              rowClassName={record =>
+                record.status === PauseRequestStatus.PENDING ? 'bg-orange-50' : ''
+              }
+            />
+          </HorizontalScrollContainer>
         )}
       </Card>
     </div>

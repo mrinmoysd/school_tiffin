@@ -7,6 +7,7 @@ import { orderService } from '@/services';
 import { Order, OrderFilters, OrderStatus } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs, { Dayjs } from 'dayjs';
 
@@ -247,19 +248,21 @@ const OrdersListPage = () => {
             onRetry={refetch}
           />
         ) : (
-          <Table
-            columns={columns}
-            dataSource={orders}
-            rowKey="id"
-            tableLayout="fixed"
-            scroll={{ x: 'max-content' }}
-            pagination={{
-              total: orders?.length,
-              pageSize: 10,
-              showSizeChanger: true,
-              showTotal: total => `Total ${total} orders`,
-            }}
-          />
+          <HorizontalScrollContainer>
+            <Table
+              columns={columns}
+              dataSource={orders}
+              rowKey="id"
+              tableLayout="fixed"
+              scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+              pagination={{
+                total: orders?.length,
+                pageSize: 10,
+                showSizeChanger: true,
+                showTotal: total => `Total ${total} orders`,
+              }}
+            />
+          </HorizontalScrollContainer>
         )}
       </Card>
     </div>

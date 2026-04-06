@@ -200,7 +200,7 @@ const SubscriptionDetailPage = () => {
             rowKey="id"
             pagination={{ pageSize: 10 }}
             size="small"
-            scroll={{ x: 'max-content' }}
+            scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
           />
         </HorizontalScrollContainer>
       ),
@@ -224,7 +224,7 @@ const SubscriptionDetailPage = () => {
             pagination={false}
             size="small"
             locale={{ emptyText: 'No pause requests' }}
-            scroll={{ x: 'max-content' }}
+            scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
           />
         </HorizontalScrollContainer>
       ),

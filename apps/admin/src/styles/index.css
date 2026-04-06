@@ -54,6 +54,97 @@ body {
   padding-bottom: 6px;
 }
 
+/* Hide native horizontal scrollbar in table containers (keep custom control visible) */
+.table-scrollbar::-webkit-scrollbar:horizontal,
+.table-scrollbar .ant-table-content::-webkit-scrollbar:horizontal,
+.table-scrollbar .ant-table-body::-webkit-scrollbar:horizontal {
+  height: 0 !important;
+}
+
+.table-scrollbar {
+  scrollbar-width: none;
+}
+
+/* Custom horizontal scrollbar (native-like) */
+.st-horizontal-scrollbar {
+  margin-top: 8px;
+  padding: 0 6px;
+  display: grid;
+  grid-template-columns: 34px 1fr 34px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.st-horizontal-scrollbar-arrow {
+  height: 24px;
+  width: 34px;
+  border: none;
+  background: transparent;
+  color: #374151;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: color 160ms ease, opacity 160ms ease;
+}
+
+.st-horizontal-scrollbar-arrow:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.st-horizontal-scrollbar-range {
+  width: 100%;
+  margin: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 20px;
+}
+
+.st-horizontal-scrollbar-range:focus {
+  outline: none;
+}
+
+.st-horizontal-scrollbar-range::-webkit-slider-runnable-track {
+  height: 12px;
+  border-radius: 999px;
+  background: #d4d9e0;
+}
+
+.st-horizontal-scrollbar-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--st-scroll-thumb-size, 52px);
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid #828b97;
+  background: #9aa3af;
+  margin-top: 0;
+  cursor: pointer;
+}
+
+.st-horizontal-scrollbar-range:disabled::-webkit-slider-thumb {
+  cursor: not-allowed;
+}
+
+.st-horizontal-scrollbar-range::-moz-range-track {
+  height: 12px;
+  border-radius: 999px;
+  background: #d4d9e0;
+}
+
+.st-horizontal-scrollbar-range::-moz-range-thumb {
+  width: var(--st-scroll-thumb-size, 52px);
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid #828b97;
+  background: #9aa3af;
+  cursor: pointer;
+}
+
 /* Rounded, faster ellipsis tooltips (subscriptions page) */
 .st-ellipsis-tooltip .ant-tooltip-inner {
   border-radius: 8px;

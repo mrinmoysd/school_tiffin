@@ -294,7 +294,7 @@ const SubscriptionsListPage = () => {
               dataSource={subscriptions}
               rowKey="id"
               tableLayout="fixed"
-              scroll={{ x: 1200 }}
+              scroll={{ x: 1200, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
               pagination={{
                 total: subscriptions?.length,
                 pageSize: 10,

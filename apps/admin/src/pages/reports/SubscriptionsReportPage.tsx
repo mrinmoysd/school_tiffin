@@ -234,7 +234,7 @@ const SubscriptionsReportPage = () => {
                     rowKey="schoolId"
                     pagination={false}
                     size="small"
-                    scroll={{ x: 'max-content' }}
+                    scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
                   />
                 </HorizontalScrollContainer>
               </Col>

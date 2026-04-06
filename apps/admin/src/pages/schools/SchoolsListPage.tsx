@@ -27,6 +27,7 @@ import { schoolService } from '@/services';
 import { School, SchoolFilters } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -296,19 +297,21 @@ const SchoolsListPage = () => {
         ) : isLoading ? (
           <TableSkeleton rows={8} />
         ) : (
-          <Table
-            columns={columns}
-            dataSource={schools}
-            rowKey="id"
-            tableLayout="fixed"
-            scroll={{ x: 'max-content' }}
-            pagination={{
-              total: schools?.length,
-              pageSize: 10,
-              showSizeChanger: true,
-              showTotal: total => `Total ${total} schools`,
-            }}
-          />
+          <HorizontalScrollContainer>
+            <Table
+              columns={columns}
+              dataSource={schools}
+              rowKey="id"
+              tableLayout="fixed"
+              scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+              pagination={{
+                total: schools?.length,
+                pageSize: 10,
+                showSizeChanger: true,
+                showTotal: total => `Total ${total} schools`,
+              }}
+            />
+          </HorizontalScrollContainer>
         )}
       </Card>
     </div>

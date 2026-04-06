@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ConfigProvider, App as AntApp } from 'antd';
+import enUS from 'antd/locale/en_US';
 import App from './App';
 import './styles/index.css';
 
@@ -35,10 +36,18 @@ const theme = {
   },
 };
 
+const locale = {
+  ...enUS,
+  Pagination: {
+    ...enUS.Pagination,
+    items_per_page: '',
+  },
+};
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <ConfigProvider theme={theme}>
+      <ConfigProvider theme={theme} locale={locale}>
         <AntApp>
           <App />
         </AntApp>

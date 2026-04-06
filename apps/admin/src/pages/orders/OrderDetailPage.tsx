@@ -184,7 +184,7 @@ const OrderDetailPage = () => {
                 pagination={false}
                 size="small"
                 tableLayout="fixed"
-                scroll={{ x: 760 }}
+                scroll={{ x: 760, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
                 locale={{ emptyText: 'No transactions' }}
               />
             </HorizontalScrollContainer>

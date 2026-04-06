@@ -12,6 +12,7 @@ import { cmsService } from '@/services';
 import { CMSPage } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -189,19 +190,21 @@ const CMSListPage = () => {
             onRetry={refetch}
           />
         ) : (
-          <Table
-            columns={columns}
-            dataSource={pages}
-            rowKey="id"
-            tableLayout="fixed"
-            scroll={{ x: 'max-content' }}
-            pagination={{
-              total: pages?.length,
-              pageSize: 10,
-              showSizeChanger: true,
-              showTotal: total => `Total ${total} pages`,
-            }}
-          />
+          <HorizontalScrollContainer>
+            <Table
+              columns={columns}
+              dataSource={pages}
+              rowKey="id"
+              tableLayout="fixed"
+              scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+              pagination={{
+                total: pages?.length,
+                pageSize: 10,
+                showSizeChanger: true,
+                showTotal: total => `Total ${total} pages`,
+              }}
+            />
+          </HorizontalScrollContainer>
         )}
       </Card>
     </div>
