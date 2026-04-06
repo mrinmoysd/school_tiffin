@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  App as AntdApp,
   Table,
   Button,
   Input,
@@ -11,11 +12,11 @@ import {
   Typography,
   Card,
   Modal,
-  message,
   Tooltip,
 } from 'antd';
 import {
   PlusOutlined,
+  EyeOutlined,
   SearchOutlined,
   EditOutlined,
   DeleteOutlined,
@@ -31,9 +32,11 @@ import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 const { confirm } = Modal;
+const SCHOOL_NAME_TOOLTIP_TRIM_LIMIT = 30;
 
 const SchoolsListPage = () => {
   const navigate = useNavigate();
+  const { message } = AntdApp.useApp();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<SchoolFilters>({});
 
@@ -80,6 +83,10 @@ const SchoolsListPage = () => {
     },
   });
 
+  const pendingServiceToggleSchoolId = toggleServiceMutation.isPending
+    ? (toggleServiceMutation.variables?.id ?? null)
+    : null;
+
   // Handle delete confirmation
   const handleDelete = (school: School) => {
     confirm({
@@ -106,20 +113,62 @@ const SchoolsListPage = () => {
   // Table columns
   const columns: ColumnsType<School> = [
     {
+      title: <span className="whitespace-nowrap">Actions</span>,
+      key: 'actions',
+      align: 'center',
+      width: 170,
+      render: (_, record) => (
+        <Space>
+          <Tooltip title="View">
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
+              onClick={() => navigate(`/schools/${record.id}`)}
+            />
+          </Tooltip>
+          <Tooltip title="Edit">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => navigate(`/schools/${record.id}/edit`)}
+            />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleDelete(record)}
+            />
+          </Tooltip>
+        </Space>
+      ),
+    },
+    {
       title: <span className="whitespace-nowrap">School Name</span>,
       dataIndex: 'name',
       key: 'name',
       width: 200,
       ellipsis: true,
       sorter: (a, b) => a.name.localeCompare(b.name),
-      render: (name: string, record) => (
-        <div className="min-w-0">
-          <Text strong className="whitespace-nowrap">
-            {name}
-          </Text>
-          <div className="text-xs text-gray-500 truncate">{record.code}</div>
-        </div>
-      ),
+      render: (name: string, record) => {
+        const trimmedName = (name || '').trim();
+        const showTruncatedName = trimmedName.length > SCHOOL_NAME_TOOLTIP_TRIM_LIMIT;
+        const displayName = showTruncatedName
+          ? `${trimmedName.slice(0, SCHOOL_NAME_TOOLTIP_TRIM_LIMIT)}...`
+          : trimmedName || '-';
+
+        return (
+          <div className="min-w-0">
+            <Tooltip title={showTruncatedName ? trimmedName : undefined}>
+              <Text strong className="whitespace-nowrap">
+                {displayName}
+              </Text>
+            </Tooltip>
+            <div className="text-xs text-gray-500 truncate">{record.code}</div>
+          </div>
+        );
+      },
     },
     {
       title: <span className="whitespace-nowrap">City</span>,
@@ -171,7 +220,8 @@ const SchoolsListPage = () => {
           onChange={checked =>
             toggleServiceMutation.mutate({ id: record.id, isServiceAvailable: checked })
           }
-          loading={toggleServiceMutation.isPending}
+          loading={pendingServiceToggleSchoolId === record.id}
+          disabled={pendingServiceToggleSchoolId === record.id}
           checkedChildren="Yes"
           unCheckedChildren="No"
         />
@@ -184,31 +234,6 @@ const SchoolsListPage = () => {
       width: 140,
       render: (date: string) => dayjs(date).format('MMM DD, YYYY'),
       sorter: (a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix(),
-    },
-    {
-      title: <span className="whitespace-nowrap">Actions</span>,
-      key: 'actions',
-      align: 'center',
-      width: 120,
-      render: (_, record) => (
-        <Space>
-          <Tooltip title="Edit">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              onClick={() => navigate(`/schools/${record.id}/edit`)}
-            />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record)}
-            />
-          </Tooltip>
-        </Space>
-      ),
     },
   ];
 

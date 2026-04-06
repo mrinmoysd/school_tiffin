@@ -1,5 +1,11 @@
 import { IsEmail, IsString, IsOptional, MinLength, MaxLength, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import {
+  EMAIL_VALIDATION_REGEX,
+  INDIAN_PHONE_WITH_COUNTRY_CODE_REGEX,
+} from '../../common/constants/validation.constants';
+import { normalizeIndianPhone } from '../../common/utils/phone.util';
 
 export class UpdateUserDto {
   @ApiProperty({
@@ -20,17 +26,19 @@ export class UpdateUserDto {
   })
   @IsOptional()
   @IsEmail()
+  @Matches(EMAIL_VALIDATION_REGEX, { message: 'email must be a valid email' })
   email?: string;
 
   @ApiProperty({
-    description: 'User phone number in Indian format',
+    description: 'User phone number (mobile or landline, Indian format)',
     example: '+919876543210',
     required: false,
   })
   @IsOptional()
   @IsString()
-  @Matches(/^\+91[6-9]\d{9}$/, {
-    message: 'Invalid Indian phone number format. Must be in format: +91XXXXXXXXXX',
+  @Transform(({ value }) => normalizeIndianPhone(value))
+  @Matches(INDIAN_PHONE_WITH_COUNTRY_CODE_REGEX, {
+    message: 'Invalid phone number format. Enter a valid Indian mobile or landline number.',
   })
   phone?: string;
 

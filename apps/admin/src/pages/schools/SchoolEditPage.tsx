@@ -18,6 +18,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { schoolService } from '@/services';
 import { UpdateSchoolDto } from '@/types';
 import { useEffect } from 'react';
+import {
+  EMAIL_VALIDATION_REGEX,
+  isValidIndianPhone,
+  normalizeIndianPhone,
+} from '@/constants/validation';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -41,12 +46,13 @@ const SchoolEditPage = () => {
   useEffect(() => {
     if (school) {
       let operatingDaysArray: string[] = [];
+      const rawOperatingDays = school.operatingDays as unknown;
 
-      if (Array.isArray((school as any).operatingDays)) {
+      if (Array.isArray(rawOperatingDays)) {
         // If backend already returns an array
-        operatingDaysArray = (school as any).operatingDays;
-      } else if (typeof school.operatingDays === 'string') {
-        const value = school.operatingDays.trim();
+        operatingDaysArray = rawOperatingDays.map(value => String(value).trim()).filter(Boolean);
+      } else if (typeof rawOperatingDays === 'string') {
+        const value = rawOperatingDays.trim();
         // Try JSON first
         if (value.startsWith('[')) {
           try {
@@ -85,12 +91,11 @@ const SchoolEditPage = () => {
     },
   });
 
-  const onFinish = (
-    values: UpdateSchoolDto & { operatingDaysArray: string[] } & { code?: string },
-  ) => {
-    const { operatingDaysArray, code: _code, ...rest } = values;
+  const onFinish = (values: UpdateSchoolDto & { operatingDaysArray: string[] }) => {
+    const { operatingDaysArray, ...rest } = values;
     const data: UpdateSchoolDto = {
       ...rest,
+      contactPhone: rest.contactPhone?.trim() ? normalizeIndianPhone(rest.contactPhone) : undefined,
       // Backend expects comma-separated values
       operatingDays: operatingDaysArray.join(','),
     };
@@ -194,7 +199,7 @@ const SchoolEditPage = () => {
               <Form.Item
                 name="contactEmail"
                 label="Contact Email"
-                rules={[{ type: 'email', message: 'Please enter valid email' }]}
+                rules={[{ pattern: EMAIL_VALIDATION_REGEX, message: 'Please enter valid email' }]}
               >
                 <Input placeholder="e.g., admin@school.edu" />
               </Form.Item>
@@ -203,9 +208,18 @@ const SchoolEditPage = () => {
               <Form.Item
                 name="contactPhone"
                 label="Contact Phone"
-                rules={[{ pattern: /^\d{10}$/, message: 'Please enter valid 10-digit phone' }]}
+                rules={[
+                  {
+                    validator: (_, value: string | undefined) => {
+                      if (isValidIndianPhone(value)) return Promise.resolve();
+                      return Promise.reject(
+                        new Error('Enter a valid mobile or landline number (optional +91).'),
+                      );
+                    },
+                  },
+                ]}
               >
-                <Input placeholder="e.g., 9876543210" maxLength={10} />
+                <Input placeholder="e.g., 9876543210 or 02212345678" maxLength={16} />
               </Form.Item>
             </Col>
           </Row>

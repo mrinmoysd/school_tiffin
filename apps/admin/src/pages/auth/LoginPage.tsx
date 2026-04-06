@@ -8,6 +8,7 @@ import { authService } from '@/services';
 import { useAuthStore } from '@/stores/authStore';
 import { LoginRequest, UserRole } from '@/types';
 import { Controller, useForm } from 'react-hook-form';
+import { EMAIL_VALIDATION_REGEX } from '@/constants/validation';
 
 const { Title, Text } = Typography;
 
@@ -105,7 +106,7 @@ const LoginPage = () => {
                 rules={{
                   required: 'Please enter your email',
                   pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    value: EMAIL_VALIDATION_REGEX,
                     message: 'Please enter a valid email',
                   },
                 }}

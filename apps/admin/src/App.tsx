@@ -10,6 +10,7 @@ const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 const DashboardPage = lazy(() => import('./pages/dashboard/DashboardPage'));
 const SchoolsListPage = lazy(() => import('./pages/schools/SchoolsListPage'));
 const SchoolCreatePage = lazy(() => import('./pages/schools/SchoolCreatePage'));
+const SchoolDetailPage = lazy(() => import('./pages/schools/SchoolDetailPage'));
 const SchoolEditPage = lazy(() => import('./pages/schools/SchoolEditPage'));
 const MealPlansListPage = lazy(() => import('./pages/meal-plans/MealPlansListPage'));
 const MealPlanCreatePage = lazy(() => import('./pages/meal-plans/MealPlanCreatePage'));
@@ -57,6 +58,7 @@ function App() {
               {/* Schools */}
               <Route path="/schools" element={<SchoolsListPage />} />
               <Route path="/schools/create" element={<SchoolCreatePage />} />
+              <Route path="/schools/:id" element={<SchoolDetailPage />} />
               <Route path="/schools/:id/edit" element={<SchoolEditPage />} />
 
               {/* Meal Plans */}

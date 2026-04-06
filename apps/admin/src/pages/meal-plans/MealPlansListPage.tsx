@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  App as AntdApp,
   Table,
   Button,
   Input,
@@ -11,7 +12,6 @@ import {
   Typography,
   Card,
   Modal,
-  message,
   Tooltip,
   Image,
 } from 'antd';
@@ -48,8 +48,54 @@ const getTypeTagColor = (value?: string) => {
 
 const MealPlansListPage = () => {
   const navigate = useNavigate();
+  const { message } = AntdApp.useApp();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<MealPlanFilters>({});
+
+  const ellipsisTooltip = {
+    mouseEnterDelay: 0.05,
+    mouseLeaveDelay: 0.1,
+    rootClassName: 'st-ellipsis-tooltip',
+  };
+
+  const EllipsisCell = ({
+    text,
+    strong,
+    className,
+  }: {
+    text?: string;
+    strong?: boolean;
+    className?: string;
+  }) => {
+    const spanRef = useRef<{ scrollWidth: number; clientWidth: number } | null>(null);
+    const [isOverflow, setIsOverflow] = useState(false);
+
+    const checkOverflow = () => {
+      const el = spanRef.current;
+      if (!el) return;
+      setIsOverflow(el.scrollWidth > el.clientWidth);
+    };
+
+    return (
+      <Tooltip
+        title={text}
+        open={isOverflow ? undefined : false}
+        mouseEnterDelay={ellipsisTooltip.mouseEnterDelay}
+        mouseLeaveDelay={ellipsisTooltip.mouseLeaveDelay}
+        classNames={{ root: ellipsisTooltip.rootClassName }}
+      >
+        <span
+          ref={node => {
+            spanRef.current = node;
+          }}
+          onMouseEnter={checkOverflow}
+          className={`block truncate ${strong ? 'font-semibold' : ''} ${className || ''}`}
+        >
+          {text || '-'}
+        </span>
+      </Tooltip>
+    );
+  };
 
   // Fetch meal plans
   const {
@@ -164,11 +210,9 @@ const MealPlansListPage = () => {
       sorter: (a, b) => a.name.localeCompare(b.name),
       render: (name: string, record) => (
         <div className="min-w-0">
-          <Text strong className="whitespace-nowrap">
-            {name}
-          </Text>
+          <EllipsisCell text={name} strong />
           {record.description && (
-            <div className="text-xs text-gray-500 truncate max-w-xs">{record.description}</div>
+            <EllipsisCell text={record.description} className="text-xs text-gray-500 max-w-xs" />
           )}
         </div>
       ),
@@ -179,6 +223,7 @@ const MealPlansListPage = () => {
       key: 'school',
       width: 160,
       ellipsis: true,
+      render: (text: string) => <EllipsisCell text={text} />,
     },
     {
       title: <span className="whitespace-nowrap">Type</span>,
@@ -186,11 +231,16 @@ const MealPlansListPage = () => {
       key: 'planType',
       width: 130,
       render: (_, record) => (
-        <span className="whitespace-nowrap">
-          <Tag color={getTypeTagColor(record.planType)}>
-            {record.mealPlanType?.displayName || record.planType || '-'}
-          </Tag>
-        </span>
+        <Tooltip title={record.mealPlanType?.displayName || record.planType || '-'}>
+          <span className="whitespace-nowrap">
+            <Tag
+              color={getTypeTagColor(record.planType)}
+              className="max-w-[105px] overflow-hidden text-ellipsis whitespace-nowrap align-middle"
+            >
+              {record.mealPlanType?.displayName || record.planType || '-'}
+            </Tag>
+          </span>
+        </Tooltip>
       ),
     },
     {
@@ -205,9 +255,12 @@ const MealPlansListPage = () => {
       key: 'price',
       width: 160,
       render: (_, record) => (
-        <div>
-          <div>₹{formatRupees(record.pricePerDay)}/day</div>
-          <div className="text-xs text-gray-500">Total: ₹{formatRupees(record.totalPrice)}</div>
+        <div className="min-w-0">
+          <EllipsisCell text={`₹${formatRupees(record.pricePerDay)}/day`} />
+          <EllipsisCell
+            text={`Total: ₹${formatRupees(record.totalPrice)}`}
+            className="text-xs text-gray-500"
+          />
         </div>
       ),
     },

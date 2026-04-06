@@ -36,7 +36,7 @@ const formatRupeesInput = (value?: string | number) => {
   if (value === undefined || value === null || value === '') return '';
   const num = typeof value === 'number' ? value : Number(value);
   if (Number.isNaN(num)) return '';
-  return `₹${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `₹${num.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 };
 
 const parseRupeesInput = (value?: string) => (value ? value.replace(/[₹,\s]/g, '') : '');
@@ -46,6 +46,42 @@ const paiseToRupees = (value?: number) =>
 
 const rupeesToPaise = (value?: number) =>
   value === undefined || value === null ? value : Math.round(value * 100);
+
+const FLOAT_COMPARISON_EPSILON = 0.0001;
+
+const shouldUpdateComputedTotalPrice = (currentValue: unknown, nextValue: number): boolean => {
+  if (typeof currentValue === 'number') {
+    return Math.abs(currentValue - nextValue) > FLOAT_COMPARISON_EPSILON;
+  }
+
+  if (typeof currentValue === 'string' && currentValue.trim() !== '') {
+    const parsedCurrentValue = Number(currentValue);
+    if (Number.isFinite(parsedCurrentValue)) {
+      return Math.abs(parsedCurrentValue - nextValue) > FLOAT_COMPARISON_EPSILON;
+    }
+  }
+
+  return true;
+};
+
+const toSafeErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  if (typeof error === 'string' && error.trim()) {
+    return error;
+  }
+
+  if (error && typeof error === 'object') {
+    const maybeMessage = (error as { message?: unknown }).message;
+    if (typeof maybeMessage === 'string' && maybeMessage.trim()) {
+      return maybeMessage;
+    }
+  }
+
+  return fallback;
+};
 
 const MealPlanEditPage = () => {
   const navigate = useNavigate();
@@ -66,7 +102,7 @@ const MealPlanEditPage = () => {
     if (typeof pricePerDay === 'number' && typeof durationDays === 'number') {
       const total = Number((pricePerDay * durationDays).toFixed(2));
       const currentTotal = form.getFieldValue('totalPrice');
-      if (currentTotal !== total) {
+      if (shouldUpdateComputedTotalPrice(currentTotal, total)) {
         form.setFieldValue('totalPrice', total);
       }
     }
@@ -119,8 +155,8 @@ const MealPlanEditPage = () => {
       message.success('Meal plan updated successfully');
       navigate('/meal-plans');
     },
-    onError: (error: Error) => {
-      message.error(error.message);
+    onError: error => {
+      message.error(toSafeErrorMessage(error, 'Failed to update meal plan.'));
     },
   });
 
@@ -154,9 +190,7 @@ const MealPlanEditPage = () => {
       setUploadedImageKey(uploadedKey);
       form.setFieldValue('imageUrl', uploadedUrl);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Image upload failed. Please try again.';
-      message.error(errorMessage);
+      message.error(toSafeErrorMessage(error, 'Image upload failed. Please try again.'));
     } finally {
       setImageUploading(false);
     }

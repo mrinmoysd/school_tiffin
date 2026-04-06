@@ -83,7 +83,6 @@ export class SchoolsService {
           OR: [
             { name: { contains: search, mode: 'insensitive' } },
             { code: { contains: search, mode: 'insensitive' } },
-            { city: { contains: search, mode: 'insensitive' } },
           ],
         }),
         deletedAt: null,
