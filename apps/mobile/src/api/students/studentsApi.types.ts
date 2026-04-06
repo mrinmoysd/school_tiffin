@@ -16,7 +16,8 @@ export interface Student {
 }
 
 export interface CreateStudentPayload {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   dateOfBirth?: string;
   grade: string;
   schoolId: string;
@@ -24,7 +25,8 @@ export interface CreateStudentPayload {
 }
 
 export interface UpdateStudentPayload {
-  fullName?: string;
+  firstName?: string;
+  lastName?: string;
   dateOfBirth?: string;
   grade?: string;
   schoolId?: string;

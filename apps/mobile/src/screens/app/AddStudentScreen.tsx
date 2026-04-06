@@ -232,7 +232,8 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
       const lastName = values.lastName.trim();
 
       const payload = {
-        fullName: `${firstName} ${lastName}`.trim(),
+        firstName,
+        lastName,
         dateOfBirth: toApiDate(values.dateOfBirth),
         grade: values.grade.trim(),
         schoolId: values.schoolId,
