@@ -58,6 +58,7 @@ interface MarkupSelectionEditorProps {
   onChange: (value: string) => void;
   placeholder?: string;
   minHeight?: number;
+  isActive?: boolean;
   onEditorActivate?: (editorId: string, editorElement: HTMLDivElement | null) => void;
   onEditorSelectionChange?: (editorId: string, range: Range | null) => void;
 }
@@ -249,6 +250,43 @@ const BLOCK_LABELS: Record<CmsVisualBlockType, string> = {
   html: 'Code Block',
 };
 
+const toOrdinal = (value: number) => {
+  const remainder = value % 10;
+  const remainderHundred = value % 100;
+  if (remainder === 1 && remainderHundred !== 11) return `${value}st`;
+  if (remainder === 2 && remainderHundred !== 12) return `${value}nd`;
+  if (remainder === 3 && remainderHundred !== 13) return `${value}rd`;
+  return `${value}th`;
+};
+
+const toTitleCaseWords = (value: string) =>
+  value
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
+const getSimpleFieldLabel = (suffix: string) => {
+  switch (suffix) {
+    case 'eyebrow':
+      return 'Eyebrow';
+    case 'title':
+      return 'Title';
+    case 'subtitle':
+      return 'Subtitle';
+    case 'heading':
+      return 'Heading';
+    case 'body':
+      return 'Body';
+    case 'description':
+      return 'Description';
+    case 'caption':
+      return 'Caption';
+    default:
+      return toTitleCaseWords(suffix);
+  }
+};
+
 const createEmptyGroups = (): SectionGroups => ({
   hero: [],
   content: [],
@@ -395,6 +433,7 @@ const MarkupSelectionEditor = ({
   onChange,
   placeholder,
   minHeight = 140,
+  isActive = false,
   onEditorActivate,
   onEditorSelectionChange,
 }: MarkupSelectionEditorProps) => {
@@ -454,13 +493,15 @@ const MarkupSelectionEditor = ({
         onBlur={() => setTimeout(() => captureSelection(), 0)}
         style={{
           minHeight,
-          border: '1px solid #d9d9d9',
+          border: `1px solid ${isActive ? '#1677ff' : '#d9d9d9'}`,
           borderRadius: 8,
           padding: 12,
-          background: '#fff',
+          background: isActive ? '#f7fbff' : '#fff',
           lineHeight: 1.7,
           outline: 'none',
           whiteSpace: 'pre-wrap',
+          boxShadow: isActive ? '0 0 0 2px rgba(22, 119, 255, 0.16)' : 'none',
+          transition: 'all 120ms ease',
         }}
       />
 
@@ -797,6 +838,43 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
   };
 
   const blocksBySection = useMemo(() => groupBlocks(blocks), [blocks]);
+  const activeEditorLabel = useMemo(() => {
+    if (!activeEditorId) {
+      return 'None selected';
+    }
+
+    for (const section of SECTION_DEFINITIONS) {
+      const sectionBlocks = blocksBySection[section.id];
+      const sectionTitle = `${section.label} section`;
+
+      for (let index = 0; index < sectionBlocks.length; index += 1) {
+        const block = sectionBlocks[index];
+        const blockPrefix = `${block.id}-`;
+        if (!activeEditorId.startsWith(blockPrefix)) {
+          continue;
+        }
+
+        const suffix = activeEditorId.slice(blockPrefix.length);
+        const blockTitle = `${toOrdinal(index + 1)} block (${BLOCK_LABELS[block.type].toLowerCase()})`;
+
+        if (block.type === 'features') {
+          const faqMatch = suffix.match(/^(.*)-(question|answer)$/);
+          if (faqMatch) {
+            const [, faqId, faqField] = faqMatch;
+            const faqIndex = block.faqItems.findIndex(item => item.id === faqId);
+            const faqLabelPrefix = faqIndex >= 0 ? `FAQ ${faqIndex + 1}` : 'FAQ';
+            const faqFieldLabel = faqField === 'question' ? 'Question' : 'Answer';
+            return `${sectionTitle} : ${blockTitle} : ${faqLabelPrefix.toLowerCase()} ${faqFieldLabel.toLowerCase()}`;
+          }
+        }
+
+        const fieldLabel = getSimpleFieldLabel(suffix).toLowerCase();
+        return `${sectionTitle} : ${blockTitle} : ${fieldLabel}`;
+      }
+    }
+
+    return activeEditorId;
+  }, [activeEditorId, blocksBySection]);
   const livePreviewHtml = useMemo(() => renderVisualBlocksToHtml(blocks), [blocks]);
 
   useEffect(() => {
@@ -1153,6 +1231,8 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
     );
   };
 
+  const isEditorActive = (editorId: string) => activeEditorId === editorId;
+
   const renderBlockEditor = (block: CmsVisualBlock) => {
     switch (block.type) {
       case 'hero':
@@ -1163,6 +1243,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
               value={block.eyebrow}
               minHeight={58}
               placeholder="Eyebrow (optional)"
+              isActive={isEditorActive(`${block.id}-eyebrow`)}
               onEditorActivate={handleEditorActivate}
               onEditorSelectionChange={handleEditorSelectionChange}
               onChange={nextValue =>
@@ -1176,6 +1257,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
               value={block.title}
               minHeight={72}
               placeholder="Main heading"
+              isActive={isEditorActive(`${block.id}-title`)}
               onEditorActivate={handleEditorActivate}
               onEditorSelectionChange={handleEditorSelectionChange}
               onChange={nextValue =>
@@ -1189,6 +1271,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
               value={block.subtitle}
               minHeight={120}
               placeholder="Subtitle"
+              isActive={isEditorActive(`${block.id}-subtitle`)}
               onEditorActivate={handleEditorActivate}
               onEditorSelectionChange={handleEditorSelectionChange}
               onChange={nextValue =>
@@ -1234,6 +1317,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
               value={block.heading}
               minHeight={72}
               placeholder="Section heading"
+              isActive={isEditorActive(`${block.id}-heading`)}
               onEditorActivate={handleEditorActivate}
               onEditorSelectionChange={handleEditorSelectionChange}
               onChange={nextValue =>
@@ -1246,6 +1330,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
               editorId={`${block.id}-body`}
               value={block.body}
               placeholder="Write section content, select text, then choose H1/H2/H3..."
+              isActive={isEditorActive(`${block.id}-body`)}
               onEditorActivate={handleEditorActivate}
               onEditorSelectionChange={handleEditorSelectionChange}
               onChange={nextValue =>
@@ -1307,6 +1392,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
               value={block.heading}
               minHeight={72}
               placeholder="Heading"
+              isActive={isEditorActive(`${block.id}-heading`)}
               onEditorActivate={handleEditorActivate}
               onEditorSelectionChange={handleEditorSelectionChange}
               onChange={nextValue =>
@@ -1335,6 +1421,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
                     value={item.question}
                     minHeight={62}
                     placeholder="Question"
+                    isActive={isEditorActive(`${block.id}-${item.id}-question`)}
                     onEditorActivate={handleEditorActivate}
                     onEditorSelectionChange={handleEditorSelectionChange}
                     onChange={nextValue =>
@@ -1350,6 +1437,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
                     value={item.answer}
                     minHeight={110}
                     placeholder="Answer"
+                    isActive={isEditorActive(`${block.id}-${item.id}-answer`)}
                     onEditorActivate={handleEditorActivate}
                     onEditorSelectionChange={handleEditorSelectionChange}
                     onChange={nextValue =>
@@ -1399,6 +1487,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
               value={block.title}
               minHeight={72}
               placeholder="CTA heading"
+              isActive={isEditorActive(`${block.id}-title`)}
               onEditorActivate={handleEditorActivate}
               onEditorSelectionChange={handleEditorSelectionChange}
               onChange={nextValue =>
@@ -1412,6 +1501,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
               value={block.description}
               minHeight={120}
               placeholder="CTA description"
+              isActive={isEditorActive(`${block.id}-description`)}
               onEditorActivate={handleEditorActivate}
               onEditorSelectionChange={handleEditorSelectionChange}
               onChange={nextValue =>
@@ -1512,6 +1602,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
               value={block.caption}
               minHeight={88}
               placeholder="Caption rich text"
+              isActive={isEditorActive(`${block.id}-caption`)}
               onEditorActivate={handleEditorActivate}
               onEditorSelectionChange={handleEditorSelectionChange}
               onChange={nextValue =>
@@ -1613,6 +1704,9 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
                         const isExpanded = expandedBlockId === block.id;
                         const isDragging =
                           dragState?.kind === 'block' && dragState.blockId === block.id;
+                        const hasActiveEditor = Boolean(
+                          activeEditorId && activeEditorId.startsWith(`${block.id}-`),
+                        );
                         const showBeforeHint =
                           dropHint?.sectionId === section.id &&
                           dropHint.blockId === block.id &&
@@ -1639,7 +1733,16 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
                               size="small"
                               style={{
                                 opacity: isDragging ? 0.45 : 1,
-                                borderColor: sectionIsActive ? '#d9e7ff' : undefined,
+                                borderColor: hasActiveEditor
+                                  ? '#1677ff'
+                                  : sectionIsActive
+                                    ? '#d9e7ff'
+                                    : undefined,
+                                background: hasActiveEditor ? '#f7fbff' : undefined,
+                                boxShadow: hasActiveEditor
+                                  ? '0 0 0 2px rgba(22, 119, 255, 0.12)'
+                                  : undefined,
+                                transition: 'all 120ms ease',
                               }}
                               title={
                                 <Space size={8}>
@@ -1889,7 +1992,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
                     </div>
 
                     <Text type="secondary">
-                      Active editor: {activeEditorId ? activeEditorId : 'None selected'}
+                      <strong>Active editor:</strong> {activeEditorLabel}
                     </Text>
                   </Space>
                 ),

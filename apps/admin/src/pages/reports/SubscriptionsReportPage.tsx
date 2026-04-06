@@ -18,18 +18,39 @@ import {
   Pie,
   Cell,
 } from 'recharts';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 
 const { Title, Text } = Typography;
-const { RangePicker } = DatePicker;
+const DATE_FORMAT = 'YYYY-MM-DD';
 
 const COLORS = ['#22c55e', '#3b82f6', '#f97316', '#8b5cf6', '#ef4444', '#14b8a6'];
 
 const SubscriptionsReportPage = () => {
   const [filters, setFilters] = useState<ReportFilters>({
-    startDate: dayjs().subtract(30, 'day').format('YYYY-MM-DD'),
-    endDate: dayjs().format('YYYY-MM-DD'),
+    startDate: dayjs().subtract(30, 'day').format(DATE_FORMAT),
+    endDate: dayjs().format(DATE_FORMAT),
   });
+  const startDateValue = dayjs(filters.startDate);
+  const endDateValue = dayjs(filters.endDate);
+
+  const handleStartDateChange = (date: Dayjs | null) => {
+    if (!date) return;
+
+    setFilters(prev => ({
+      ...prev,
+      startDate: date.format(DATE_FORMAT),
+      endDate: date.add(1, 'month').format(DATE_FORMAT),
+    }));
+  };
+
+  const handleEndDateChange = (date: Dayjs | null) => {
+    if (!date || date.isBefore(startDateValue, 'day')) return;
+
+    setFilters(prev => ({
+      ...prev,
+      endDate: date.format(DATE_FORMAT),
+    }));
+  };
 
   // Fetch subscriptions report
   const {
@@ -112,17 +133,21 @@ const SubscriptionsReportPage = () => {
             <Text type="secondary" className="mr-2">
               Period:
             </Text>
-            <RangePicker
-              value={[dayjs(filters.startDate), dayjs(filters.endDate)]}
-              onChange={dates => {
-                if (dates) {
-                  setFilters({
-                    ...filters,
-                    startDate: dates[0]!.format('YYYY-MM-DD'),
-                    endDate: dates[1]!.format('YYYY-MM-DD'),
-                  });
-                }
-              }}
+            <DatePicker
+              placeholder="Start date"
+              format={DATE_FORMAT}
+              value={startDateValue}
+              onChange={handleStartDateChange}
+              allowClear={false}
+              style={{ marginRight: 8 }}
+            />
+            <DatePicker
+              placeholder="End date"
+              format={DATE_FORMAT}
+              value={endDateValue}
+              onChange={handleEndDateChange}
+              disabledDate={current => current.isBefore(startDateValue, 'day')}
+              allowClear={false}
             />
           </div>
           <div>

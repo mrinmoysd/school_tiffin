@@ -9,14 +9,42 @@ import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import type { ColumnsType } from 'antd/es/table';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 
 const { Title, Text } = Typography;
-const { RangePicker } = DatePicker;
+const DATE_FORMAT = 'YYYY-MM-DD';
 
 const SubscriptionsListPage = () => {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<SubscriptionFilters>({});
+  const startDateValue = filters.startDate ? dayjs(filters.startDate) : null;
+  const endDateValue = filters.endDate ? dayjs(filters.endDate) : null;
+
+  const handleStartDateChange = (date: Dayjs | null) => {
+    if (!date) {
+      setFilters(prev => ({ ...prev, startDate: undefined, endDate: undefined }));
+      return;
+    }
+
+    setFilters(prev => ({
+      ...prev,
+      startDate: date.format(DATE_FORMAT),
+      endDate: date.add(1, 'month').format(DATE_FORMAT),
+    }));
+  };
+
+  const handleEndDateChange = (date: Dayjs | null) => {
+    if (!date) {
+      setFilters(prev => ({ ...prev, endDate: undefined }));
+      return;
+    }
+
+    if (startDateValue && date.isBefore(startDateValue, 'day')) {
+      return;
+    }
+
+    setFilters(prev => ({ ...prev, endDate: date.format(DATE_FORMAT) }));
+  };
 
   // Fetch subscriptions
   const {
@@ -231,18 +259,20 @@ const SubscriptionsListPage = () => {
             optionFilterProp="label"
             options={schools?.map(s => ({ label: s.name, value: s.id }))}
           />
-          <RangePicker
-            onChange={dates => {
-              if (dates) {
-                setFilters({
-                  ...filters,
-                  startDate: dates[0]?.format('YYYY-MM-DD'),
-                  endDate: dates[1]?.format('YYYY-MM-DD'),
-                });
-              } else {
-                setFilters({ ...filters, startDate: undefined, endDate: undefined });
-              }
-            }}
+          <DatePicker
+            placeholder="Start date"
+            format={DATE_FORMAT}
+            value={startDateValue}
+            onChange={handleStartDateChange}
+            allowClear
+          />
+          <DatePicker
+            placeholder="End date"
+            format={DATE_FORMAT}
+            value={endDateValue}
+            onChange={handleEndDateChange}
+            disabledDate={current => !!startDateValue && current.isBefore(startDateValue, 'day')}
+            allowClear
           />
         </div>
       </Card>
