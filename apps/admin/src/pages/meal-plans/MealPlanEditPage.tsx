@@ -63,6 +63,26 @@ const shouldUpdateComputedTotalPrice = (currentValue: unknown, nextValue: number
 
   return true;
 };
+
+const toSafeErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  if (typeof error === 'string' && error.trim()) {
+    return error;
+  }
+
+  if (error && typeof error === 'object') {
+    const maybeMessage = (error as { message?: unknown }).message;
+    if (typeof maybeMessage === 'string' && maybeMessage.trim()) {
+      return maybeMessage;
+    }
+  }
+
+  return fallback;
+};
+
 const MealPlanEditPage = () => {
   const navigate = useNavigate();
   const { message } = AntdApp.useApp();
@@ -135,8 +155,8 @@ const MealPlanEditPage = () => {
       message.success('Meal plan updated successfully');
       navigate('/meal-plans');
     },
-    onError: (error: Error) => {
-      message.error(error.message);
+    onError: error => {
+      message.error(toSafeErrorMessage(error, 'Failed to update meal plan.'));
     },
   });
 
@@ -170,9 +190,7 @@ const MealPlanEditPage = () => {
       setUploadedImageKey(uploadedKey);
       form.setFieldValue('imageUrl', uploadedUrl);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Image upload failed. Please try again.';
-      message.error(errorMessage);
+      message.error(toSafeErrorMessage(error, 'Image upload failed. Please try again.'));
     } finally {
       setImageUploading(false);
     }
