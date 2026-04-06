@@ -8,6 +8,7 @@ export interface StudentSchool {
 export interface Student {
   id: string;
   fullName: string;
+  dateOfBirth?: string | null;
   grade: number | string | null;
   profileImageUrl?: string | null;
   school: StudentSchool | null;
@@ -16,6 +17,7 @@ export interface Student {
 
 export interface CreateStudentPayload {
   fullName: string;
+  dateOfBirth?: string;
   grade: string;
   schoolId: string;
   profileImageUrl?: string;
@@ -23,6 +25,7 @@ export interface CreateStudentPayload {
 
 export interface UpdateStudentPayload {
   fullName?: string;
+  dateOfBirth?: string;
   grade?: string;
   schoolId?: string;
   profileImageUrl?: string;

@@ -46,6 +46,12 @@ type ToastConfig = {
 
 const AppAlertContext = createContext<AppAlertContextValue | undefined>(undefined);
 
+const sortActionsForDisplay = (actions: AppAlertAction[]): AppAlertAction[] => {
+  const nonCancelActions = actions.filter(action => action.style !== 'cancel');
+  const cancelActions = actions.filter(action => action.style === 'cancel');
+  return [...nonCancelActions, ...cancelActions];
+};
+
 export const AppAlertProvider = ({ children }: { children: React.ReactNode }) => {
   const { colors } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -62,7 +68,7 @@ export const AppAlertProvider = ({ children }: { children: React.ReactNode }) =>
     setConfig({
       title,
       message,
-      actions: normalizedActions,
+      actions: sortActionsForDisplay(normalizedActions),
       dismissible: options?.dismissible ?? false,
     });
   }, []);

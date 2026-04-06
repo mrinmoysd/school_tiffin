@@ -31,7 +31,8 @@ import { useAppTheme } from '../../theme';
 type Props = NativeStackScreenProps<RootStackParamList, 'AddStudent'>;
 
 interface StudentFormValues {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   dateOfBirth: string;
   grade: string;
   schoolId: string;
@@ -57,14 +58,14 @@ const GRADE_OPTIONS = [
   '12',
 ];
 
-const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const DATE_REGEX = /^\d{2}\/\d{2}\/\d{4}$/;
 
 const isValidDateString = (value: string) => {
   if (!DATE_REGEX.test(value)) {
     return false;
   }
 
-  const [yearString, monthString, dayString] = value.split('-');
+  const [dayString, monthString, yearString] = value.split('/');
   const year = Number(yearString);
   const month = Number(monthString);
   const day = Number(dayString);
@@ -79,11 +80,11 @@ const isValidDateString = (value: string) => {
 };
 
 const formatDateForInput = (date: Date) => {
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, '0');
   const day = `${date.getDate()}`.padStart(2, '0');
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const year = date.getFullYear();
 
-  return `${year}-${month}-${day}`;
+  return `${day}/${month}/${year}`;
 };
 
 const parseInputDate = (value: string): Date | null => {
@@ -91,7 +92,7 @@ const parseInputDate = (value: string): Date | null => {
     return null;
   }
 
-  const [yearString, monthString, dayString] = value.split('-');
+  const [dayString, monthString, yearString] = value.split('/');
   const year = Number(yearString);
   const month = Number(monthString);
   const day = Number(dayString);
@@ -100,12 +101,51 @@ const parseInputDate = (value: string): Date | null => {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
+const toApiDate = (value: string): string | undefined => {
+  const parsed = parseInputDate(value.trim());
+  if (!parsed) {
+    return undefined;
+  }
+
+  const year = parsed.getFullYear();
+  const month = `${parsed.getMonth() + 1}`.padStart(2, '0');
+  const day = `${parsed.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const fromApiDateToInput = (value?: string | null): string => {
+  if (!value) {
+    return '';
+  }
+
+  const dateOnly = value.includes('T') ? value.slice(0, 10) : value;
+  const [yearString, monthString, dayString] = dateOnly.split('-');
+  if (!yearString || !monthString || !dayString) {
+    return '';
+  }
+
+  return `${dayString.padStart(2, '0')}/${monthString.padStart(2, '0')}/${yearString}`;
+};
+
 const normalizeGradeValue = (grade: string | number | null) => {
   if (grade === null || grade === undefined) {
     return '';
   }
 
   return `${grade}`;
+};
+
+const splitFullName = (fullName?: string | null): { firstName: string; lastName: string } => {
+  const normalized = (fullName ?? '').trim().replace(/\s+/g, ' ');
+  if (!normalized) {
+    return { firstName: '', lastName: '' };
+  }
+
+  const [firstName, ...rest] = normalized.split(' ');
+  return {
+    firstName,
+    lastName: rest.join(' '),
+  };
 };
 
 export const AddStudentScreen = ({ route, navigation }: Props) => {
@@ -127,7 +167,8 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
 
   const { control, handleSubmit, setValue, watch } = useForm<StudentFormValues>({
     defaultValues: {
-      fullName: '',
+      firstName: '',
+      lastName: '',
       dateOfBirth: '',
       grade: '',
       schoolId: params.schoolId ?? '',
@@ -153,11 +194,17 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
 
       if (isEditMode && params.studentId) {
         const student = await studentsApi.getStudentById(params.studentId);
-        setValue('fullName', student.fullName ?? '');
+        const { firstName, lastName } = splitFullName(student.fullName);
+        setValue('firstName', firstName);
+        setValue('lastName', lastName);
+        setValue('dateOfBirth', fromApiDateToInput(student.dateOfBirth));
         setValue('grade', normalizeGradeValue(student.grade));
         setValue('schoolId', student.school?.id ?? params.schoolId ?? '');
         setStudentImageUrl(student.profileImageUrl ?? null);
       } else {
+        setValue('firstName', '');
+        setValue('lastName', '');
+        setValue('dateOfBirth', '');
         setValue('schoolId', params.schoolId ?? '');
         setStudentImageUrl(null);
       }
@@ -181,8 +228,12 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
     setError(null);
 
     try {
+      const firstName = values.firstName.trim();
+      const lastName = values.lastName.trim();
+
       const payload = {
-        fullName: values.fullName.trim(),
+        fullName: `${firstName} ${lastName}`.trim(),
+        dateOfBirth: toApiDate(values.dateOfBirth),
         grade: values.grade.trim(),
         schoolId: values.schoolId,
         ...(studentImageUrl ? { profileImageUrl: studentImageUrl } : {}),
@@ -265,7 +316,11 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
             accessibilityRole="button"
             accessibilityLabel="Choose student photo"
           >
-            <ProfileAvatar imageUrl={studentImageUrl} name={watch('fullName')} size={88} />
+            <ProfileAvatar
+              imageUrl={studentImageUrl}
+              name={`${watch('firstName')} ${watch('lastName')}`.trim()}
+              size={88}
+            />
             <View style={styles.cameraBadge}>
               <Ionicons name="camera" size={14} color={colors.neutral.white} />
             </View>
@@ -274,21 +329,44 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
 
         <Controller
           control={control}
-          name="fullName"
+          name="firstName"
           rules={{
-            required: 'Full name is required',
+            required: 'First name is required',
             minLength: {
               value: 2,
-              message: 'Full name must be at least 2 characters',
+              message: 'First name must be at least 2 characters',
             },
           }}
           render={({ field: { value, onChange, onBlur }, fieldState: { error: fieldError } }) => (
             <FormTextInput
-              label="Full Name"
+              label="First Name"
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
               error={fieldError?.message}
+              autoCapitalize="words"
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="lastName"
+          rules={{
+            required: 'Last name is required',
+            minLength: {
+              value: 1,
+              message: 'Last name is required',
+            },
+          }}
+          render={({ field: { value, onChange, onBlur }, fieldState: { error: fieldError } }) => (
+            <FormTextInput
+              label="Last Name"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={fieldError?.message}
+              autoCapitalize="words"
             />
           )}
         />
@@ -298,7 +376,7 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
           name="dateOfBirth"
           rules={{
             required: 'Date of birth is required',
-            validate: value => isValidDateString(value.trim()) || 'Enter date in YYYY-MM-DD format',
+            validate: value => isValidDateString(value.trim()) || 'Enter date in DD/MM/YYYY format',
           }}
           render={({ field: { value, onChange, onBlur }, fieldState: { error: fieldError } }) => {
             const selectedDate = parseInputDate(value);

@@ -25,6 +25,7 @@ export const StudentsScreen = ({ navigation }: Props) => {
   const { colors } = useAppTheme();
   const styles = createStyles(colors);
   const hasFocusedOnceRef = useRef(false);
+  const swipeableRefs = useRef<Record<string, Swipeable | null>>({});
 
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,12 +79,24 @@ export const StudentsScreen = ({ navigation }: Props) => {
     });
   };
 
+  const closeSwipeableRow = (studentId: string) => {
+    swipeableRefs.current[studentId]?.close();
+  };
+
   const onDeleteStudent = (student: Student) => {
+    if (deletingStudentId === student.id) {
+      return;
+    }
+
     alert(
       'Delete Student',
       `Are you sure you want to delete ${student.fullName}? This action cannot be undone.`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+          onPress: () => closeSwipeableRow(student.id),
+        },
         {
           text: 'Delete',
           style: 'destructive',
@@ -101,6 +114,7 @@ export const StudentsScreen = ({ navigation }: Props) => {
               }
             } finally {
               setDeletingStudentId(null);
+              closeSwipeableRow(student.id);
             }
           },
         },
@@ -141,7 +155,9 @@ export const StudentsScreen = ({ navigation }: Props) => {
               <View style={styles.hintLine} />
               <View style={styles.hintContent}>
                 <Ionicons name="information-circle-outline" size={14} color={colors.text.muted} />
-                <Text style={styles.swipeHint}>Swipe left on a student row for quick actions</Text>
+                <Text style={styles.swipeHint}>
+                  Tap/Swipe left on a student row for quick actions
+                </Text>
               </View>
               <View style={styles.hintLine} />
             </View>
@@ -161,28 +177,25 @@ export const StudentsScreen = ({ navigation }: Props) => {
 
           return (
             <Swipeable
+              ref={ref => {
+                swipeableRefs.current[item.id] = ref;
+              }}
               overshootRight={false}
               renderRightActions={() => (
                 <View style={styles.swipeActions}>
-                  <Pressable
-                    style={[styles.swipeAction, styles.swipeEditAction]}
-                    onPress={() => onEditStudent(item)}
-                  >
-                    <Text style={styles.swipeActionText}>Edit</Text>
-                  </Pressable>
                   <Pressable
                     style={[styles.swipeAction, styles.swipeDeleteAction]}
                     onPress={() => onDeleteStudent(item)}
                     disabled={isDeleting}
                   >
                     <Text style={styles.swipeActionText}>
-                      {isDeleting ? 'Deleting...' : 'Delete'}
+                      {isDeleting ? 'Deleting...' : 'Delete Student'}
                     </Text>
                   </Pressable>
                 </View>
               )}
             >
-              <View style={styles.studentCard}>
+              <Pressable style={styles.studentCard} onPress={() => onEditStudent(item)}>
                 <View style={styles.studentTopRow}>
                   <ProfileAvatar imageUrl={item.profileImageUrl} name={item.fullName} size={52} />
                   <View style={styles.studentInfo}>
@@ -191,7 +204,7 @@ export const StudentsScreen = ({ navigation }: Props) => {
                     <Text style={styles.studentMeta}>School: {item.school?.name ?? '-'}</Text>
                   </View>
                 </View>
-              </View>
+              </Pressable>
             </Swipeable>
           );
         }}
@@ -317,14 +330,11 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       marginBottom: 10,
     },
     swipeAction: {
-      width: 84,
+      width: 92,
       justifyContent: 'center',
       alignItems: 'center',
       borderRadius: 10,
       marginLeft: 8,
-    },
-    swipeEditAction: {
-      backgroundColor: colors.intent.infoStrong,
     },
     swipeDeleteAction: {
       backgroundColor: colors.intent.danger,
