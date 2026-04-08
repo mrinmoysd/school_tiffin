@@ -7,6 +7,7 @@ import { adminService, schoolService } from '@/services';
 import { DeliveryItem, DeliveryFilters, DeliveryStatus } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -272,20 +273,22 @@ const DeliveriesPage = () => {
             onRetry={refetch}
           />
         ) : (
-          <Table
-            columns={columns}
-            dataSource={deliveries}
-            rowKey="id"
-            rowSelection={rowSelection}
-            tableLayout="fixed"
-            scroll={{ x: 'max-content' }}
-            pagination={{
-              total: deliveries?.length,
-              pageSize: 20,
-              showSizeChanger: true,
-              showTotal: total => `Total ${total} deliveries`,
-            }}
-          />
+          <HorizontalScrollContainer>
+            <Table
+              columns={columns}
+              dataSource={deliveries}
+              rowKey="id"
+              rowSelection={rowSelection}
+              tableLayout="fixed"
+              scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+              pagination={{
+                total: deliveries?.length,
+                pageSize: 20,
+                showSizeChanger: true,
+                showTotal: total => `Total ${total} deliveries`,
+              }}
+            />
+          </HorizontalScrollContainer>
         )}
       </Card>
     </div>

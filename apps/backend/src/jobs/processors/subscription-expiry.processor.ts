@@ -1,9 +1,11 @@
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
-import { Job } from 'bull';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { SubscriptionStatus } from '@prisma/client';
+
+const getStudentName = (student: { firstName?: string | null; lastName?: string | null }) =>
+  [student.firstName, student.lastName].filter(Boolean).join(' ').trim();
 
 @Processor('subscription-expiry')
 export class SubscriptionExpiryProcessor {
@@ -19,7 +21,7 @@ export class SubscriptionExpiryProcessor {
    * Runs daily at 11:59 PM
    */
   @Process('check-subscription-expiry')
-  async handleSubscriptionExpiry(job: Job) {
+  async handleSubscriptionExpiry() {
     this.logger.log('Checking for expired subscriptions...');
 
     try {
@@ -58,7 +60,7 @@ export class SubscriptionExpiryProcessor {
         });
 
         const parent = subscription.student.parent;
-        const studentName = subscription.student.fullName;
+        const studentName = getStudentName(subscription.student);
 
         const title = 'Subscription Completed';
         const body = `Subscription ${subscription.subscriptionNumber} for ${studentName} has been completed.`;

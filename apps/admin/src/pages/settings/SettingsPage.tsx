@@ -28,6 +28,7 @@ import {
 import { CreateMealPlanTypeDto, MealPlanTypeMaster, UpdateMealPlanTypeDto } from '@/types';
 import ErrorState from '@/components/ErrorState';
 import TableSkeleton from '@/components/TableSkeleton';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
@@ -344,17 +345,19 @@ const SettingsPage = () => {
                       onRetry={refetch}
                     />
                   ) : (
-                    <Table
-                      rowKey="id"
-                      columns={columns}
-                      dataSource={mealPlanTypes}
-                      pagination={{
-                        pageSize: 10,
-                        showSizeChanger: true,
-                        showTotal: total => `Total ${total} types`,
-                      }}
-                      scroll={{ x: 900 }}
-                    />
+                    <HorizontalScrollContainer>
+                      <Table
+                        rowKey="id"
+                        columns={columns}
+                        dataSource={mealPlanTypes}
+                        pagination={{
+                          pageSize: 10,
+                          showSizeChanger: true,
+                          showTotal: total => `Total ${total} types`,
+                        }}
+                        scroll={{ x: 900, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+                      />
+                    </HorizontalScrollContainer>
                   )}
                 </div>
               ),

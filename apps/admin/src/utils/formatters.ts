@@ -74,6 +74,17 @@ export const getInitials = (name: string): string => {
 };
 
 /**
+ * Format a student full name from first/last name
+ */
+export const formatStudentName = (student?: {
+  firstName?: string | null;
+  lastName?: string | null;
+}): string => {
+  if (!student) return '';
+  return [student.firstName, student.lastName].filter(Boolean).join(' ').trim();
+};
+
+/**
  * Download blob as file
  */
 export const downloadBlob = (blob: Blob, filename: string): void => {

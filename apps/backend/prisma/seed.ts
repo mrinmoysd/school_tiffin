@@ -219,7 +219,8 @@ async function main() {
   const studentOne = await prisma.student.create({
     data: {
       parentId: parentOne.id,
-      fullName: 'Riya Sharma',
+      firstName: 'Riya',
+      lastName: 'Sharma',
       grade: '5',
       section: 'A',
       schoolId: schoolOne.id,
@@ -232,7 +233,8 @@ async function main() {
   const studentTwo = await prisma.student.create({
     data: {
       parentId: parentOne.id,
-      fullName: 'Arjun Sharma',
+      firstName: 'Arjun',
+      lastName: 'Sharma',
       grade: '2',
       section: 'B',
       schoolId: schoolOne.id,
@@ -244,7 +246,8 @@ async function main() {
   const studentThree = await prisma.student.create({
     data: {
       parentId: parentTwo.id,
-      fullName: 'Ishaan Verma',
+      firstName: 'Ishaan',
+      lastName: 'Verma',
       grade: '7',
       section: 'C',
       schoolId: schoolTwo.id,

@@ -7,6 +7,7 @@ import { userService } from '@/services';
 import { User, UserFilters, UserRole } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -209,27 +210,29 @@ const UsersListPage = () => {
             onRetry={refetch}
           />
         ) : (
-          <Table
-            columns={columns}
-            dataSource={data?.users}
-            rowKey="id"
-            tableLayout="fixed"
-            scroll={{ x: 'max-content' }}
-            pagination={{
-              current: page,
-              pageSize,
-              total: data?.pagination.total,
-              showSizeChanger: true,
-              onChange: (nextPage, nextPageSize) => {
-                setPage(nextPage);
-                if (nextPageSize && nextPageSize !== pageSize) {
-                  setPageSize(nextPageSize);
-                  setPage(1);
-                }
-              },
-              showTotal: total => `Total ${total} users`,
-            }}
-          />
+          <HorizontalScrollContainer>
+            <Table
+              columns={columns}
+              dataSource={data?.users}
+              rowKey="id"
+              tableLayout="fixed"
+              scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+              pagination={{
+                current: page,
+                pageSize,
+                total: data?.pagination.total,
+                showSizeChanger: true,
+                onChange: (nextPage, nextPageSize) => {
+                  setPage(nextPage);
+                  if (nextPageSize && nextPageSize !== pageSize) {
+                    setPageSize(nextPageSize);
+                    setPage(1);
+                  }
+                },
+                showTotal: total => `Total ${total} users`,
+              }}
+            />
+          </HorizontalScrollContainer>
         )}
       </Card>
     </div>

@@ -4,6 +4,12 @@ import { normalizeImageReferencePath } from '../uploads/upload-storage.util';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 
+const toDateValue = (value: string | null | undefined): Date | null | undefined => {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  return new Date(value);
+};
+
 @Injectable()
 export class StudentsService {
   constructor(private prisma: PrismaService) {}
@@ -26,11 +32,12 @@ export class StudentsService {
       throw new BadRequestException('School is not accepting registrations');
     }
 
-    const { schoolId, profileImageUrl, imageUrl, ...rest } = createStudentDto;
+    const { schoolId, profileImageUrl, imageUrl, dateOfBirth, ...rest } = createStudentDto;
     const normalizedProfileImagePath =
       profileImageUrl === undefined && imageUrl === undefined
         ? undefined
         : normalizeImageReferencePath(profileImageUrl ?? imageUrl);
+    const normalizedDateOfBirth = toDateValue(dateOfBirth);
 
     const student = await this.prisma.student.create({
       data: {
@@ -38,6 +45,7 @@ export class StudentsService {
         ...(profileImageUrl !== undefined || imageUrl !== undefined
           ? { profileImageUrl: normalizedProfileImagePath }
           : {}),
+        ...(dateOfBirth !== undefined ? { dateOfBirth: normalizedDateOfBirth } : {}),
         parent: { connect: { id: parentId } },
         ...(schoolId && { school: { connect: { id: schoolId } } }),
       },
@@ -144,11 +152,12 @@ export class StudentsService {
       }
     }
 
-    const { schoolId, profileImageUrl, imageUrl, ...rest } = updateStudentDto;
+    const { schoolId, profileImageUrl, imageUrl, dateOfBirth, ...rest } = updateStudentDto;
     const normalizedProfileImagePath =
       profileImageUrl === undefined && imageUrl === undefined
         ? undefined
         : normalizeImageReferencePath(profileImageUrl ?? imageUrl);
+    const normalizedDateOfBirth = toDateValue(dateOfBirth);
 
     const updatedStudent = await this.prisma.student.update({
       where: { id },
@@ -157,6 +166,7 @@ export class StudentsService {
         ...(profileImageUrl !== undefined || imageUrl !== undefined
           ? { profileImageUrl: normalizedProfileImagePath }
           : {}),
+        ...(dateOfBirth !== undefined ? { dateOfBirth: normalizedDateOfBirth } : {}),
         ...(schoolId !== undefined && {
           school: schoolId ? { connect: { id: schoolId } } : { disconnect: true },
         }),

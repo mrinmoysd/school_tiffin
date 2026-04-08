@@ -194,7 +194,8 @@ export interface UpdateMenuItemDto extends Partial<Omit<CreateMenuItemDto, 'meal
 export interface Student {
   id: string;
   parentId: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   profileImageUrl?: string | null;
   dateOfBirth?: string;
   grade?: string;

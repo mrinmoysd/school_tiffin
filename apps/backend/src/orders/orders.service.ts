@@ -44,7 +44,8 @@ export class OrdersService {
       include: {
         student: {
           select: {
-            fullName: true,
+            firstName: true,
+            lastName: true,
             parentId: true,
           },
         },
@@ -92,7 +93,8 @@ export class OrdersService {
             totalDays: true,
             student: {
               select: {
-                fullName: true,
+                firstName: true,
+                lastName: true,
               },
             },
           },
@@ -118,7 +120,8 @@ export class OrdersService {
             totalPrice: true,
             student: {
               select: {
-                fullName: true,
+                firstName: true,
+                lastName: true,
                 parentId: true,
               },
             },
@@ -171,7 +174,8 @@ export class OrdersService {
             subscriptionNumber: true,
             student: {
               select: {
-                fullName: true,
+                firstName: true,
+                lastName: true,
               },
             },
           },

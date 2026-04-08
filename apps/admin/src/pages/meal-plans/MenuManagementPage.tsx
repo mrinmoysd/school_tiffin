@@ -413,7 +413,7 @@ const MenuManagementPage = () => {
               dataSource={menuItems}
               rowKey="id"
               pagination={false}
-              scroll={{ x: 'max-content' }}
+              scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
             />
           )}
         </HorizontalScrollContainer>

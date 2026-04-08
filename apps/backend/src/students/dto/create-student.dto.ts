@@ -1,15 +1,24 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { IsDateString, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 
 export class CreateStudentDto {
   @ApiProperty({
-    description: 'Student full name',
-    example: 'Jane Doe',
+    description: 'Student first name',
+    example: 'Jane',
   })
   @IsString()
-  @MinLength(2)
+  @MinLength(1)
   @MaxLength(255)
-  fullName: string;
+  firstName: string;
+
+  @ApiProperty({
+    description: 'Student last name',
+    example: 'Doe',
+  })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(255)
+  lastName: string;
 
   @ApiProperty({
     description: 'Student profile image URL or upload path',
@@ -37,6 +46,15 @@ export class CreateStudentDto {
   })
   @IsString()
   grade: string;
+
+  @ApiProperty({
+    description: 'Student date of birth (ISO date format)',
+    example: '2016-08-19',
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString()
+  dateOfBirth?: string;
 
   @ApiProperty({
     description: 'School ID where student is enrolled',

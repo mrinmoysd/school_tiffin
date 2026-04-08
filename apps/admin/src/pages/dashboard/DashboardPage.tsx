@@ -18,6 +18,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { SubscriptionStatus, OrderStatus, RecentActivity } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
+import { formatStudentName } from '@/utils/formatters';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -130,10 +132,11 @@ const DashboardPage = () => {
     },
     {
       title: <span className="whitespace-nowrap">Student</span>,
-      dataIndex: ['student', 'fullName'],
+      dataIndex: 'student',
       key: 'student',
       width: 160,
       ellipsis: true,
+      render: (student: RecentSubscriptionRow['student']) => formatStudentName(student),
     },
     {
       title: <span className="whitespace-nowrap">School</span>,
@@ -331,19 +334,21 @@ const DashboardPage = () => {
                 onRetry={refetchActivity}
               />
             ) : (
-              <Table
-                columns={subscriptionColumns}
-                dataSource={activity?.recentSubscriptions || []}
-                rowKey="id"
-                pagination={false}
-                size="small"
-                tableLayout="fixed"
-                scroll={{ x: 'max-content' }}
-                onRow={record => ({
-                  onClick: () => navigate(`/subscriptions/${record.id}`),
-                  className: 'cursor-pointer hover:bg-gray-50',
-                })}
-              />
+              <HorizontalScrollContainer>
+                <Table
+                  columns={subscriptionColumns}
+                  dataSource={activity?.recentSubscriptions || []}
+                  rowKey="id"
+                  pagination={false}
+                  size="small"
+                  tableLayout="fixed"
+                  scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+                  onRow={record => ({
+                    onClick: () => navigate(`/subscriptions/${record.id}`),
+                    className: 'cursor-pointer hover:bg-gray-50',
+                  })}
+                />
+              </HorizontalScrollContainer>
             )}
           </Card>
         </Col>
@@ -370,19 +375,21 @@ const DashboardPage = () => {
                 onRetry={refetchActivity}
               />
             ) : (
-              <Table
-                columns={orderColumns}
-                dataSource={activity?.recentOrders || []}
-                rowKey="id"
-                pagination={false}
-                size="small"
-                tableLayout="fixed"
-                scroll={{ x: 'max-content' }}
-                onRow={record => ({
-                  onClick: () => navigate(`/orders/${record.id}`),
-                  className: 'cursor-pointer hover:bg-gray-50',
-                })}
-              />
+              <HorizontalScrollContainer>
+                <Table
+                  columns={orderColumns}
+                  dataSource={activity?.recentOrders || []}
+                  rowKey="id"
+                  pagination={false}
+                  size="small"
+                  tableLayout="fixed"
+                  scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+                  onRow={record => ({
+                    onClick: () => navigate(`/orders/${record.id}`),
+                    className: 'cursor-pointer hover:bg-gray-50',
+                  })}
+                />
+              </HorizontalScrollContainer>
             )}
           </Card>
         </Col>

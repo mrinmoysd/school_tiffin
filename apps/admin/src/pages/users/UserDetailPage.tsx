@@ -24,6 +24,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userService } from '@/services';
 import { UserRole, SubscriptionStatus, OrderStatus } from '@/types';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
+import { formatStudentName } from '@/utils/formatters';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -142,10 +143,12 @@ const UserDetailPage = () => {
     },
     {
       title: <span className="whitespace-nowrap">Name</span>,
-      dataIndex: 'fullName',
-      key: 'fullName',
+      dataIndex: 'firstName',
+      key: 'name',
       width: 160,
       ellipsis: true,
+      render: (_: string, record: { firstName?: string; lastName?: string }) =>
+        formatStudentName(record),
     },
     {
       title: <span className="whitespace-nowrap">Grade</span>,
@@ -187,10 +190,11 @@ const UserDetailPage = () => {
     },
     {
       title: <span className="whitespace-nowrap">Student</span>,
-      dataIndex: ['student', 'fullName'],
+      dataIndex: 'student',
       key: 'student',
       width: 150,
       ellipsis: true,
+      render: (student: { firstName?: string; lastName?: string }) => formatStudentName(student),
     },
     {
       title: <span className="whitespace-nowrap">Meal Plan</span>,
@@ -271,7 +275,7 @@ const UserDetailPage = () => {
             pagination={false}
             size="small"
             tableLayout="fixed"
-            scroll={{ x: 620 }}
+            scroll={{ x: 620, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
           />
         </HorizontalScrollContainer>
       ),
@@ -292,7 +296,7 @@ const UserDetailPage = () => {
             pagination={{ pageSize: 5 }}
             size="small"
             tableLayout="fixed"
-            scroll={{ x: 640 }}
+            scroll={{ x: 640, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
           />
         </HorizontalScrollContainer>
       ),
@@ -313,7 +317,7 @@ const UserDetailPage = () => {
             pagination={{ pageSize: 5 }}
             size="small"
             tableLayout="fixed"
-            scroll={{ x: 520 }}
+            scroll={{ x: 520, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
           />
         </HorizontalScrollContainer>
       ),

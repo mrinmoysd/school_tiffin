@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { SubscriptionStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
@@ -15,7 +20,12 @@ export class SubscriptionsService {
    * Create a new subscription with database transaction
    */
   async create(parentId: string, createSubscriptionDto: CreateSubscriptionDto) {
-    const { studentId, mealPlanId, startDate: startDateString, numberOfDays } = createSubscriptionDto;
+    const {
+      studentId,
+      mealPlanId,
+      startDate: startDateString,
+      numberOfDays,
+    } = createSubscriptionDto;
 
     // Verify student belongs to parent
     const student = await this.prisma.student.findFirst({
@@ -71,7 +81,7 @@ export class SubscriptionsService {
     const subscriptionNumber = this.subscriptionEngine.generateSubscriptionNumber();
 
     // Create subscription with transaction
-    const result = await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async tx => {
       // Create subscription record
       const subscription = await tx.subscription.create({
         data: {
@@ -91,7 +101,7 @@ export class SubscriptionsService {
       });
 
       // Create subscription days (bulk insert)
-      const subscriptionDaysData = schedule.map((date) => ({
+      const subscriptionDaysData = schedule.map(date => ({
         subscriptionId: subscription.id,
         scheduledDate: date,
         status: 'SCHEDULED' as const,
@@ -108,7 +118,8 @@ export class SubscriptionsService {
           student: {
             select: {
               id: true,
-              fullName: true,
+              firstName: true,
+              lastName: true,
               grade: true,
             },
           },
@@ -130,10 +141,7 @@ export class SubscriptionsService {
   /**
    * Get all subscriptions for a parent
    */
-  async findAllByParent(
-    parentId: string,
-    status?: SubscriptionStatus,
-  ) {
+  async findAllByParent(parentId: string, status?: SubscriptionStatus) {
     // Get all students for this parent
     const students = await this.prisma.student.findMany({
       where: {
@@ -143,7 +151,7 @@ export class SubscriptionsService {
       select: { id: true },
     });
 
-    const studentIds = students.map((s) => s.id);
+    const studentIds = students.map(s => s.id);
 
     const subscriptions = await this.prisma.subscription.findMany({
       where: {
@@ -154,7 +162,8 @@ export class SubscriptionsService {
         student: {
           select: {
             id: true,
-            fullName: true,
+            firstName: true,
+            lastName: true,
             grade: true,
             school: {
               select: {
@@ -191,7 +200,8 @@ export class SubscriptionsService {
         student: {
           select: {
             id: true,
-            fullName: true,
+            firstName: true,
+            lastName: true,
             grade: true,
             parentId: true,
             school: {

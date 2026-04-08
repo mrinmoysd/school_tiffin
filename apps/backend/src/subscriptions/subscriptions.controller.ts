@@ -1,5 +1,12 @@
 import { Controller, Get, Post, Body, Param, Delete, Query, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { SubscriptionsService } from './subscriptions.service';
 import { CreateSubscriptionDto } from './dto';
 import { CurrentUser } from '../common/decorators';
@@ -17,7 +24,8 @@ export class SubscriptionsController {
   @Post()
   @ApiOperation({
     summary: 'Create a new subscription',
-    description: 'Create a subscription for a student. Generates delivery schedule automatically based on school operating days. Uses database transaction for data consistency.',
+    description:
+      'Create a subscription for a student. Generates delivery schedule automatically based on school operating days. Uses database transaction for data consistency.',
   })
   @ApiResponse({
     status: 201,
@@ -40,7 +48,8 @@ export class SubscriptionsController {
           status: 'PENDING_PAYMENT',
           student: {
             id: '550e8400-e29b-41d4-a716-446655440000',
-            fullName: 'Jane Doe',
+            firstName: 'Jane',
+            lastName: 'Doe',
             grade: 5,
           },
           mealPlan: {
@@ -57,7 +66,10 @@ export class SubscriptionsController {
   })
   @ApiResponse({ status: 400, description: 'Invalid input or business rule violation' })
   @ApiResponse({ status: 404, description: 'Student or meal plan not found' })
-  async create(@CurrentUser('sub') parentId: string, @Body() createSubscriptionDto: CreateSubscriptionDto) {
+  async create(
+    @CurrentUser('sub') parentId: string,
+    @Body() createSubscriptionDto: CreateSubscriptionDto,
+  ) {
     return this.subscriptionsService.create(parentId, createSubscriptionDto);
   }
 
@@ -92,7 +104,8 @@ export class SubscriptionsController {
   @Get(':id')
   @ApiOperation({
     summary: 'Get subscription by ID',
-    description: 'Get detailed information about a specific subscription including student and meal plan details.',
+    description:
+      'Get detailed information about a specific subscription including student and meal plan details.',
   })
   @ApiParam({
     name: 'id',
@@ -112,7 +125,8 @@ export class SubscriptionsController {
   @Get(':id/schedule')
   @ApiOperation({
     summary: 'Get subscription schedule',
-    description: 'Get the complete delivery schedule for a subscription showing all scheduled dates and their status.',
+    description:
+      'Get the complete delivery schedule for a subscription showing all scheduled dates and their status.',
   })
   @ApiParam({
     name: 'id',
@@ -156,7 +170,8 @@ export class SubscriptionsController {
   @Delete(':id')
   @ApiOperation({
     summary: 'Cancel subscription',
-    description: 'Cancel an active subscription. Calculates refund amount based on remaining days. Cannot cancel completed subscriptions.',
+    description:
+      'Cancel an active subscription. Calculates refund amount based on remaining days. Cannot cancel completed subscriptions.',
   })
   @ApiParam({
     name: 'id',
@@ -181,7 +196,10 @@ export class SubscriptionsController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'Cannot cancel - subscription already cancelled or completed' })
+  @ApiResponse({
+    status: 400,
+    description: 'Cannot cancel - subscription already cancelled or completed',
+  })
   @ApiResponse({ status: 403, description: 'Access denied' })
   async cancel(@Param('id', ParseUUIDPipe) id: string, @CurrentUser('sub') parentId: string) {
     return this.subscriptionsService.cancel(id, parentId);

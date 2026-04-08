@@ -26,6 +26,8 @@ import { pauseRequestService } from '@/services';
 import { PauseRequest, PauseRequestFilters, PauseRequestStatus } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
+import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
+import { formatStudentName } from '@/utils/formatters';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs, { Dayjs } from 'dayjs';
 
@@ -113,7 +115,7 @@ const PauseRequestsPage = () => {
       content: (
         <div>
           <p>
-            Approve pause for <strong>{request.subscription?.student?.fullName}</strong>?
+            Approve pause for <strong>{formatStudentName(request.subscription?.student)}</strong>?
           </p>
           <div className="mt-3 p-3 bg-gray-50 rounded text-sm">
             <div>
@@ -170,10 +172,11 @@ const PauseRequestsPage = () => {
     },
     {
       title: <span className="whitespace-nowrap">Student</span>,
-      dataIndex: ['subscription', 'student', 'fullName'],
+      dataIndex: ['subscription', 'student'],
       key: 'student',
       width: 160,
       ellipsis: true,
+      render: (_: unknown, record) => formatStudentName(record.subscription?.student),
     },
     {
       title: <span className="whitespace-nowrap">Subscription</span>,
@@ -332,22 +335,24 @@ const PauseRequestsPage = () => {
             onRetry={refetch}
           />
         ) : (
-          <Table
-            columns={columns}
-            dataSource={pauseRequests}
-            rowKey="id"
-            tableLayout="fixed"
-            scroll={{ x: 'max-content' }}
-            pagination={{
-              total: pauseRequests?.length,
-              pageSize: 10,
-              showSizeChanger: true,
-              showTotal: total => `Total ${total} requests`,
-            }}
-            rowClassName={record =>
-              record.status === PauseRequestStatus.PENDING ? 'bg-orange-50' : ''
-            }
-          />
+          <HorizontalScrollContainer>
+            <Table
+              columns={columns}
+              dataSource={pauseRequests}
+              rowKey="id"
+              tableLayout="fixed"
+              scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+              pagination={{
+                total: pauseRequests?.length,
+                pageSize: 10,
+                showSizeChanger: true,
+                showTotal: total => `Total ${total} requests`,
+              }}
+              rowClassName={record =>
+                record.status === PauseRequestStatus.PENDING ? 'bg-orange-50' : ''
+              }
+            />
+          </HorizontalScrollContainer>
         )}
       </Card>
     </div>

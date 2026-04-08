@@ -26,6 +26,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { subscriptionService } from '@/services';
 import { SubscriptionStatus, DeliveryStatus, PauseRequestStatus } from '@/types';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
+import { formatStudentName } from '@/utils/formatters';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -200,7 +201,7 @@ const SubscriptionDetailPage = () => {
             rowKey="id"
             pagination={{ pageSize: 10 }}
             size="small"
-            scroll={{ x: 'max-content' }}
+            scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
           />
         </HorizontalScrollContainer>
       ),
@@ -224,7 +225,7 @@ const SubscriptionDetailPage = () => {
             pagination={false}
             size="small"
             locale={{ emptyText: 'No pause requests' }}
-            scroll={{ x: 'max-content' }}
+            scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
           />
         </HorizontalScrollContainer>
       ),
@@ -291,7 +292,7 @@ const SubscriptionDetailPage = () => {
               <Text type="secondary" className="text-xs">
                 Student
               </Text>
-              <div className="font-medium">{subscription.student?.fullName}</div>
+              <div className="font-medium">{formatStudentName(subscription.student)}</div>
             </div>
           </div>
         </Card>

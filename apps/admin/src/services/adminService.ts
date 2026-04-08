@@ -1,4 +1,5 @@
 import api from '@/lib/axios';
+import { formatStudentName } from '@/utils/formatters';
 import {
   ApiResponse,
   DashboardStats,
@@ -26,7 +27,8 @@ interface DeliveriesResponse {
       subscription: {
         subscriptionNumber: string;
         student: {
-          fullName: string;
+          firstName: string;
+          lastName: string;
           grade?: string;
           section?: string;
           school: {
@@ -60,7 +62,8 @@ interface SalesReportResponse {
     subscription: {
       subscriptionNumber: string;
       student: {
-        fullName: string;
+        firstName: string;
+        lastName: string;
         school: { name: string };
       };
     };
@@ -152,7 +155,7 @@ export const adminService = {
         for (const delivery of schoolDeliveries) {
           deliveries.push({
             id: delivery.id,
-            studentName: delivery.subscription.student.fullName,
+            studentName: formatStudentName(delivery.subscription.student),
             grade: delivery.subscription.student.grade,
             schoolName: delivery.subscription.student.school.name,
             mealPlanName: delivery.subscription.mealPlan.name,

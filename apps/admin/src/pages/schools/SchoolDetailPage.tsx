@@ -251,7 +251,7 @@ const SchoolDetailPage = () => {
                 pagination={{ pageSize: 5 }}
                 size="small"
                 tableLayout="fixed"
-                scroll={{ x: 700 }}
+                scroll={{ x: 700, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
               />
             </HorizontalScrollContainer>
           </Card>
