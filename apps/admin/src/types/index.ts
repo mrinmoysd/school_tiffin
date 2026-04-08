@@ -43,6 +43,7 @@ export interface User {
   profileImageUrl?: string | null;
   role: UserRole;
   isActive: boolean;
+  maxStudents: number;
   emailVerified: boolean;
   createdAt: string;
   lastLoginAt?: string;

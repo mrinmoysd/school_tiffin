@@ -70,6 +70,14 @@ export const userService = {
     return response.data.data;
   },
 
+  // Update parent max students
+  updateMaxStudents: async (id: string, maxStudents: number): Promise<User> => {
+    const response = await api.patch<ApiResponse<User>>(`/admin/users/${id}/max-students`, {
+      maxStudents,
+    });
+    return response.data.data;
+  },
+
   // Update current user profile
   updateMyProfile: async (data: UpdateMyProfileDto): Promise<User> => {
     const response = await api.patch<ApiResponse<User>>('/users/me', data);

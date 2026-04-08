@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   ParseUUIDPipe,
   Patch,
   Post,
@@ -14,6 +15,7 @@ import {
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiBody,
   ApiParam,
   ApiQuery,
   ApiResponse,
@@ -370,6 +372,44 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'User status updated successfully' })
   async toggleUserStatus(@Param('id', ParseUUIDPipe) id: string) {
     return this.adminService.toggleUserStatus(id);
+  }
+
+  /**
+   * Update parent max students limit
+   */
+  @Patch('users/:id/max-students')
+  @ApiOperation({
+    summary: '[Admin] Update parent max students',
+    description: 'Set the maximum number of students allowed for a parent user.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'User UUID',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['maxStudents'],
+      properties: {
+        maxStudents: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 20,
+          example: 4,
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Max students updated successfully' })
+  async updateUserMaxStudents(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('maxStudents', ParseIntPipe) maxStudents: number,
+  ) {
+    if (maxStudents < 1 || maxStudents > 20) {
+      throw new BadRequestException('maxStudents must be between 1 and 20');
+    }
+
+    return this.adminService.updateUserMaxStudents(id, maxStudents);
   }
 
   /**

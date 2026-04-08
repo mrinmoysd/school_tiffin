@@ -21,6 +21,7 @@ model User {
   fullName        String    @map("full_name") @db.VarChar(255)
   role            UserRole
   isActive        Boolean   @default(true) @map("is_active")
+  maxStudents     Int       @default(4) @map("max_students")
   emailVerified   Boolean   @default(false) @map("email_verified")
   phoneVerified   Boolean   @default(false) @map("phone_verified")
   phoneVerifiedAt DateTime? @map("phone_verified_at")

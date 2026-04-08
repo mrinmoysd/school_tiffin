@@ -56,6 +56,7 @@ export class AuthController {
             id: '550e8400-e29b-41d4-a716-446655440000',
             email: 'parent@example.com',
             fullName: 'John Doe',
+            maxStudents: 4,
             role: 'PARENT',
           },
           tokens: {
@@ -150,6 +151,7 @@ export class AuthController {
             id: '550e8400-e29b-41d4-a716-446655440000',
             email: 'parent@example.com',
             fullName: 'John Doe',
+            maxStudents: 4,
             role: 'PARENT',
           },
           tokens: {
@@ -596,6 +598,7 @@ export class AuthController {
             id: '550e8400-e29b-41d4-a716-446655440000',
             email: '+919876543210@temp.com',
             fullName: '',
+            maxStudents: 4,
             role: 'PARENT',
           },
           tokens: {
