@@ -27,7 +27,8 @@ export class StudentsController {
         statusCode: 201,
         data: {
           id: '550e8400-e29b-41d4-a716-446655440000',
-          fullName: 'Jane Doe',
+          firstName: 'Jane',
+          lastName: 'Doe',
           grade: 5,
           schoolId: '660e8400-e29b-41d4-a716-446655440000',
           parentId: '770e8400-e29b-41d4-a716-446655440000',
@@ -69,7 +70,8 @@ export class StudentsController {
         data: [
           {
             id: '550e8400-e29b-41d4-a716-446655440000',
-            fullName: 'Jane Doe',
+            firstName: 'Jane',
+            lastName: 'Doe',
             grade: 5,
             school: {
               id: '660e8400-e29b-41d4-a716-446655440000',
@@ -94,7 +96,8 @@ export class StudentsController {
   @Get(':id')
   @ApiOperation({
     summary: 'Get student by ID',
-    description: 'Get detailed information about a specific student. Only accessible by student\'s parent.',
+    description:
+      "Get detailed information about a specific student. Only accessible by student's parent.",
   })
   @ApiParam({
     name: 'id',

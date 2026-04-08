@@ -1,5 +1,23 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { PauseRequestStatus } from '@prisma/client';
 import { CurrentUser, Roles, UserRole } from '../common/decorators';
 import { CreatePauseRequestDto } from './dto';
@@ -17,7 +35,8 @@ export class PauseRequestsController {
   @Post()
   @ApiOperation({
     summary: 'Create a pause request',
-    description: 'Request to pause a subscription for a specific date range. Automatically calculates affected days and new end date.',
+    description:
+      'Request to pause a subscription for a specific date range. Automatically calculates affected days and new end date.',
   })
   @ApiResponse({
     status: 201,
@@ -38,7 +57,8 @@ export class PauseRequestsController {
           subscription: {
             subscriptionNumber: 'SUB-1707484800000-1234',
             student: {
-              fullName: 'Jane Doe',
+              firstName: 'Jane',
+              lastName: 'Doe',
             },
           },
           impact: {
@@ -52,7 +72,10 @@ export class PauseRequestsController {
     },
   })
   @ApiResponse({ status: 400, description: 'Invalid dates or overlapping pause request' })
-  async create(@CurrentUser('sub') parentId: string, @Body() createPauseRequestDto: CreatePauseRequestDto) {
+  async create(
+    @CurrentUser('sub') parentId: string,
+    @Body() createPauseRequestDto: CreatePauseRequestDto,
+  ) {
     return this.pauseRequestsService.create(parentId, createPauseRequestDto);
   }
 
@@ -103,7 +126,8 @@ export class PauseRequestsController {
   @Roles(UserRole.ADMIN)
   @ApiOperation({
     summary: '[Admin] Approve or reject pause request',
-    description: 'Admin only: Approve or reject a pause request. Approved requests will be processed in background.',
+    description:
+      'Admin only: Approve or reject a pause request. Approved requests will be processed in background.',
   })
   @ApiParam({
     name: 'id',

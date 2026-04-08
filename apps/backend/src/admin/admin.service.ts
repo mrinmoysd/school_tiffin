@@ -11,6 +11,9 @@ import {
 } from '@prisma/client';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns';
 
+const getStudentName = (student?: { firstName?: string | null; lastName?: string | null } | null) =>
+  [student?.firstName, student?.lastName].filter(Boolean).join(' ').trim();
+
 @Injectable()
 export class AdminService {
   constructor(
@@ -100,7 +103,7 @@ export class AdminService {
         orderBy: { createdAt: 'desc' },
         include: {
           parent: { select: { id: true, fullName: true, email: true } },
-          student: { select: { id: true, fullName: true } },
+          student: { select: { id: true, firstName: true, lastName: true } },
           school: { select: { id: true, name: true } },
           mealPlan: { select: { id: true, name: true } },
         },
@@ -149,7 +152,8 @@ export class AdminService {
             subscriptionNumber: true,
             student: {
               select: {
-                fullName: true,
+                firstName: true,
+                lastName: true,
                 grade: true,
                 section: true,
                 school: {
@@ -175,7 +179,8 @@ export class AdminService {
       orderBy: [
         { subscription: { student: { school: { name: 'asc' } } } },
         { subscription: { student: { grade: 'asc' } } },
-        { subscription: { student: { fullName: 'asc' } } },
+        { subscription: { student: { firstName: 'asc' } } },
+        { subscription: { student: { lastName: 'asc' } } },
       ],
     });
 
@@ -258,7 +263,7 @@ export class AdminService {
       status: string;
       subscription?: {
         subscriptionNumber?: string;
-        student?: { fullName?: string; grade?: string };
+        student?: { firstName?: string; lastName?: string; grade?: string };
         mealPlan?: { name?: string };
         parent?: { phoneNumber?: string };
       };
@@ -271,7 +276,7 @@ export class AdminService {
             delivery.id,
             delivery.scheduledDate,
             schoolName,
-            delivery.subscription?.student?.fullName || '',
+            getStudentName(delivery.subscription?.student) || '',
             delivery.subscription?.student?.grade || '',
             delivery.subscription?.mealPlan?.name || '',
             delivery.subscription?.subscriptionNumber || '',
@@ -371,7 +376,7 @@ export class AdminService {
         parentId: userId,
       },
       include: {
-        student: { select: { fullName: true } },
+        student: { select: { firstName: true, lastName: true } },
         mealPlan: { select: { name: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -548,7 +553,8 @@ export class AdminService {
           OR: [
             { subscriptionNumber: { contains: search, mode: 'insensitive' } },
             { parent: { fullName: { contains: search, mode: 'insensitive' } } },
-            { student: { fullName: { contains: search, mode: 'insensitive' } } },
+            { student: { firstName: { contains: search, mode: 'insensitive' } } },
+            { student: { lastName: { contains: search, mode: 'insensitive' } } },
           ],
         }),
         ...((startDate || endDate) && {
@@ -569,7 +575,8 @@ export class AdminService {
         student: {
           select: {
             id: true,
-            fullName: true,
+            firstName: true,
+            lastName: true,
             grade: true,
           },
         },
@@ -606,7 +613,8 @@ export class AdminService {
         student: {
           select: {
             id: true,
-            fullName: true,
+            firstName: true,
+            lastName: true,
             grade: true,
           },
         },
@@ -695,7 +703,8 @@ export class AdminService {
           OR: [
             { parent: { fullName: { contains: search, mode: 'insensitive' } } },
             { subscription: { subscriptionNumber: { contains: search, mode: 'insensitive' } } },
-            { subscription: { student: { fullName: { contains: search, mode: 'insensitive' } } } },
+            { subscription: { student: { firstName: { contains: search, mode: 'insensitive' } } } },
+            { subscription: { student: { lastName: { contains: search, mode: 'insensitive' } } } },
           ],
         }),
         ...((startDate || endDate) && {
@@ -719,7 +728,8 @@ export class AdminService {
             subscriptionNumber: true,
             student: {
               select: {
-                fullName: true,
+                firstName: true,
+                lastName: true,
               },
             },
           },
@@ -746,7 +756,8 @@ export class AdminService {
             subscriptionNumber: true,
             student: {
               select: {
-                fullName: true,
+                firstName: true,
+                lastName: true,
               },
             },
           },
@@ -813,7 +824,8 @@ export class AdminService {
             totalDays: true,
             student: {
               select: {
-                fullName: true,
+                firstName: true,
+                lastName: true,
                 school: {
                   select: {
                     name: true,
@@ -862,7 +874,7 @@ export class AdminService {
         [
           order.id,
           order.orderNumber,
-          order.subscription?.student?.fullName || '',
+          getStudentName(order.subscription?.student) || '',
           order.subscription?.student?.school?.name || '',
           Number(order.amount),
           Number(order.finalAmount),

@@ -114,7 +114,8 @@ export class AdminController {
                 subscription: {
                   subscriptionNumber: 'SUB-xxx',
                   student: {
-                    fullName: 'John Doe',
+                    firstName: 'John',
+                    lastName: 'Doe',
                     grade: 5,
                     section: 'A',
                   },

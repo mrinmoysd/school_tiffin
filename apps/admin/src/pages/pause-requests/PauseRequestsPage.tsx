@@ -27,6 +27,7 @@ import { PauseRequest, PauseRequestFilters, PauseRequestStatus } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
+import { formatStudentName } from '@/utils/formatters';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs, { Dayjs } from 'dayjs';
 
@@ -114,7 +115,7 @@ const PauseRequestsPage = () => {
       content: (
         <div>
           <p>
-            Approve pause for <strong>{request.subscription?.student?.fullName}</strong>?
+            Approve pause for <strong>{formatStudentName(request.subscription?.student)}</strong>?
           </p>
           <div className="mt-3 p-3 bg-gray-50 rounded text-sm">
             <div>
@@ -171,10 +172,11 @@ const PauseRequestsPage = () => {
     },
     {
       title: <span className="whitespace-nowrap">Student</span>,
-      dataIndex: ['subscription', 'student', 'fullName'],
+      dataIndex: ['subscription', 'student'],
       key: 'student',
       width: 160,
       ellipsis: true,
+      render: (_: unknown, record) => formatStudentName(record.subscription?.student),
     },
     {
       title: <span className="whitespace-nowrap">Subscription</span>,

@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PauseRequestStatus } from '@prisma/client';
 import { addDays, startOfDay } from 'date-fns';
 import { PrismaService } from '../prisma/prisma.service';
@@ -18,7 +23,12 @@ export class PauseRequestsService {
    * Create a pause request
    */
   async create(parentId: string, createPauseRequestDto: CreatePauseRequestDto) {
-    const { subscriptionId, startDate: startDateString, endDate: endDateString, reason } = createPauseRequestDto;
+    const {
+      subscriptionId,
+      startDate: startDateString,
+      endDate: endDateString,
+      reason,
+    } = createPauseRequestDto;
 
     // Verify subscription ownership
     const subscription = await this.subscriptionsService.findOne(subscriptionId, parentId);
@@ -51,26 +61,21 @@ export class PauseRequestsService {
       where: {
         subscriptionId,
         status: {
-          in: [PauseRequestStatus.PENDING, PauseRequestStatus.APPROVED, PauseRequestStatus.PROCESSED],
+          in: [
+            PauseRequestStatus.PENDING,
+            PauseRequestStatus.APPROVED,
+            PauseRequestStatus.PROCESSED,
+          ],
         },
         OR: [
           {
-            AND: [
-              { startDate: { lte: startDate } },
-              { endDate: { gte: startDate } },
-            ],
+            AND: [{ startDate: { lte: startDate } }, { endDate: { gte: startDate } }],
           },
           {
-            AND: [
-              { startDate: { lte: endDate } },
-              { endDate: { gte: endDate } },
-            ],
+            AND: [{ startDate: { lte: endDate } }, { endDate: { gte: endDate } }],
           },
           {
-            AND: [
-              { startDate: { gte: startDate } },
-              { endDate: { lte: endDate } },
-            ],
+            AND: [{ startDate: { gte: startDate } }, { endDate: { lte: endDate } }],
           },
         ],
       },
@@ -121,7 +126,8 @@ export class PauseRequestsService {
             subscriptionNumber: true,
             student: {
               select: {
-                fullName: true,
+                firstName: true,
+                lastName: true,
               },
             },
           },
@@ -146,7 +152,7 @@ export class PauseRequestsService {
   async findAllByParent(parentId: string, status?: PauseRequestStatus) {
     // Get all subscriptions for this parent
     const subscriptions = await this.subscriptionsService.findAllByParent(parentId);
-    const subscriptionIds = subscriptions.map((s) => s.id);
+    const subscriptionIds = subscriptions.map(s => s.id);
 
     const pauseRequests = await this.prisma.pauseRequest.findMany({
       where: {
@@ -160,7 +166,8 @@ export class PauseRequestsService {
             subscriptionNumber: true,
             student: {
               select: {
-                fullName: true,
+                firstName: true,
+                lastName: true,
               },
             },
           },

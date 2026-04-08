@@ -19,6 +19,7 @@ import { SubscriptionStatus, OrderStatus, RecentActivity } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
+import { formatStudentName } from '@/utils/formatters';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -131,10 +132,11 @@ const DashboardPage = () => {
     },
     {
       title: <span className="whitespace-nowrap">Student</span>,
-      dataIndex: ['student', 'fullName'],
+      dataIndex: 'student',
       key: 'student',
       width: 160,
       ellipsis: true,
+      render: (student: RecentSubscriptionRow['student']) => formatStudentName(student),
     },
     {
       title: <span className="whitespace-nowrap">School</span>,

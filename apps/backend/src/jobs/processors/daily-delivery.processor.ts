@@ -1,9 +1,11 @@
 import { Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
-import { Job } from 'bull';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { startOfDay, endOfDay, format } from 'date-fns';
+
+const getStudentName = (student: { firstName?: string | null; lastName?: string | null }) =>
+  [student.firstName, student.lastName].filter(Boolean).join(' ').trim();
 
 @Processor('daily-delivery')
 export class DailyDeliveryProcessor {
@@ -19,7 +21,7 @@ export class DailyDeliveryProcessor {
    * Runs daily at 6 AM
    */
   @Process('generate-daily-deliveries')
-  async handleDailyDeliveries(job: Job) {
+  async handleDailyDeliveries() {
     this.logger.log('Processing daily deliveries...');
 
     const today = new Date();
@@ -71,7 +73,7 @@ export class DailyDeliveryProcessor {
       // Send notifications to parents
       for (const delivery of deliveries) {
         const parent = delivery.subscription.student.parent;
-        const studentName = delivery.subscription.student.fullName;
+        const studentName = getStudentName(delivery.subscription.student);
         const schoolName = delivery.subscription.student.school.name;
         const mealPlanName = delivery.subscription.mealPlan.name;
 

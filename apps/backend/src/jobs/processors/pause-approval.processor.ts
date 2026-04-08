@@ -5,6 +5,9 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { PauseRequestStatus } from '@prisma/client';
 
+const getStudentName = (student: { firstName?: string | null; lastName?: string | null }) =>
+  [student.firstName, student.lastName].filter(Boolean).join(' ').trim();
+
 @Processor('pause-approval')
 export class PauseApprovalProcessor {
   private readonly logger = new Logger(PauseApprovalProcessor.name);
@@ -50,7 +53,7 @@ export class PauseApprovalProcessor {
       }
 
       // Process pause with transaction
-      await this.prisma.$transaction(async (tx) => {
+      await this.prisma.$transaction(async tx => {
         // 1. Update subscription_days to PAUSED
         await tx.subscriptionDay.updateMany({
           where: {
@@ -76,7 +79,7 @@ export class PauseApprovalProcessor {
 
         // 3. Create new subscription_days for the extension
         // Get subscription details
-        const subscription = await tx.subscription.findUnique({
+        await tx.subscription.findUnique({
           where: { id: pauseRequest.subscriptionId },
           include: {
             student: {
@@ -104,7 +107,7 @@ export class PauseApprovalProcessor {
 
       // Send notification to parent
       const parent = pauseRequest.subscription.student.parent;
-      const studentName = pauseRequest.subscription.student.fullName;
+      const studentName = getStudentName(pauseRequest.subscription.student);
 
       const title = 'Pause Request Processed';
       const body = `Your pause request for ${studentName}'s subscription has been processed. Subscription extended to ${pauseRequest.newEndDate.toLocaleDateString()}.`;
