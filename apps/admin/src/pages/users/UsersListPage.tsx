@@ -1,6 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Input, Select, Typography, Card, Tag, Switch, Button, message, Modal } from 'antd';
+import {
+  Table,
+  Input,
+  Select,
+  Typography,
+  Card,
+  Tag,
+  Switch,
+  Button,
+  InputNumber,
+  message,
+  Modal,
+} from 'antd';
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userService } from '@/services';
@@ -20,6 +32,7 @@ const UsersListPage = () => {
   const [filters, setFilters] = useState<UserFilters>({});
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [editedMaxStudents, setEditedMaxStudents] = useState<Record<string, number>>({});
 
   // Fetch users
   const skip = (page - 1) * pageSize;
@@ -28,6 +41,19 @@ const UsersListPage = () => {
     queryFn: () => userService.getAll(filters, skip, pageSize),
   });
 
+  useEffect(() => {
+    if (!data?.users) return;
+
+    const next: Record<string, number> = {};
+    for (const user of data.users) {
+      if (user.role === UserRole.PARENT) {
+        next[user.id] = user.maxStudents;
+      }
+    }
+
+    setEditedMaxStudents(next);
+  }, [data?.users]);
+
   // Toggle active mutation
   const toggleActiveMutation = useMutation({
     mutationFn: ({ id }: { id: string }) => userService.toggleActive(id),
@@ -35,6 +61,19 @@ const UsersListPage = () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       queryClient.invalidateQueries({ queryKey: ['user', variables.id] });
       message.success('User status updated');
+    },
+    onError: (error: Error) => {
+      message.error(error.message);
+    },
+  });
+
+  const updateMaxStudentsMutation = useMutation({
+    mutationFn: ({ id, maxStudents }: { id: string; maxStudents: number }) =>
+      userService.updateMaxStudents(id, maxStudents),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['user', variables.id] });
+      message.success('Student limit updated');
     },
     onError: (error: Error) => {
       message.error(error.message);
@@ -132,6 +171,51 @@ const UsersListPage = () => {
       key: 'lastLoginAt',
       width: 150,
       render: (date: string) => (date ? dayjs(date).format('MMM DD, HH:mm') : 'Never'),
+    },
+    {
+      title: <span className="whitespace-nowrap">Max Students</span>,
+      dataIndex: 'maxStudents',
+      key: 'maxStudents',
+      width: 180,
+      render: (_value: number, record) => {
+        if (record.role !== UserRole.PARENT) return '-';
+
+        const value = editedMaxStudents[record.id] ?? record.maxStudents;
+        const hasChanged = value !== record.maxStudents;
+        const isSaving =
+          updateMaxStudentsMutation.isPending &&
+          updateMaxStudentsMutation.variables?.id === record.id;
+
+        return (
+          <div className="flex items-center gap-2">
+            <InputNumber
+              min={1}
+              max={20}
+              value={value}
+              onChange={nextValue => {
+                if (typeof nextValue !== 'number') return;
+                setEditedMaxStudents(prev => ({ ...prev, [record.id]: nextValue }));
+              }}
+              style={{ width: 90 }}
+            />
+            <Button
+              type="link"
+              size="small"
+              className="!px-0"
+              disabled={!hasChanged}
+              loading={isSaving}
+              onClick={() =>
+                updateMaxStudentsMutation.mutate({
+                  id: record.id,
+                  maxStudents: value,
+                })
+              }
+            >
+              Save
+            </Button>
+          </div>
+        );
+      },
     },
     {
       title: <span className="whitespace-nowrap">Joined</span>,

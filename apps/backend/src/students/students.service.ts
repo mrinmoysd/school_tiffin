@@ -18,6 +18,28 @@ export class StudentsService {
    * Create a new student
    */
   async create(parentId: string, createStudentDto: CreateStudentDto) {
+    const parent = await this.prisma.user.findUnique({
+      where: { id: parentId },
+      select: { maxStudents: true },
+    });
+
+    if (!parent) {
+      throw new NotFoundException('Parent not found');
+    }
+
+    const activeStudentCount = await this.prisma.student.count({
+      where: {
+        parentId,
+        deletedAt: null,
+      },
+    });
+
+    if (activeStudentCount >= parent.maxStudents) {
+      throw new BadRequestException(
+        `Student limit reached. You already have ${activeStudentCount} student(s). Maximum allowed is ${parent.maxStudents}. Please contact admin to increase your limit.`,
+      );
+    }
+
     // Verify school exists
     const school = await this.prisma.school.findUnique({
       where: { id: createStudentDto.schoolId },

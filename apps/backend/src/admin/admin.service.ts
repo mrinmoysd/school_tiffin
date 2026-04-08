@@ -315,6 +315,7 @@ export class AdminService {
         phoneNumber: true,
         role: true,
         isActive: true,
+        maxStudents: true,
         lastLoginAt: true,
         createdAt: true,
       },
@@ -433,6 +434,43 @@ export class AdminService {
     });
 
     return updated;
+  }
+
+  /**
+   * Update parent max students limit
+   */
+  async updateUserMaxStudents(userId: string, maxStudents: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.role !== UserRole.PARENT) {
+      throw new BadRequestException('Student limit can only be updated for parent users');
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { maxStudents },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        phoneNumber: true,
+        role: true,
+        isActive: true,
+        maxStudents: true,
+        lastLoginAt: true,
+        createdAt: true,
+      },
+    });
   }
 
   async getOrders(status?: OrderStatus, search?: string, startDate?: string, endDate?: string) {

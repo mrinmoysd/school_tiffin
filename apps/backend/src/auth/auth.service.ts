@@ -19,6 +19,7 @@ export interface AuthResponse {
     email: string;
     fullName: string | null;
     profileImageUrl?: string | null;
+    maxStudents: number;
     role: string;
   };
   tokens: {
@@ -66,6 +67,7 @@ export class AuthService {
         fullName: dto.fullName,
         phoneNumber: dto.phone,
         role: 'PARENT', // Default role
+        maxStudents: 4,
         emailVerified: false,
         phoneVerified: false,
         isActive: true,
@@ -75,6 +77,7 @@ export class AuthService {
         email: true,
         fullName: true,
         profileImageUrl: true,
+        maxStudents: true,
         role: true,
       },
     });
@@ -100,6 +103,7 @@ export class AuthService {
         email: true,
         fullName: true,
         profileImageUrl: true,
+        maxStudents: true,
         role: true,
         passwordHash: true,
         isActive: true,
@@ -330,6 +334,7 @@ export class AuthService {
         email: true,
         fullName: true,
         profileImageUrl: true,
+        maxStudents: true,
         role: true,
         isActive: true,
       },
@@ -345,6 +350,7 @@ export class AuthService {
           fullName: '', // Empty full name
           phoneVerified: true,
           role: 'PARENT',
+          maxStudents: 4,
           isActive: true,
         },
         select: {
@@ -352,6 +358,7 @@ export class AuthService {
           email: true,
           fullName: true,
           profileImageUrl: true,
+          maxStudents: true,
           role: true,
           isActive: true,
         },
