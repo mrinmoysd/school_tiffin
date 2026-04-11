@@ -89,9 +89,9 @@ export interface CreateSchoolDto {
   deliveryInstructions?: string;
 }
 
-export interface UpdateSchoolDto extends Partial<CreateSchoolDto> {
+export type UpdateSchoolDto = Omit<Partial<CreateSchoolDto>, 'code'> & {
   isServiceAvailable?: boolean;
-}
+};
 
 // Meal Plan Types
 export interface MealPlanTypeMaster {

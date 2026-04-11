@@ -35,7 +35,7 @@ const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
 // Loading fallback
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
-    <Spin size="large" tip="Loading..." />
+    <Spin size="large" />
   </div>
 );
 
