@@ -7,6 +7,7 @@ import { useMutation } from '@tanstack/react-query';
 import { authService } from '@/services';
 import { useAuthStore } from '@/stores/authStore';
 import { LoginRequest, UserRole } from '@/types';
+import { formatUserName } from '@/utils/formatters';
 import { Controller, useForm } from 'react-hook-form';
 import { EMAIL_VALIDATION_REGEX } from '@/constants/validation';
 
@@ -49,18 +50,20 @@ const LoginPage = () => {
         {
           id: data.user.id,
           email: data.user.email,
-          fullName: data.user.fullName || '',
+          firstName: data.user.firstName || '',
+          lastName: data.user.lastName || '',
           profileImageUrl: data.user.profileImageUrl || undefined,
           role: data.user.role as UserRole,
           isActive: true,
           emailVerified: true,
+          maxStudents: data.user.maxStudents ?? 4,
           createdAt: new Date().toISOString(),
         },
         data.tokens.accessToken,
         data.tokens.refreshToken,
         variables.rememberMe,
       );
-      message.success(`Welcome back, ${data.user.fullName || 'Admin'}!`);
+      message.success(`Welcome back, ${formatUserName(data.user) || 'Admin'}!`);
       navigate(from, { replace: true });
     },
     onError: (error: Error) => {

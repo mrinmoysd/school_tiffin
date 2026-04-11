@@ -12,7 +12,8 @@ interface AdminUsersListData {
 }
 
 interface UpdateMyProfileDto {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   phone?: string;
   profileImageUrl?: string | null;
 }

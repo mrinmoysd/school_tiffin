@@ -26,7 +26,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { subscriptionService } from '@/services';
 import { SubscriptionStatus, DeliveryStatus, PauseRequestStatus } from '@/types';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
-import { formatStudentName } from '@/utils/formatters';
+import { formatStudentName, formatUserName } from '@/utils/formatters';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -279,7 +279,7 @@ const SubscriptionDetailPage = () => {
               <Text type="secondary" className="text-xs">
                 Parent
               </Text>
-              <div className="font-medium">{subscription.parent?.fullName}</div>
+              <div className="font-medium">{formatUserName(subscription.parent) || '-'}</div>
             </div>
           </div>
         </Card>

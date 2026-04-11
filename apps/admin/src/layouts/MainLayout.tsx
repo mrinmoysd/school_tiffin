@@ -22,6 +22,7 @@ import type { MenuProps } from 'antd';
 import { Avatar, Badge, Button, Dropdown, Image, Layout, Menu, Modal, theme } from 'antd';
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { formatUserName } from '@/utils/formatters';
 
 const { Header, Sider, Content } = Layout;
 
@@ -298,7 +299,7 @@ const MainLayout = () => {
                   }}
                 />
                 <div className="hidden md:block">
-                  <div className="text-sm font-medium">{user?.fullName}</div>
+                  <div className="text-sm font-medium">{formatUserName(user)}</div>
                   <div className="text-xs text-gray-500">{user?.role}</div>
                 </div>
               </div>
@@ -332,7 +333,7 @@ const MainLayout = () => {
         {user?.profileImageUrl && (
           <Image
             src={user.profileImageUrl}
-            alt={user.fullName || 'Profile image'}
+            alt={formatUserName(user) || 'Profile image'}
             preview={false}
             className="w-full rounded-lg"
           />

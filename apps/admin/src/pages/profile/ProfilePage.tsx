@@ -30,11 +30,13 @@ import {
 } from '@/services';
 import { useAuthStore } from '@/stores/authStore';
 import { isValidIndianPhone, normalizeIndianPhone } from '@/constants/validation';
+import { formatUserName } from '@/utils/formatters';
 
 const { Title, Text } = Typography;
 
 interface ProfileFormValues {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   phone?: string;
 }
 
@@ -53,7 +55,8 @@ const ProfilePage = () => {
   const updateProfileMutation = useMutation({
     mutationFn: (values: ProfileFormValues) =>
       userService.updateMyProfile({
-        fullName: values.fullName.trim(),
+        firstName: values.firstName.trim(),
+        lastName: values.lastName.trim(),
         phone: values.phone?.trim() ? normalizeIndianPhone(values.phone) : undefined,
         profileImageUrl: pendingProfileImageUrl,
       }),
@@ -91,7 +94,8 @@ const ProfilePage = () => {
     if (!user) return;
     const currentImage = user.profileImageUrl || null;
     form.setFieldsValue({
-      fullName: user.fullName || '',
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
       phone: user.phoneNumber || '',
     });
     setInitialImageUrl(currentImage);
@@ -234,7 +238,7 @@ const ProfilePage = () => {
               <Avatar size={96} icon={<UserOutlined />} style={{ backgroundColor: '#16a34a' }} />
             )}
           </Descriptions.Item>
-          <Descriptions.Item label="Full Name">{user.fullName}</Descriptions.Item>
+          <Descriptions.Item label="Name">{formatUserName(user)}</Descriptions.Item>
           <Descriptions.Item label="Email">
             <div className="flex items-center gap-2">
               <span>{user.email}</span>
@@ -300,15 +304,27 @@ const ProfilePage = () => {
             </div>
           </Form.Item>
           <Form.Item
-            name="fullName"
-            label="Full Name"
+            name="firstName"
+            label="First Name"
             rules={[
-              { required: true, message: 'Please enter your full name' },
-              { min: 2, message: 'Full name must be at least 2 characters' },
-              { max: 255, message: 'Full name must be 255 characters or less' },
+              { required: true, message: 'Please enter first name' },
+              { min: 1, message: 'First name must be at least 1 character' },
+              { max: 255, message: 'First name must be 255 characters or less' },
             ]}
           >
-            <Input placeholder="Enter full name" />
+            <Input placeholder="Enter first name" />
+          </Form.Item>
+
+          <Form.Item
+            name="lastName"
+            label="Last Name"
+            rules={[
+              { required: true, message: 'Please enter last name' },
+              { min: 1, message: 'Last name must be at least 1 character' },
+              { max: 255, message: 'Last name must be 255 characters or less' },
+            ]}
+          >
+            <Input placeholder="Enter last name" />
           </Form.Item>
 
           <Form.Item

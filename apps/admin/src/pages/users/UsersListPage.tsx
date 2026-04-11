@@ -17,6 +17,7 @@ import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userService } from '@/services';
 import { User, UserFilters, UserRole } from '@/types';
+import { formatUserName } from '@/utils/formatters';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
@@ -92,7 +93,7 @@ const UsersListPage = () => {
     if (!nextActive) {
       confirm({
         title: 'Deactivate User',
-        content: `Deactivate ${record.fullName}? They will no longer be able to access the admin portal.`,
+        content: `Deactivate ${formatUserName(record)}? They will no longer be able to access the admin portal.`,
         okText: 'Deactivate',
         okType: 'danger',
         onOk: () => toggleActiveMutation.mutate({ id: record.id }),
@@ -105,16 +106,16 @@ const UsersListPage = () => {
   const columns: ColumnsType<User> = [
     {
       title: <span className="whitespace-nowrap">Name</span>,
-      dataIndex: 'fullName',
-      key: 'fullName',
+      dataIndex: 'firstName',
+      key: 'name',
       width: 160,
       ellipsis: true,
-      render: (name: string) => (
+      render: (_name: string, record) => (
         <Text strong className="whitespace-nowrap">
-          {name}
+          {formatUserName(record) || '-'}
         </Text>
       ),
-      sorter: (a, b) => a.fullName.localeCompare(b.fullName),
+      sorter: (a, b) => formatUserName(a).localeCompare(formatUserName(b)),
     },
     {
       title: <span className="whitespace-nowrap">Email</span>,

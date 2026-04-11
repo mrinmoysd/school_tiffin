@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { orderService } from '@/services';
 import { OrderStatus, TransactionStatus } from '@/types';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
+import { formatUserName } from '@/utils/formatters';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -143,7 +144,7 @@ const OrderDetailPage = () => {
               <Descriptions.Item label="Status">
                 <Tag color={statusColors[order.status]}>{order.status}</Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="Parent">{order.parent?.fullName}</Descriptions.Item>
+              <Descriptions.Item label="Parent">{formatUserName(order.parent) || '-'}</Descriptions.Item>
               <Descriptions.Item label="Subscription">
                 <Button
                   type="link"

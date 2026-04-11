@@ -8,7 +8,7 @@ import { Subscription, SubscriptionFilters, SubscriptionStatus } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
-import { formatStudentName } from '@/utils/formatters';
+import { formatStudentName, formatUserName } from '@/utils/formatters';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs, { Dayjs } from 'dayjs';
 
@@ -124,11 +124,11 @@ const SubscriptionsListPage = () => {
     },
     {
       title: <span className="whitespace-nowrap">Parent</span>,
-      dataIndex: ['parent', 'fullName'],
+      dataIndex: ['parent', 'firstName'],
       key: 'parent',
       width: 150,
       ellipsis: true,
-      render: (text: string) => <EllipsisCell text={text} />,
+      render: (_text: string, record) => <EllipsisCell text={formatUserName(record.parent)} />,
     },
     {
       title: <span className="whitespace-nowrap">Student</span>,
