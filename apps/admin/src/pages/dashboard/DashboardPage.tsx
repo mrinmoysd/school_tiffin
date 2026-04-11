@@ -36,7 +36,10 @@ interface StatsCardProps {
 }
 
 const StatsCard = ({ title, value, icon, gradient, suffix, loading }: StatsCardProps) => (
-  <Card className={`stats-card ${gradient} text-white border-0`} bodyStyle={{ padding: '20px' }}>
+  <Card
+    className={`stats-card ${gradient} text-white border-0`}
+    styles={{ body: { padding: '20px' } }}
+  >
     {loading ? (
       <Skeleton active paragraph={false} />
     ) : (
