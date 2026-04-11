@@ -14,6 +14,9 @@ import { startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns';
 const getStudentName = (student?: { firstName?: string | null; lastName?: string | null } | null) =>
   [student?.firstName, student?.lastName].filter(Boolean).join(' ').trim();
 
+const getUserName = (user?: { firstName?: string | null; lastName?: string | null } | null) =>
+  [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim();
+
 @Injectable()
 export class AdminService {
   constructor(
@@ -102,7 +105,8 @@ export class AdminService {
         take: 10,
         orderBy: { createdAt: 'desc' },
         include: {
-          parent: { select: { id: true, fullName: true, email: true } },
+          parent: { select: { id: true, firstName: true,
+            lastName: true, email: true } },
           student: { select: { id: true, firstName: true, lastName: true } },
           school: { select: { id: true, name: true } },
           mealPlan: { select: { id: true, name: true } },
@@ -112,7 +116,8 @@ export class AdminService {
         take: 10,
         orderBy: { createdAt: 'desc' },
         include: {
-          parent: { select: { id: true, fullName: true, email: true } },
+          parent: { select: { id: true, firstName: true,
+            lastName: true, email: true } },
           subscription: {
             select: { id: true, subscriptionNumber: true },
           },
@@ -302,7 +307,8 @@ export class AdminService {
         ...(isActive !== undefined && { isActive }),
         ...(search && {
           OR: [
-            { fullName: { contains: search, mode: 'insensitive' } },
+            { firstName: { contains: search, mode: 'insensitive' } },
+            { lastName: { contains: search, mode: 'insensitive' } },
             { email: { contains: search, mode: 'insensitive' } },
             { phoneNumber: { contains: search } },
           ],
@@ -310,7 +316,8 @@ export class AdminService {
       },
       select: {
         id: true,
-        fullName: true,
+        firstName: true,
+            lastName: true,
         email: true,
         phoneNumber: true,
         role: true,
@@ -332,7 +339,8 @@ export class AdminService {
         ...(isActive !== undefined && { isActive }),
         ...(search && {
           OR: [
-            { fullName: { contains: search, mode: 'insensitive' } },
+            { firstName: { contains: search, mode: 'insensitive' } },
+            { lastName: { contains: search, mode: 'insensitive' } },
             { email: { contains: search, mode: 'insensitive' } },
           ],
         }),
@@ -461,7 +469,8 @@ export class AdminService {
       data: { maxStudents },
       select: {
         id: true,
-        fullName: true,
+        firstName: true,
+            lastName: true,
         email: true,
         phoneNumber: true,
         role: true,
@@ -480,7 +489,8 @@ export class AdminService {
         ...(search && {
           OR: [
             { orderNumber: { contains: search, mode: 'insensitive' } },
-            { parent: { fullName: { contains: search, mode: 'insensitive' } } },
+            { parent: { firstName: { contains: search, mode: 'insensitive' } } },
+            { parent: { lastName: { contains: search, mode: 'insensitive' } } },
             { subscription: { subscriptionNumber: { contains: search, mode: 'insensitive' } } },
           ],
         }),
@@ -495,7 +505,8 @@ export class AdminService {
         parent: {
           select: {
             id: true,
-            fullName: true,
+            firstName: true,
+            lastName: true,
             email: true,
           },
         },
@@ -517,7 +528,8 @@ export class AdminService {
         parent: {
           select: {
             id: true,
-            fullName: true,
+            firstName: true,
+            lastName: true,
             email: true,
           },
         },
@@ -558,7 +570,7 @@ export class AdminService {
         [
           order.id,
           order.orderNumber,
-          order.parent?.fullName || '',
+          getUserName(order.parent) || '',
           order.parent?.email || '',
           order.subscription?.subscriptionNumber || '',
           order.status,
@@ -590,7 +602,8 @@ export class AdminService {
         ...(search && {
           OR: [
             { subscriptionNumber: { contains: search, mode: 'insensitive' } },
-            { parent: { fullName: { contains: search, mode: 'insensitive' } } },
+            { parent: { firstName: { contains: search, mode: 'insensitive' } } },
+            { parent: { lastName: { contains: search, mode: 'insensitive' } } },
             { student: { firstName: { contains: search, mode: 'insensitive' } } },
             { student: { lastName: { contains: search, mode: 'insensitive' } } },
           ],
@@ -606,7 +619,8 @@ export class AdminService {
         parent: {
           select: {
             id: true,
-            fullName: true,
+            firstName: true,
+            lastName: true,
             email: true,
           },
         },
@@ -644,7 +658,8 @@ export class AdminService {
         parent: {
           select: {
             id: true,
-            fullName: true,
+            firstName: true,
+            lastName: true,
             email: true,
           },
         },
@@ -739,7 +754,8 @@ export class AdminService {
         ...(status && { status }),
         ...(search && {
           OR: [
-            { parent: { fullName: { contains: search, mode: 'insensitive' } } },
+            { parent: { firstName: { contains: search, mode: 'insensitive' } } },
+            { parent: { lastName: { contains: search, mode: 'insensitive' } } },
             { subscription: { subscriptionNumber: { contains: search, mode: 'insensitive' } } },
             { subscription: { student: { firstName: { contains: search, mode: 'insensitive' } } } },
             { subscription: { student: { lastName: { contains: search, mode: 'insensitive' } } } },
@@ -756,7 +772,8 @@ export class AdminService {
         parent: {
           select: {
             id: true,
-            fullName: true,
+            firstName: true,
+            lastName: true,
             email: true,
           },
         },
@@ -784,7 +801,8 @@ export class AdminService {
         parent: {
           select: {
             id: true,
-            fullName: true,
+            firstName: true,
+            lastName: true,
             email: true,
           },
         },
@@ -973,3 +991,6 @@ export class AdminService {
     };
   }
 }
+
+
+

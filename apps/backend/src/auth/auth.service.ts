@@ -17,7 +17,8 @@ export interface AuthResponse {
   user: {
     id: string;
     email: string;
-    fullName: string | null;
+    firstName: string;
+    lastName: string;
     profileImageUrl?: string | null;
     maxStudents: number;
     role: string;
@@ -64,7 +65,8 @@ export class AuthService {
       data: {
         email: dto.email,
         passwordHash: hashedPassword,
-        fullName: dto.fullName,
+        firstName: dto.firstName,
+        lastName: dto.lastName,
         phoneNumber: dto.phone,
         role: 'PARENT', // Default role
         maxStudents: 4,
@@ -75,7 +77,8 @@ export class AuthService {
       select: {
         id: true,
         email: true,
-        fullName: true,
+        firstName: true,
+        lastName: true,
         profileImageUrl: true,
         maxStudents: true,
         role: true,
@@ -101,7 +104,8 @@ export class AuthService {
       select: {
         id: true,
         email: true,
-        fullName: true,
+        firstName: true,
+        lastName: true,
         profileImageUrl: true,
         maxStudents: true,
         role: true,
@@ -332,7 +336,8 @@ export class AuthService {
       select: {
         id: true,
         email: true,
-        fullName: true,
+        firstName: true,
+        lastName: true,
         profileImageUrl: true,
         maxStudents: true,
         role: true,
@@ -347,7 +352,8 @@ export class AuthService {
           email: `${dto.phone}@temp.com`, // Temporary email
           phoneNumber: dto.phone,
           passwordHash: '', // No password for OTP users
-          fullName: '', // Empty full name
+          firstName: 'Parent',
+          lastName: '',
           phoneVerified: true,
           role: 'PARENT',
           maxStudents: 4,
@@ -356,7 +362,8 @@ export class AuthService {
         select: {
           id: true,
           email: true,
-          fullName: true,
+          firstName: true,
+          lastName: true,
           profileImageUrl: true,
           maxStudents: true,
           role: true,

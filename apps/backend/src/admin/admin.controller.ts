@@ -302,7 +302,8 @@ export class AdminController {
           users: [
             {
               id: 'user-uuid',
-              fullName: 'Jane Doe',
+              firstName: 'Jane',
+              lastName: 'Doe',
               email: 'jane@example.com',
               phoneNumber: '+911234567890',
               role: 'PARENT',

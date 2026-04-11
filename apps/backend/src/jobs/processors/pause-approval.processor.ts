@@ -38,7 +38,8 @@ export class PauseApprovalProcessor {
                   parent: {
                     select: {
                       id: true,
-                      fullName: true,
+                      firstName: true,
+                      lastName: true,
                     },
                   },
                 },
