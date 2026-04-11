@@ -282,22 +282,22 @@ const SubscriptionsListPage = () => {
 
       {/* Table */}
       <Card>
-        <HorizontalScrollContainer>
-          {isLoading ? (
-            <TableSkeleton rows={9} />
-          ) : isError ? (
-            <ErrorState
-              title="Unable to load subscriptions"
-              description={(error as Error)?.message}
-              onRetry={refetch}
-            />
-          ) : (
+        {isLoading ? (
+          <TableSkeleton rows={9} />
+        ) : isError ? (
+          <ErrorState
+            title="Unable to load subscriptions"
+            description={(error as Error)?.message}
+            onRetry={refetch}
+          />
+        ) : (
+          <HorizontalScrollContainer>
             <Table
               columns={columns}
               dataSource={subscriptions}
               rowKey="id"
               tableLayout="fixed"
-              scroll={{ x: 1200, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+              scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
               pagination={{
                 total: subscriptions?.length,
                 pageSize: 10,
@@ -309,8 +309,8 @@ const SubscriptionsListPage = () => {
                 className: 'cursor-pointer hover:bg-gray-50',
               })}
             />
-          )}
-        </HorizontalScrollContainer>
+          </HorizontalScrollContainer>
+        )}
       </Card>
     </div>
   );

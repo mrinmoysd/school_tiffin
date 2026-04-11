@@ -394,7 +394,7 @@ const MealPlansListPage = () => {
               dataSource={mealPlans}
               rowKey="id"
               tableLayout="fixed"
-              scroll={{ x: 960, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+              scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
               pagination={{
                 total: mealPlans?.length,
                 pageSize: 10,

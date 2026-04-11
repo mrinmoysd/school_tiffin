@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent, type ComponentRef } from 'react';
+import { useRef, useState, type ChangeEvent, type ComponentRef } from 'react';
 import {
   App as AntdApp,
   Button,
@@ -40,7 +40,6 @@ const SettingsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingType, setEditingType] = useState<MealPlanTypeMaster | null>(null);
   const [form] = Form.useForm<CreateMealPlanTypeDto & { isActive: boolean }>();
-  const [taxForm] = Form.useForm<{ taxPercentage: number }>();
   const logoInputRef = useRef<ComponentRef<'input'> | null>(null);
 
   const {
@@ -178,12 +177,6 @@ const SettingsPage = () => {
       message.error(err.message);
     },
   });
-
-  useEffect(() => {
-    if (taxSetting) {
-      taxForm.setFieldValue('taxPercentage', taxSetting.taxPercentage);
-    }
-  }, [taxSetting, taxForm]);
 
   const handleOpenModal = (mealPlanType?: MealPlanTypeMaster) => {
     if (mealPlanType) {
@@ -355,7 +348,7 @@ const SettingsPage = () => {
                           showSizeChanger: true,
                           showTotal: total => `Total ${total} types`,
                         }}
-                        scroll={{ x: 900, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+                        scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
                       />
                     </HorizontalScrollContainer>
                   )}
@@ -375,10 +368,10 @@ const SettingsPage = () => {
                     />
                   ) : (
                     <Form
-                      form={taxForm}
+                      key={taxSetting?.updatedAt ?? 'tax-default'}
                       layout="vertical"
                       onFinish={handleTaxSubmit}
-                      initialValues={{ taxPercentage: 0 }}
+                      initialValues={{ taxPercentage: taxSetting?.taxPercentage ?? 0 }}
                     >
                       <Form.Item
                         name="taxPercentage"

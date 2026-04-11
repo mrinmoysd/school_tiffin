@@ -275,7 +275,7 @@ const UserDetailPage = () => {
             pagination={false}
             size="small"
             tableLayout="fixed"
-            scroll={{ x: 620, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+            scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
           />
         </HorizontalScrollContainer>
       ),
@@ -296,7 +296,7 @@ const UserDetailPage = () => {
             pagination={{ pageSize: 5 }}
             size="small"
             tableLayout="fixed"
-            scroll={{ x: 640, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+            scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
           />
         </HorizontalScrollContainer>
       ),
@@ -317,7 +317,7 @@ const UserDetailPage = () => {
             pagination={{ pageSize: 5 }}
             size="small"
             tableLayout="fixed"
-            scroll={{ x: 520, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+            scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
           />
         </HorizontalScrollContainer>
       ),
