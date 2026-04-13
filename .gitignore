@@ -71,3 +71,6 @@ tmp/
 # OS
 Thumbs.db
 eslint.config.mjs
+
+# Local planning docs
+NOTIFICATION_SHADE_FUTURE_PLAN.local.md

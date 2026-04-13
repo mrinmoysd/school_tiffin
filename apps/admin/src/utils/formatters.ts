@@ -90,6 +90,21 @@ export const formatUserName = (
 };
 
 /**
+ * Capitalize each word in plain text
+ */
+export const toCapitalizedWords = (value?: string | null): string => {
+  if (!value) return '';
+
+  const normalized = value.trim().replace(/\s+/g, ' ');
+  if (!normalized) return '';
+
+  return normalized
+    .split(' ')
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+};
+
+/**
  * Format a student full name from first/last name
  */
 export const formatStudentName = (student?: {

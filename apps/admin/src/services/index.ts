@@ -8,6 +8,7 @@ export { userService } from './userService';
 export { pauseRequestService } from './pauseRequestService';
 export { adminService } from './adminService';
 export { cmsService } from './cmsService';
+export { notificationService } from './notificationService';
 export {
   isAllowedUploadImageMimeType,
   MAX_IMAGE_SIZE,
