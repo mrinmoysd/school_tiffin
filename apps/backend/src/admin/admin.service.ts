@@ -74,7 +74,10 @@ export class AdminService {
         where: { status: 'PENDING' },
       }),
       this.prisma.school.count({
-        where: { deletedAt: null },
+        where: {
+          deletedAt: null,
+          isServiceAvailable: true,
+        },
       }),
       this.prisma.user.count({
         where: {

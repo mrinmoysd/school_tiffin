@@ -28,6 +28,7 @@ import { School, SchoolFilters } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
+import { toCapitalizedWords } from '@/utils/formatters';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 
@@ -177,7 +178,7 @@ const SchoolsListPage = () => {
       key: 'city',
       width: 140,
       ellipsis: true,
-      render: (city: string) => city || '-',
+      render: (city: string) => toCapitalizedWords(city) || '-',
     },
     {
       title: <span className="whitespace-nowrap">Contact</span>,
@@ -267,10 +268,13 @@ const SchoolsListPage = () => {
           <Select
             placeholder="Filter by city"
             value={filters.city}
-            onChange={value => setFilters({ ...filters, city: value })}
+            onChange={value => setFilters({ ...filters, city: value || undefined })}
             style={{ width: 200 }}
             allowClear
-            options={cities?.map(city => ({ label: city, value: city }))}
+            options={cities?.map(city => ({
+              label: toCapitalizedWords(city),
+              value: toCapitalizedWords(city),
+            }))}
           />
           <Select
             placeholder="Service status"

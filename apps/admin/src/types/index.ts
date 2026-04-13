@@ -369,6 +369,20 @@ export interface RecentActivity {
   recentOrders: Order[];
 }
 
+// Notification Types
+export interface AppNotification {
+  id: string;
+  title: string;
+  body: string;
+  data?: Record<string, unknown> | null;
+  notificationType?: string;
+  referenceId?: string | null;
+  referenceType?: string | null;
+  isRead: boolean;
+  readAt?: string | null;
+  createdAt: string;
+}
+
 // Delivery Types
 export interface DeliveryItem {
   id: string;

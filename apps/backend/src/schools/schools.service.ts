@@ -14,6 +14,7 @@ export class SchoolsService {
 
   private readonly CACHE_KEY_ALL = 'schools:all';
   private readonly CACHE_KEY_PREFIX = 'schools:';
+  private readonly DASHBOARD_CACHE_KEY = 'admin:dashboard:v2';
   private readonly CACHE_TTL = 300; // 5 minutes
 
   private normalizeOperatingDays(operatingDays: string): string {
@@ -43,6 +44,27 @@ export class SchoolsService {
     return days.join(',');
   }
 
+  private normalizeCityName(city?: string): string | undefined {
+    if (typeof city !== 'string') return undefined;
+
+    const normalized = city.trim().replace(/\s+/g, ' ');
+    if (!normalized) return undefined;
+
+    return normalized
+      .split(' ')
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  private normalizeSchoolName(name: string): string {
+    const normalized = name.trim().replace(/\s+/g, ' ');
+
+    return normalized
+      .split(' ')
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(' ');
+  }
+
   /**
    * Create a new school (Admin only)
    */
@@ -50,12 +72,15 @@ export class SchoolsService {
     const school = await this.prisma.school.create({
       data: {
         ...createSchoolDto,
+        name: this.normalizeSchoolName(createSchoolDto.name),
+        city: this.normalizeCityName(createSchoolDto.city),
         operatingDays: this.normalizeOperatingDays(createSchoolDto.operatingDays),
       },
     });
 
     // Invalidate cache
     await this.cacheManager.del(this.CACHE_KEY_ALL);
+    await this.cacheManager.del(this.DASHBOARD_CACHE_KEY);
 
     return school;
   }
@@ -64,9 +89,10 @@ export class SchoolsService {
    * Get all schools with caching and filters
    */
   async findAll(city?: string, search?: string, isServiceAvailable?: boolean) {
-    const cacheKey = `${this.CACHE_KEY_ALL}:city:${city || ''}:search:${search || ''}:service:${
-      isServiceAvailable === undefined ? 'any' : isServiceAvailable
-    }`;
+    const normalizedCityFilter = city?.trim();
+    const cacheKey = `${this.CACHE_KEY_ALL}:city:${normalizedCityFilter?.toLowerCase() || ''}:search:${
+      search || ''
+    }:service:${isServiceAvailable === undefined ? 'any' : isServiceAvailable}`;
 
     // Try to get from cache
     const cached = await this.cacheManager.get(cacheKey);
@@ -77,7 +103,12 @@ export class SchoolsService {
     // Query database
     const schools = await this.prisma.school.findMany({
       where: {
-        ...(city && { city }),
+        ...(normalizedCityFilter && {
+          city: {
+            equals: normalizedCityFilter,
+            mode: 'insensitive',
+          },
+        }),
         ...(typeof isServiceAvailable === 'boolean' && { isServiceAvailable }),
         ...(search && {
           OR: [
@@ -163,6 +194,12 @@ export class SchoolsService {
 
     const normalizedUpdate = {
       ...updateSchoolDto,
+      ...(typeof updateSchoolDto.name === 'string'
+        ? { name: this.normalizeSchoolName(updateSchoolDto.name) }
+        : {}),
+      ...(typeof updateSchoolDto.city === 'string'
+        ? { city: this.normalizeCityName(updateSchoolDto.city) }
+        : {}),
       ...(typeof updateSchoolDto.operatingDays === 'string'
         ? { operatingDays: this.normalizeOperatingDays(updateSchoolDto.operatingDays) }
         : {}),
@@ -176,6 +213,7 @@ export class SchoolsService {
     // Invalidate cache
     await this.cacheManager.del(this.CACHE_KEY_ALL);
     await this.cacheManager.del(`${this.CACHE_KEY_PREFIX}${id}`);
+    await this.cacheManager.del(this.DASHBOARD_CACHE_KEY);
 
     return updated;
   }
@@ -200,6 +238,7 @@ export class SchoolsService {
     // Invalidate cache
     await this.cacheManager.del(this.CACHE_KEY_ALL);
     await this.cacheManager.del(`${this.CACHE_KEY_PREFIX}${id}`);
+    await this.cacheManager.del(this.DASHBOARD_CACHE_KEY);
 
     return updated;
   }
@@ -224,6 +263,7 @@ export class SchoolsService {
     // Invalidate cache
     await this.cacheManager.del(this.CACHE_KEY_ALL);
     await this.cacheManager.del(`${this.CACHE_KEY_PREFIX}${id}`);
+    await this.cacheManager.del(this.DASHBOARD_CACHE_KEY);
 
     return { message: 'School deleted successfully' };
   }
