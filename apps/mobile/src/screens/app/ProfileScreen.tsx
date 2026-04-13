@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -156,14 +157,26 @@ export const ProfileScreen = ({ navigation }: Props) => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>User Information</Text>
-          <View style={styles.avatarRow}>
-            <ProfileAvatar imageUrl={profile.profileImageUrl} name={profile.fullName} size={76} />
+          <View style={styles.profileHeaderRow}>
+            <View style={styles.parentInfoColumn}>
+              <Text style={styles.line}>Name: {profile.fullName || '-'}</Text>
+              <Text style={styles.muted}>Email: {profile.email || '-'}</Text>
+              <Text style={styles.muted}>Phone: {getDisplayPhone(profile)}</Text>
+              <Text style={styles.muted}>Member Since: {formatDate(profile.createdAt)}</Text>
+            </View>
+
+            <Pressable
+              style={styles.avatarPressable}
+              onPress={() => navigation.navigate('EditProfile')}
+              accessibilityRole="button"
+              accessibilityLabel="Edit profile image"
+            >
+              <ProfileAvatar imageUrl={profile.profileImageUrl} name={profile.fullName} size={76} />
+              <View style={styles.cameraBadge}>
+                <Ionicons name="camera" size={13} color={colors.neutral.white} />
+              </View>
+            </Pressable>
           </View>
-          <Text style={styles.line}>Name: {profile.fullName || '-'}</Text>
-          <Text style={styles.muted}>Email: {profile.email || '-'}</Text>
-          <Text style={styles.muted}>Phone: {getDisplayPhone(profile)}</Text>
-          <Text style={styles.muted}>Member Since: {formatDate(profile.createdAt)}</Text>
         </View>
 
         <View style={styles.card}>
@@ -299,9 +312,32 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       fontWeight: '600',
       marginBottom: 4,
     },
-    avatarRow: {
-      marginBottom: 12,
+    profileHeaderRow: {
+      flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    parentInfoColumn: {
+      flex: 1,
+      marginRight: 14,
+    },
+    avatarPressable: {
+      position: 'relative',
+      borderRadius: 999,
+      marginTop: 2,
+    },
+    cameraBadge: {
+      position: 'absolute',
+      right: -2,
+      bottom: -2,
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      backgroundColor: colors.action.primary,
+      borderWidth: 2,
+      borderColor: colors.neutral.white,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     muted: {
       color: colors.text.subtle,

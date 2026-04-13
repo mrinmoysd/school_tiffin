@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -121,6 +122,7 @@ export const HomeScreen = ({ navigation }: Props) => {
   const insets = useSafeAreaInsets();
   const { colors } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const hasFocusedOnceRef = useRef(false);
   const user = useAppSelector(state => state.auth.user);
   const [greetingName, setGreetingName] = useState(() =>
     getGreetingName(user?.fullName, user?.email),
@@ -184,6 +186,16 @@ export const HomeScreen = ({ navigation }: Props) => {
 
     void fetchInitialData();
   }, [loadHomeData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (hasFocusedOnceRef.current) {
+        void loadHomeData();
+      } else {
+        hasFocusedOnceRef.current = true;
+      }
+    }, [loadHomeData]),
+  );
 
   useEffect(() => {
     setGreetingName(getGreetingName(user?.fullName, user?.email));
