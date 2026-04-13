@@ -76,11 +76,13 @@ export const getInitials = (name: string): string => {
 /**
  * Format a user full name from first/last name
  */
-export const formatUserName = (user?: {
-  firstName?: string | null;
-  lastName?: string | null;
-  fullName?: string | null;
-}): string => {
+export const formatUserName = (
+  user?: {
+    firstName?: string | null;
+    lastName?: string | null;
+    fullName?: string | null;
+  } | null,
+): string => {
   if (!user) return '';
   const splitName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
   if (splitName) return splitName;

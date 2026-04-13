@@ -3,6 +3,7 @@ import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import {
   ChangeEvent,
   CSSProperties,
+  PointerEvent as ReactPointerEvent,
   ReactNode,
   useCallback,
   useEffect,
@@ -19,6 +20,7 @@ interface HorizontalScrollContainerProps {
 const SCROLL_STEP = 240;
 const MIN_THUMB_SIZE = 44;
 const FALLBACK_TRACK_WIDTH = 420;
+const DRAG_START_THRESHOLD_PX = 1;
 
 const getMaxScrollLeft = (element: HTMLDivElement) =>
   Math.max(element.scrollWidth - element.clientWidth, 0);
@@ -30,6 +32,12 @@ const HorizontalScrollContainer = ({ children, className }: HorizontalScrollCont
   const animationFrameRef = useRef<number | null>(null);
   const scrollSyncFrameRef = useRef<number | null>(null);
   const latestScrollLeftRef = useRef(0);
+  const sliderPointerActiveRef = useRef(false);
+  const sliderPointerMovedRef = useRef(false);
+  const sliderPointerStartXRef = useRef(0);
+  const sliderPointerModeRef = useRef<'thumb' | 'track' | null>(null);
+  const thumbDragStartValueRef = useRef(0);
+  const thumbDragUsableTrackRef = useRef(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [maxScrollLeft, setMaxScrollLeft] = useState(0);
   const [thumbSize, setThumbSize] = useState(52);
@@ -186,16 +194,120 @@ const HorizontalScrollContainer = ({ children, className }: HorizontalScrollCont
     [maxScrollLeft, scrollLeft],
   );
 
+  const setScrollImmediately = useCallback(
+    (target: number) => {
+      const targets = getScrollTargets();
+      const scroller = targets[0] || getActiveScroller();
+      if (!scroller) return;
+
+      stopAnimation();
+
+      const max = getMaxScrollLeft(scroller);
+      const bounded = Math.max(0, Math.min(target, max));
+      targets.forEach(node => {
+        node.scrollLeft = bounded;
+      });
+      latestScrollLeftRef.current = bounded;
+    },
+    [getActiveScroller, getScrollTargets, stopAnimation],
+  );
+
   const handleSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
     const next = Number(event.target.value) || 0;
     const targets = getScrollTargets();
     const scroller = targets[0] || getActiveScroller();
     if (!scroller) return;
     const boundedTarget = Math.max(0, Math.min(next, getMaxScrollLeft(scroller)));
+
+    if (sliderPointerActiveRef.current) {
+      // Thumb dragging is handled with pointer delta so grab position is preserved.
+      if (sliderPointerModeRef.current === 'thumb') {
+        return;
+      }
+
+      // Track click (outside thumb) jumps to clicked position with smooth animation.
+      if (sliderPointerModeRef.current === 'track') {
+        // Track is click-only: ignore drag-like value changes while pointer is held.
+        return;
+      }
+    }
+
     animateScrollTo(boundedTarget);
   };
 
-  const animateScrollTo = (target: number) => {
+  const handleSliderPointerDown = (event: ReactPointerEvent<HTMLInputElement>) => {
+    stopAnimation();
+    sliderPointerActiveRef.current = true;
+    sliderPointerMovedRef.current = false;
+    sliderPointerStartXRef.current = event.clientX;
+    const scroller = getActiveScroller();
+    const liveMaxScrollLeft = scroller ? getMaxScrollLeft(scroller) : maxScrollLeft;
+    const liveScrollLeft = scroller
+      ? Math.max(0, Math.min(scroller.scrollLeft, liveMaxScrollLeft))
+      : sliderValue;
+
+    const slider = event.currentTarget;
+    const rect = slider.getBoundingClientRect();
+    const width = slider.clientWidth || rect.width;
+    const usableTrack = Math.max(width - thumbSize, 0);
+    const valueRatio = liveMaxScrollLeft > 0 ? liveScrollLeft / liveMaxScrollLeft : 0;
+    const thumbLeft = valueRatio * usableTrack;
+    const thumbRight = thumbLeft + thumbSize;
+    const pointerX = Math.max(0, Math.min(event.clientX - rect.left, width));
+    const isThumbHit = pointerX >= thumbLeft && pointerX <= thumbRight;
+    sliderPointerModeRef.current = isThumbHit ? 'thumb' : 'track';
+    thumbDragStartValueRef.current = liveScrollLeft;
+    thumbDragUsableTrackRef.current = usableTrack;
+
+    if (!isThumbHit) {
+      const clampedPointer = Math.max(0, Math.min(pointerX, width));
+      const thumbOffset = thumbSize / 2;
+      const targetRatio =
+        usableTrack > 0
+          ? Math.max(0, Math.min((clampedPointer - thumbOffset) / usableTrack, 1))
+          : 0;
+      const target = targetRatio * liveMaxScrollLeft;
+      animateScrollTo(target, 'gentle');
+    }
+
+    if (isThumbHit) {
+      // Prevent native range thumb handling so we can preserve exact grab offset.
+      event.preventDefault();
+    }
+
+    if (event.currentTarget.setPointerCapture) {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+  };
+
+  const handleSliderPointerMove = (event: ReactPointerEvent<HTMLInputElement>) => {
+    if (!sliderPointerActiveRef.current) return;
+    if (sliderPointerModeRef.current !== 'thumb') return;
+
+    const deltaX = event.clientX - sliderPointerStartXRef.current;
+    if (!sliderPointerMovedRef.current && Math.abs(deltaX) < DRAG_START_THRESHOLD_PX) {
+      return;
+    }
+
+    sliderPointerMovedRef.current = true;
+    event.preventDefault();
+
+    const usableTrack = Math.max(thumbDragUsableTrackRef.current, 1);
+    const valueDelta = (deltaX / usableTrack) * maxScrollLeft;
+    const target = thumbDragStartValueRef.current + valueDelta;
+    setScrollImmediately(target);
+  };
+
+  const handleSliderPointerRelease = (event: ReactPointerEvent<HTMLInputElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    sliderPointerActiveRef.current = false;
+    sliderPointerMovedRef.current = false;
+    sliderPointerModeRef.current = null;
+  };
+
+  const animateScrollTo = (target: number, profile: 'default' | 'gentle' = 'default') => {
     const targets = getScrollTargets();
     const scroller = targets[0] || getActiveScroller();
     if (!scroller) return;
@@ -215,14 +327,20 @@ const HorizontalScrollContainer = ({ children, className }: HorizontalScrollCont
     }
 
     const distanceRatio = Math.abs(distance) / Math.max(scroller.clientWidth, 1);
-    const duration = Math.max(460, Math.min(1400, 420 + distanceRatio * 460));
-    const easeInOutSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
+    const duration =
+      profile === 'gentle'
+        ? Math.max(420, Math.min(920, 360 + distanceRatio * 520))
+        : Math.max(220, Math.min(520, 200 + distanceRatio * 260));
+    const easing =
+      profile === 'gentle'
+        ? (t: number) => (t < 0.5 ? 16 * t ** 5 : 1 - (-2 * t + 2) ** 5 / 2)
+        : (t: number) => 1 - (1 - t) ** 3;
     const startedAt = performance.now();
 
     const tick = (now: number) => {
       const elapsed = now - startedAt;
       const progress = Math.min(elapsed / duration, 1);
-      const eased = easeInOutSine(progress);
+      const eased = easing(progress);
       const liveMax = getMaxScrollLeft(scroller);
       const desired = start + distance * eased;
       const boundedNext = Math.max(0, Math.min(desired, liveMax));
@@ -288,6 +406,10 @@ const HorizontalScrollContainer = ({ children, className }: HorizontalScrollCont
           step={1}
           value={sliderDisplayValue}
           onChange={handleSliderChange}
+          onPointerDown={handleSliderPointerDown}
+          onPointerMove={handleSliderPointerMove}
+          onPointerUp={handleSliderPointerRelease}
+          onPointerCancel={handleSliderPointerRelease}
           disabled={!hasHorizontalOverflow}
           style={sliderStyle}
           aria-label="Horizontal scroll position"

@@ -28,7 +28,7 @@ export class AdminService {
    * Get dashboard statistics
    */
   async getDashboard() {
-    const cacheKey = 'admin:dashboard';
+    const cacheKey = 'admin:dashboard:v2';
     const cached = await this.cacheManager.get(cacheKey);
     if (cached) return cached;
 
@@ -43,7 +43,9 @@ export class AdminService {
       monthlyRevenue,
       pendingPauseRequests,
       activeSchools,
-      totalUsers,
+      totalParents,
+      totalStudents,
+      completedDeliveriesToday,
       pendingOrders,
     ] = await Promise.all([
       this.prisma.subscription.count({
@@ -75,7 +77,25 @@ export class AdminService {
         where: { deletedAt: null },
       }),
       this.prisma.user.count({
-        where: { role: 'PARENT' },
+        where: {
+          role: UserRole.PARENT,
+          isActive: true,
+        },
+      }),
+      this.prisma.student.count({
+        where: {
+          isActive: true,
+          deletedAt: null,
+        },
+      }),
+      this.prisma.subscriptionDay.count({
+        where: {
+          scheduledDate: {
+            gte: today,
+            lte: endOfDay(now),
+          },
+          status: DeliveryStatus.DELIVERED,
+        },
       }),
       this.prisma.order.count({
         where: { status: OrderStatus.PENDING },
@@ -88,7 +108,9 @@ export class AdminService {
       monthlyRevenue: monthlyRevenue._sum.finalAmount || 0,
       pendingPauseRequests,
       activeSchools,
-      totalUsers,
+      totalParents,
+      totalStudents,
+      completedDeliveriesToday,
       pendingOrders,
       lastUpdated: new Date(),
     };
@@ -105,8 +127,7 @@ export class AdminService {
         take: 10,
         orderBy: { createdAt: 'desc' },
         include: {
-          parent: { select: { id: true, firstName: true,
-            lastName: true, email: true } },
+          parent: { select: { id: true, firstName: true, lastName: true, email: true } },
           student: { select: { id: true, firstName: true, lastName: true } },
           school: { select: { id: true, name: true } },
           mealPlan: { select: { id: true, name: true } },
@@ -116,8 +137,7 @@ export class AdminService {
         take: 10,
         orderBy: { createdAt: 'desc' },
         include: {
-          parent: { select: { id: true, firstName: true,
-            lastName: true, email: true } },
+          parent: { select: { id: true, firstName: true, lastName: true, email: true } },
           subscription: {
             select: { id: true, subscriptionNumber: true },
           },
@@ -317,7 +337,7 @@ export class AdminService {
       select: {
         id: true,
         firstName: true,
-            lastName: true,
+        lastName: true,
         email: true,
         phoneNumber: true,
         role: true,
@@ -470,7 +490,7 @@ export class AdminService {
       select: {
         id: true,
         firstName: true,
-            lastName: true,
+        lastName: true,
         email: true,
         phoneNumber: true,
         role: true,
@@ -991,6 +1011,3 @@ export class AdminService {
     };
   }
 }
-
-
-

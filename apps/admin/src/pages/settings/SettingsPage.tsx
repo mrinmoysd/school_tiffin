@@ -315,20 +315,17 @@ const SettingsPage = () => {
             {
               key: 'meal-plan-types',
               label: <span className="text-xl font-semibold">Meal Plan Types</span>,
-              extra: (
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={event => {
-                    event.stopPropagation();
-                    handleOpenModal();
-                  }}
-                >
-                  Add Type
-                </Button>
-              ),
               children: (
                 <div className="pt-2">
+                  <div className="mb-4 flex justify-end">
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={() => handleOpenModal()}
+                    >
+                      Add Type
+                    </Button>
+                  </div>
                   {isLoading ? (
                     <TableSkeleton rows={6} />
                   ) : isError ? (
