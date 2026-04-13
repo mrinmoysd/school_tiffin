@@ -46,7 +46,8 @@ export class DailyDeliveryProcessor {
                   parent: {
                     select: {
                       id: true,
-                      fullName: true,
+                      firstName: true,
+                      lastName: true,
                       email: true,
                       phoneNumber: true,
                     },

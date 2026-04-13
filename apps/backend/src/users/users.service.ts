@@ -17,7 +17,8 @@ export class UsersService {
         id: true,
         email: true,
         phoneNumber: true,
-        fullName: true,
+        firstName: true,
+        lastName: true,
         role: true,
         isActive: true,
         maxStudents: true,
@@ -78,12 +79,14 @@ export class UsersService {
         : normalizeImageReferencePath(updateUserDto.profileImageUrl);
 
     const data: {
-      fullName?: string;
+      firstName?: string;
+      lastName?: string;
       email?: string;
       phoneNumber?: string;
       profileImageUrl?: string | null;
     } = {
-      ...(updateUserDto.fullName !== undefined ? { fullName: updateUserDto.fullName } : {}),
+      ...(updateUserDto.firstName !== undefined ? { firstName: updateUserDto.firstName } : {}),
+      ...(updateUserDto.lastName !== undefined ? { lastName: updateUserDto.lastName } : {}),
       ...(updateUserDto.email !== undefined ? { email: updateUserDto.email } : {}),
       ...(updateUserDto.phone !== undefined ? { phoneNumber: updateUserDto.phone } : {}),
       ...(updateUserDto.profileImageUrl !== undefined
@@ -99,7 +102,8 @@ export class UsersService {
         id: true,
         email: true,
         phoneNumber: true,
-        fullName: true,
+        firstName: true,
+        lastName: true,
         role: true,
         isActive: true,
         maxStudents: true,

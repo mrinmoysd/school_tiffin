@@ -39,11 +39,20 @@ export class RegisterDTO {
   password: string;
 
   @ApiProperty({
-    example: 'John Doe',
-    description: 'Full name of the user',
+    example: 'John',
+    description: 'First name of the user',
   })
   @IsString()
-  @MinLength(2)
+  @MinLength(1)
   @MaxLength(100)
-  fullName: string;
+  firstName: string;
+
+  @ApiProperty({
+    example: 'Doe',
+    description: 'Last name of the user',
+  })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)
+  lastName: string;
 }

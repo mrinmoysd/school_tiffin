@@ -38,7 +38,8 @@ export class AuthController {
         value: {
           email: 'parent@example.com',
           password: 'Password123!',
-          fullName: 'John Doe',
+          firstName: 'John',
+          lastName: 'Doe',
           phone: '+919876543210',
         },
       },
@@ -55,7 +56,8 @@ export class AuthController {
           user: {
             id: '550e8400-e29b-41d4-a716-446655440000',
             email: 'parent@example.com',
-            fullName: 'John Doe',
+            firstName: 'John',
+            lastName: 'Doe',
             maxStudents: 4,
             role: 'PARENT',
           },
@@ -150,7 +152,8 @@ export class AuthController {
           user: {
             id: '550e8400-e29b-41d4-a716-446655440000',
             email: 'parent@example.com',
-            fullName: 'John Doe',
+            firstName: 'John',
+            lastName: 'Doe',
             maxStudents: 4,
             role: 'PARENT',
           },
@@ -597,7 +600,8 @@ export class AuthController {
           user: {
             id: '550e8400-e29b-41d4-a716-446655440000',
             email: '+919876543210@temp.com',
-            fullName: '',
+            firstName: 'Parent',
+            lastName: '',
             maxStudents: 4,
             role: 'PARENT',
           },

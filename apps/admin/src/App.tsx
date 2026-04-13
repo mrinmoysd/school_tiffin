@@ -35,13 +35,13 @@ const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
 // Loading fallback
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen">
-    <Spin size="large" tip="Loading..." />
+    <Spin size="large" />
   </div>
 );
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Auth routes */}

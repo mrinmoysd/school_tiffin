@@ -24,7 +24,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userService } from '@/services';
 import { UserRole, SubscriptionStatus, OrderStatus } from '@/types';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
-import { formatStudentName } from '@/utils/formatters';
+import { formatStudentName, formatUserName } from '@/utils/formatters';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -275,7 +275,7 @@ const UserDetailPage = () => {
             pagination={false}
             size="small"
             tableLayout="fixed"
-            scroll={{ x: 620, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+            scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
           />
         </HorizontalScrollContainer>
       ),
@@ -296,7 +296,7 @@ const UserDetailPage = () => {
             pagination={{ pageSize: 5 }}
             size="small"
             tableLayout="fixed"
-            scroll={{ x: 640, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+            scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
           />
         </HorizontalScrollContainer>
       ),
@@ -317,7 +317,7 @@ const UserDetailPage = () => {
             pagination={{ pageSize: 5 }}
             size="small"
             tableLayout="fixed"
-            scroll={{ x: 520, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+            scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
           />
         </HorizontalScrollContainer>
       ),
@@ -331,7 +331,7 @@ const UserDetailPage = () => {
         <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/users')} />
         <div>
           <Title level={2} className="!mb-0">
-            {user.fullName}
+            {formatUserName(user)}
           </Title>
           <Text type="secondary">User Profile</Text>
         </div>
@@ -348,7 +348,7 @@ const UserDetailPage = () => {
               style={{ backgroundColor: '#16a34a' }}
             />
             <Title level={4} className="!mt-4 !mb-1">
-              {user.fullName}
+              {formatUserName(user)}
             </Title>
             <Tag color={roleColors[user.role]}>{user.role}</Tag>
           </div>

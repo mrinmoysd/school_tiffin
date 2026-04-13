@@ -65,6 +65,17 @@ body {
   scrollbar-width: none;
 }
 
+.table-scrollbar .ant-table-content,
+.table-scrollbar .ant-table-body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Hide Ant Design's built-in sticky horizontal scrollbar when using custom one */
+.table-scrollbar .ant-table-sticky-scroll {
+  display: none !important;
+}
+
 /* Custom horizontal scrollbar (native-like) */
 .st-horizontal-scrollbar {
   margin-top: 8px;

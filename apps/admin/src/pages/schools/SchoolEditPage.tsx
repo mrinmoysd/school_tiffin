@@ -1,11 +1,11 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import {
+  App as AntApp,
   Form,
   Input,
   Button,
   Card,
   Typography,
-  message,
   Row,
   Col,
   Checkbox,
@@ -30,6 +30,7 @@ const { TextArea } = Input;
 const DAYS_OF_WEEK = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
 const SchoolEditPage = () => {
+  const { message } = AntApp.useApp();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
@@ -91,13 +92,38 @@ const SchoolEditPage = () => {
     },
   });
 
-  const onFinish = (values: UpdateSchoolDto & { operatingDaysArray: string[] }) => {
-    const { operatingDaysArray, ...rest } = values;
+  const onFinish = (
+    values: Omit<UpdateSchoolDto, 'operatingDays'> & {
+      code?: string;
+      operatingDaysArray: string[];
+    },
+  ) => {
+    const {
+      operatingDaysArray,
+      name,
+      address,
+      city,
+      state,
+      pincode,
+      contactEmail,
+      contactPhone,
+      deliveryInstructions,
+      isServiceAvailable,
+    } = values;
+
+    // Keep PATCH payload aligned with backend UpdateSchoolDto (no `code` field).
     const data: UpdateSchoolDto = {
-      ...rest,
-      contactPhone: rest.contactPhone?.trim() ? normalizeIndianPhone(rest.contactPhone) : undefined,
+      name,
+      address,
+      city,
+      state,
+      pincode,
+      contactEmail,
+      contactPhone: contactPhone?.trim() ? normalizeIndianPhone(contactPhone) : undefined,
       // Backend expects comma-separated values
       operatingDays: operatingDaysArray.join(','),
+      deliveryInstructions,
+      isServiceAvailable,
     };
     updateMutation.mutate(data);
   };

@@ -8,7 +8,7 @@ import { Subscription, SubscriptionFilters, SubscriptionStatus } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
-import { formatStudentName } from '@/utils/formatters';
+import { formatStudentName, formatUserName } from '@/utils/formatters';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs, { Dayjs } from 'dayjs';
 
@@ -124,11 +124,11 @@ const SubscriptionsListPage = () => {
     },
     {
       title: <span className="whitespace-nowrap">Parent</span>,
-      dataIndex: ['parent', 'fullName'],
+      dataIndex: ['parent', 'firstName'],
       key: 'parent',
       width: 150,
       ellipsis: true,
-      render: (text: string) => <EllipsisCell text={text} />,
+      render: (_text: string, record) => <EllipsisCell text={formatUserName(record.parent)} />,
     },
     {
       title: <span className="whitespace-nowrap">Student</span>,
@@ -282,22 +282,22 @@ const SubscriptionsListPage = () => {
 
       {/* Table */}
       <Card>
-        <HorizontalScrollContainer>
-          {isLoading ? (
-            <TableSkeleton rows={9} />
-          ) : isError ? (
-            <ErrorState
-              title="Unable to load subscriptions"
-              description={(error as Error)?.message}
-              onRetry={refetch}
-            />
-          ) : (
+        {isLoading ? (
+          <TableSkeleton rows={9} />
+        ) : isError ? (
+          <ErrorState
+            title="Unable to load subscriptions"
+            description={(error as Error)?.message}
+            onRetry={refetch}
+          />
+        ) : (
+          <HorizontalScrollContainer>
             <Table
               columns={columns}
               dataSource={subscriptions}
               rowKey="id"
               tableLayout="fixed"
-              scroll={{ x: 1200, y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
+              scroll={{ x: 'max-content', y: 'clamp(260px, calc(100vh - 360px), 720px)' }}
               pagination={{
                 total: subscriptions?.length,
                 pageSize: 10,
@@ -309,8 +309,8 @@ const SubscriptionsListPage = () => {
                 className: 'cursor-pointer hover:bg-gray-50',
               })}
             />
-          )}
-        </HorizontalScrollContainer>
+          </HorizontalScrollContainer>
+        )}
       </Card>
     </div>
   );

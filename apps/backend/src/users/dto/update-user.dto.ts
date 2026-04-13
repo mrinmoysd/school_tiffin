@@ -9,15 +9,26 @@ import { normalizeIndianPhone } from '../../common/utils/phone.util';
 
 export class UpdateUserDto {
   @ApiProperty({
-    description: 'User full name',
-    example: 'John Doe',
+    description: 'User first name',
+    example: 'John',
     required: false,
   })
   @IsOptional()
   @IsString()
-  @MinLength(2)
+  @MinLength(1)
   @MaxLength(255)
-  fullName?: string;
+  firstName?: string;
+
+  @ApiProperty({
+    description: 'User last name',
+    example: 'Doe',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(255)
+  lastName?: string;
 
   @ApiProperty({
     description: 'User email address',

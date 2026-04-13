@@ -313,10 +313,7 @@ const MealPlanEditPage = () => {
             <TextArea rows={3} placeholder="Describe the meal plan..." />
           </Form.Item>
 
-          <Form.Item
-            label="Plan Image (optional)"
-            extra={`JPG or PNG. Max ${MAX_IMAGE_SIZE_MB}MB.`}
-          >
+          <Form.Item label="Plan Image" extra={`JPG or PNG. Max ${MAX_IMAGE_SIZE_MB}MB.`}>
             <div className="flex items-center gap-4">
               <div className="w-24 h-24 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
                 <img

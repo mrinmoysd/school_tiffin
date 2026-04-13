@@ -25,9 +25,11 @@ export interface LoginResponse {
   user: {
     id: string;
     email: string;
-    fullName: string | null;
+    firstName: string;
+    lastName: string;
     profileImageUrl?: string | null;
     role: string;
+    maxStudents?: number;
   };
   tokens: {
     accessToken: string;
@@ -39,12 +41,13 @@ export interface User {
   id: string;
   email: string;
   phoneNumber?: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   profileImageUrl?: string | null;
   role: UserRole;
   isActive: boolean;
   maxStudents: number;
-  emailVerified: boolean;
+  emailVerified?: boolean;
   createdAt: string;
   lastLoginAt?: string;
 }
@@ -86,9 +89,9 @@ export interface CreateSchoolDto {
   deliveryInstructions?: string;
 }
 
-export interface UpdateSchoolDto extends Partial<CreateSchoolDto> {
+export type UpdateSchoolDto = Omit<Partial<CreateSchoolDto>, 'code'> & {
   isServiceAvailable?: boolean;
-}
+};
 
 // Meal Plan Types
 export interface MealPlanTypeMaster {

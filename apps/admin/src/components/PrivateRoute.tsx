@@ -17,7 +17,7 @@ const PrivateRoute = () => {
   if (!hasHydrated) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" tip="Loading..." />
+        <Spin size="large" />
       </div>
     );
   }

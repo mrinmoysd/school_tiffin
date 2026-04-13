@@ -39,7 +39,8 @@ export class SubscriptionExpiryProcessor {
               parent: {
                 select: {
                   id: true,
-                  fullName: true,
+                  firstName: true,
+                  lastName: true,
                 },
               },
             },

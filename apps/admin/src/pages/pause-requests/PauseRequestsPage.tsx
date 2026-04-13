@@ -27,7 +27,7 @@ import { PauseRequest, PauseRequestFilters, PauseRequestStatus } from '@/types';
 import TableSkeleton from '@/components/TableSkeleton';
 import ErrorState from '@/components/ErrorState';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
-import { formatStudentName } from '@/utils/formatters';
+import { formatStudentName, formatUserName } from '@/utils/formatters';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs, { Dayjs } from 'dayjs';
 
@@ -160,13 +160,13 @@ const PauseRequestsPage = () => {
   const columns: ColumnsType<PauseRequest> = [
     {
       title: <span className="whitespace-nowrap">Parent</span>,
-      dataIndex: ['parent', 'fullName'],
+      dataIndex: ['parent', 'firstName'],
       key: 'parent',
       width: 160,
       ellipsis: true,
-      render: (name: string) => (
+      render: (_name: string, record) => (
         <Text strong className="whitespace-nowrap">
-          {name}
+          {formatUserName(record.parent) || '-'}
         </Text>
       ),
     },
