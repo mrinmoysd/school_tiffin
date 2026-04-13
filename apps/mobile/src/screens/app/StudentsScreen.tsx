@@ -6,9 +6,11 @@ import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'rea
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi, type Student } from '../../api/students';
+import { usersApi } from '../../api/users';
 import { AppLoader, FoodDoodleBackdrop, ProfileAvatar, useAppAlert } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppTheme } from '../../theme';
+import { getStudentLimitReachedMessage, hasReachedStudentLimit } from '../../utils/studentLimit';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Students'>;
 
@@ -32,6 +34,7 @@ export const StudentsScreen = ({ navigation }: Props) => {
   const [refreshing, setRefreshing] = useState(false);
   const [deletingStudentId, setDeletingStudentId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [maxStudents, setMaxStudents] = useState<number | null>(null);
 
   const loadStudents = useCallback(async () => {
     setError(null);
@@ -39,6 +42,13 @@ export const StudentsScreen = ({ navigation }: Props) => {
     try {
       const response = await studentsApi.getStudents();
       setStudents(response);
+
+      try {
+        const profile = await usersApi.getCurrentUserProfile();
+        setMaxStudents(typeof profile.maxStudents === 'number' ? profile.maxStudents : null);
+      } catch {
+        // Keep existing limit if profile refresh fails.
+      }
     } catch (requestError) {
       if (requestError instanceof ApiClientError) {
         setError(requestError.message);
@@ -78,6 +88,18 @@ export const StudentsScreen = ({ navigation }: Props) => {
       schoolId: student.school?.id,
     });
   };
+
+  const onAddStudent = useCallback(() => {
+    const studentLimit = typeof maxStudents === 'number' ? maxStudents : null;
+    if (studentLimit !== null && hasReachedStudentLimit(students.length, studentLimit)) {
+      alert('Student limit reached', getStudentLimitReachedMessage(students.length, studentLimit), [
+        { text: 'OK' },
+      ]);
+      return;
+    }
+
+    navigation.navigate('AddStudent', {});
+  }, [alert, maxStudents, navigation, students.length]);
 
   const closeSwipeableRow = (studentId: string) => {
     swipeableRefs.current[studentId]?.close();
@@ -143,7 +165,7 @@ export const StudentsScreen = ({ navigation }: Props) => {
             <View style={styles.headerRow}>
               <Pressable
                 style={styles.addStudentButton}
-                onPress={() => navigation.navigate('AddStudent', {})}
+                onPress={onAddStudent}
                 accessibilityRole="button"
                 accessibilityLabel="Add new student"
               >

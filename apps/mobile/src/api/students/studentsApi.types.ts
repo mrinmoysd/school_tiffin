@@ -7,12 +7,21 @@ export interface StudentSchool {
 
 export interface Student {
   id: string;
+  parentId?: string;
+  firstName: string;
+  lastName: string;
   fullName: string;
   dateOfBirth?: string | null;
   grade: number | string | null;
+  section?: string | null;
+  schoolId?: string | null;
+  allergies?: string | null;
+  dietaryPreferences?: string | null;
+  isActive?: boolean;
   profileImageUrl?: string | null;
   school: StudentSchool | null;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface CreateStudentPayload {

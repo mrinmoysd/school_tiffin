@@ -1,7 +1,11 @@
 export interface AuthUser {
   id: string;
   email: string;
+  firstName?: string | null;
+  lastName?: string | null;
   fullName: string | null;
+  profileImageUrl?: string | null;
+  maxStudents?: number | null;
   role: string;
 }
 
@@ -22,6 +26,8 @@ export interface LoginRequest {
 
 export interface RegisterRequest {
   fullName: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   phone?: string;
   password: string;

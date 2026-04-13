@@ -135,19 +135,6 @@ const normalizeGradeValue = (grade: string | number | null) => {
   return `${grade}`;
 };
 
-const splitFullName = (fullName?: string | null): { firstName: string; lastName: string } => {
-  const normalized = (fullName ?? '').trim().replace(/\s+/g, ' ');
-  if (!normalized) {
-    return { firstName: '', lastName: '' };
-  }
-
-  const [firstName, ...rest] = normalized.split(' ');
-  return {
-    firstName,
-    lastName: rest.join(' '),
-  };
-};
-
 export const AddStudentScreen = ({ route, navigation }: Props) => {
   const { showToast } = useAppAlert();
   const { colors } = useAppTheme();
@@ -194,9 +181,8 @@ export const AddStudentScreen = ({ route, navigation }: Props) => {
 
       if (isEditMode && params.studentId) {
         const student = await studentsApi.getStudentById(params.studentId);
-        const { firstName, lastName } = splitFullName(student.fullName);
-        setValue('firstName', firstName);
-        setValue('lastName', lastName);
+        setValue('firstName', student.firstName);
+        setValue('lastName', student.lastName);
         setValue('dateOfBirth', fromApiDateToInput(student.dateOfBirth));
         setValue('grade', normalizeGradeValue(student.grade));
         setValue('schoolId', student.school?.id ?? params.schoolId ?? '');

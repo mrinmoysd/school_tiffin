@@ -16,10 +16,11 @@ import { ApiClientError } from '../../api/client/apiClient';
 import { studentsApi, type Student } from '../../api/students';
 import { subscriptionsApi, type Subscription } from '../../api/subscriptions';
 import { usersApi } from '../../api/users';
-import { AppLoader, FoodDoodleBackdrop, ProfileAvatar } from '../../components/ui';
+import { AppLoader, FoodDoodleBackdrop, ProfileAvatar, useAppAlert } from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { useAppSelector } from '../../store/hooks';
 import { useAppTheme } from '../../theme';
+import { getStudentLimitReachedMessage, hasReachedStudentLimit } from '../../utils/studentLimit';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 type BottomNavItem = {
@@ -116,6 +117,7 @@ const getCompactLabel = (value: string, maxLength = 16) => {
 };
 
 export const HomeScreen = ({ navigation }: Props) => {
+  const { alert } = useAppAlert();
   const insets = useSafeAreaInsets();
   const { colors } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -134,6 +136,9 @@ export const HomeScreen = ({ navigation }: Props) => {
   const [studentsViewportWidth, setStudentsViewportWidth] = useState(0);
   const [studentsContentWidth, setStudentsContentWidth] = useState(0);
   const [studentsScrollX, setStudentsScrollX] = useState(0);
+  const [maxStudents, setMaxStudents] = useState<number | null>(
+    typeof user?.maxStudents === 'number' ? user.maxStudents : null,
+  );
 
   const loadHomeData = useCallback(async () => {
     try {
@@ -190,6 +195,7 @@ export const HomeScreen = ({ navigation }: Props) => {
         const profile = await usersApi.getCurrentUserProfile();
         setGreetingName(getGreetingName(profile.fullName, profile.email));
         setProfileImageUrl(profile.profileImageUrl ?? null);
+        setMaxStudents(typeof profile.maxStudents === 'number' ? profile.maxStudents : null);
       } catch {
         // Keep best available local user name if profile call fails.
       }
@@ -198,11 +204,33 @@ export const HomeScreen = ({ navigation }: Props) => {
     void loadGreetingName();
   }, []);
 
+  useEffect(() => {
+    if (typeof user?.maxStudents === 'number') {
+      setMaxStudents(user.maxStudents);
+    }
+  }, [user?.maxStudents]);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadHomeData();
     setRefreshing(false);
   }, [loadHomeData]);
+
+  const handleAddStudentPress = useCallback(() => {
+    const studentLimit = typeof maxStudents === 'number' ? maxStudents : null;
+    if (studentLimit !== null && hasReachedStudentLimit(students.length, studentLimit)) {
+      alert('Student limit reached', getStudentLimitReachedMessage(students.length, studentLimit), [
+        { text: 'OK' },
+      ]);
+      return;
+    }
+
+    navigation.navigate('AddStudent', {
+      mealPlanId: undefined,
+      schoolId: undefined,
+      studentId: undefined,
+    });
+  }, [alert, maxStudents, navigation, students.length]);
 
   const selectedStudent = useMemo(
     () => students.find(student => student.id === selectedStudentId) ?? null,
@@ -282,13 +310,7 @@ export const HomeScreen = ({ navigation }: Props) => {
             <Text style={styles.sectionTitle}>Students</Text>
             <Pressable
               style={styles.addButton}
-              onPress={() =>
-                navigation.navigate('AddStudent', {
-                  mealPlanId: undefined,
-                  schoolId: undefined,
-                  studentId: undefined,
-                })
-              }
+              onPress={handleAddStudentPress}
               accessibilityRole="button"
               accessibilityLabel="Add student"
             >

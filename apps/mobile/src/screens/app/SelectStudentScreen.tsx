@@ -11,11 +11,19 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { AppButton, AppLoader, FoodDoodleBackdrop, ProfileAvatar } from '../../components/ui';
+import {
+  AppButton,
+  AppLoader,
+  FoodDoodleBackdrop,
+  ProfileAvatar,
+  useAppAlert,
+} from '../../components/ui';
 import { RootStackParamList } from '../../navigation/types';
 import { studentsApi, type Student } from '../../api/students';
 import { ApiClientError } from '../../api/client/apiClient';
+import { usersApi } from '../../api/users';
 import { useAppTheme } from '../../theme';
+import { getStudentLimitReachedMessage, hasReachedStudentLimit } from '../../utils/studentLimit';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SelectStudent'>;
 
@@ -28,9 +36,11 @@ const formatGrade = (grade: Student['grade']) => {
 };
 
 export const SelectStudentScreen = ({ navigation, route }: Props) => {
+  const { alert } = useAppAlert();
   const { colors } = useAppTheme();
   const styles = createStyles(colors);
   const [students, setStudents] = useState<Student[]>([]);
+  const [maxStudents, setMaxStudents] = useState<number | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -44,6 +54,13 @@ export const SelectStudentScreen = ({ navigation, route }: Props) => {
     try {
       const response = await studentsApi.getStudents();
       setStudents(response);
+
+      try {
+        const profile = await usersApi.getCurrentUserProfile();
+        setMaxStudents(typeof profile.maxStudents === 'number' ? profile.maxStudents : null);
+      } catch {
+        // Keep existing limit if profile refresh fails.
+      }
     } catch (requestError) {
       if (requestError instanceof ApiClientError) {
         setError(requestError.message);
@@ -126,6 +143,28 @@ export const SelectStudentScreen = ({ navigation, route }: Props) => {
       year: 'numeric',
     });
   };
+
+  const onAddStudent = useCallback(() => {
+    const studentLimit = typeof maxStudents === 'number' ? maxStudents : null;
+    if (studentLimit !== null && hasReachedStudentLimit(students.length, studentLimit)) {
+      alert('Student limit reached', getStudentLimitReachedMessage(students.length, studentLimit), [
+        { text: 'OK' },
+      ]);
+      return;
+    }
+
+    navigation.navigate('AddStudent', {
+      mealPlanId: route.params.mealPlanId,
+      schoolId: route.params.schoolId,
+    });
+  }, [
+    alert,
+    maxStudents,
+    navigation,
+    route.params.mealPlanId,
+    route.params.schoolId,
+    students.length,
+  ]);
 
   if (loading) {
     return (
@@ -214,16 +253,7 @@ export const SelectStudentScreen = ({ navigation, route }: Props) => {
           )}
         </View>
 
-        <AppButton
-          title="Add New Student"
-          variant="secondary"
-          onPress={() =>
-            navigation.navigate('AddStudent', {
-              mealPlanId: route.params.mealPlanId,
-              schoolId: route.params.schoolId,
-            })
-          }
-        />
+        <AppButton title="Add New Student" variant="secondary" onPress={onAddStudent} />
 
         {selectedStudentId ? (
           <View style={styles.dateWrapper}>

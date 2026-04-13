@@ -19,6 +19,7 @@ import { RootStackParamList } from '../../navigation/types';
 import { setAuthUser } from '../../store/auth';
 import { useAppDispatch } from '../../store/hooks';
 import { useAppTheme } from '../../theme';
+import { splitFullName } from '../../utils/name';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EditProfile'>;
 
@@ -51,12 +52,22 @@ const normalizePhoneForApi = (value: string) => {
   return `+91${digits}`;
 };
 
-const toAuthUser = (profile: UserProfile) => ({
-  id: profile.id,
-  email: profile.email,
-  fullName: profile.fullName,
-  role: profile.role,
-});
+const toAuthUser = (profile: UserProfile) => {
+  const fallbackNameParts = splitFullName(profile.fullName);
+  const firstName = profile.firstName ?? fallbackNameParts.firstName;
+  const lastName = profile.lastName ?? fallbackNameParts.lastName;
+
+  return {
+    id: profile.id,
+    email: profile.email,
+    firstName: firstName || null,
+    lastName: lastName || null,
+    fullName: profile.fullName,
+    profileImageUrl: profile.profileImageUrl ?? null,
+    maxStudents: typeof profile.maxStudents === 'number' ? profile.maxStudents : null,
+    role: profile.role,
+  };
+};
 
 export const EditProfileScreen = ({ navigation }: Props) => {
   const { showToast } = useAppAlert();
