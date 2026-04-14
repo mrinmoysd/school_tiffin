@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -163,19 +162,19 @@ export const ProfileScreen = ({ navigation }: Props) => {
               <Text style={styles.muted}>Email: {profile.email || '-'}</Text>
               <Text style={styles.muted}>Phone: {getDisplayPhone(profile)}</Text>
               <Text style={styles.muted}>Member Since: {formatDate(profile.createdAt)}</Text>
+              <Pressable
+                style={styles.inlineEditButton}
+                onPress={() => navigation.navigate('EditProfile')}
+                accessibilityRole="button"
+                accessibilityLabel="Edit profile"
+              >
+                <Text style={styles.inlineEditButtonText}>Edit Profile</Text>
+              </Pressable>
             </View>
 
-            <Pressable
-              style={styles.avatarPressable}
-              onPress={() => navigation.navigate('EditProfile')}
-              accessibilityRole="button"
-              accessibilityLabel="Edit profile image"
-            >
-              <ProfileAvatar imageUrl={profile.profileImageUrl} name={profile.fullName} size={76} />
-              <View style={styles.cameraBadge}>
-                <Ionicons name="camera" size={13} color={colors.neutral.white} />
-              </View>
-            </Pressable>
+            <View style={styles.profileImageColumn}>
+              <ProfileAvatar imageUrl={profile.profileImageUrl} name={profile.fullName} size={85} />
+            </View>
           </View>
         </View>
 
@@ -321,23 +320,25 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       flex: 1,
       marginRight: 14,
     },
-    avatarPressable: {
-      position: 'relative',
-      borderRadius: 999,
+    profileImageColumn: {
+      alignItems: 'center',
+      justifyContent: 'flex-start',
       marginTop: 2,
     },
-    cameraBadge: {
-      position: 'absolute',
-      right: -2,
-      bottom: -2,
-      width: 24,
-      height: 24,
-      borderRadius: 12,
-      backgroundColor: colors.action.primary,
-      borderWidth: 2,
-      borderColor: colors.neutral.white,
-      alignItems: 'center',
-      justifyContent: 'center',
+    inlineEditButton: {
+      marginTop: 8,
+      alignSelf: 'flex-start',
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: colors.action.primary,
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+      backgroundColor: colors.surface.infoSoft,
+    },
+    inlineEditButtonText: {
+      color: colors.intent.infoStrong,
+      fontSize: 13,
+      fontWeight: '700',
     },
     muted: {
       color: colors.text.subtle,

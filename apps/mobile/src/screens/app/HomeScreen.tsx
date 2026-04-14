@@ -199,7 +199,8 @@ export const HomeScreen = ({ navigation }: Props) => {
 
   useEffect(() => {
     setGreetingName(getGreetingName(user?.fullName, user?.email));
-  }, [user?.email, user?.fullName]);
+    setProfileImageUrl(user?.profileImageUrl ?? null);
+  }, [user?.email, user?.fullName, user?.profileImageUrl]);
 
   useEffect(() => {
     const loadGreetingName = async () => {
