@@ -1,5 +1,7 @@
 import { appSettingService, notificationService, pauseRequestService } from '@/services';
 import { useAuthStore } from '@/stores/authStore';
+import { AppNotification } from '@/types';
+import { formatRelativeTime, formatUserName } from '@/utils/formatters';
 import {
   ArrowRightOutlined,
   BankOutlined,
@@ -37,8 +39,6 @@ import {
 } from 'antd';
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { AppNotification } from '@/types';
-import { formatRelativeTime, formatUserName } from '@/utils/formatters';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -444,7 +444,9 @@ const MainLayout = () => {
         {/* Header */}
         <Header
           style={{
-            padding: '0 24px',
+            height: 56,
+            lineHeight: '56px',
+            padding: '0 16px',
             background: colorBgContainer,
             display: 'flex',
             alignItems: 'center',
@@ -458,8 +460,8 @@ const MainLayout = () => {
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{ fontSize: '16px', width: 48, height: 48 }}
+            onClick={() => setCollapsed(previous => !previous)}
+            style={{ fontSize: '15px', width: 40, height: 40 }}
           />
 
           <div className="flex items-center gap-4">
@@ -510,7 +512,7 @@ const MainLayout = () => {
         <Content
           style={{
             margin: '24px',
-            padding: 24,
+            padding: '0 24px 24px',
             minHeight: 280,
             background: colorBgContainer,
             borderRadius: borderRadiusLG,

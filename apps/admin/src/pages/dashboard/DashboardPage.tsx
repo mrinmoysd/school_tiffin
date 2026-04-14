@@ -337,7 +337,7 @@ const DashboardPage = () => {
                 onRetry={refetchActivity}
               />
             ) : (
-              <HorizontalScrollContainer>
+              <HorizontalScrollContainer className="st-dashboard-scroll-wrap">
                 <Table
                   columns={subscriptionColumns}
                   dataSource={activity?.recentSubscriptions || []}
@@ -378,7 +378,7 @@ const DashboardPage = () => {
                 onRetry={refetchActivity}
               />
             ) : (
-              <HorizontalScrollContainer>
+              <HorizontalScrollContainer className="st-dashboard-scroll-wrap">
                 <Table
                   columns={orderColumns}
                   dataSource={activity?.recentOrders || []}

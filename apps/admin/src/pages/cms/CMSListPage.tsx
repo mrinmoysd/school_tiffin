@@ -71,6 +71,10 @@ const CMSListPage = () => {
     });
   };
 
+  const pendingPublishSlug = publishMutation.isPending
+    ? (publishMutation.variables?.slug ?? null)
+    : null;
+
   // Table columns
   const columns: ColumnsType<CMSPage> = [
     {
@@ -117,7 +121,8 @@ const CMSListPage = () => {
         <Switch
           checked={isPublished}
           onChange={checked => publishMutation.mutate({ slug: record.slug, publish: checked })}
-          loading={publishMutation.isPending}
+          loading={pendingPublishSlug === record.slug}
+          disabled={pendingPublishSlug === record.slug}
           checkedChildren="Yes"
           unCheckedChildren="No"
         />
