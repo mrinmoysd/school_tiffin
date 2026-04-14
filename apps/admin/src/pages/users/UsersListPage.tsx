@@ -103,6 +103,10 @@ const UsersListPage = () => {
     toggleActiveMutation.mutate({ id: record.id });
   };
 
+  const pendingToggleUserId = toggleActiveMutation.isPending
+    ? (toggleActiveMutation.variables?.id ?? null)
+    : null;
+
   const columns: ColumnsType<User> = [
     {
       title: <span className="whitespace-nowrap">Name</span>,
@@ -162,7 +166,8 @@ const UsersListPage = () => {
         <Switch
           checked={isActive}
           onChange={checked => handleToggleActive(record, checked)}
-          loading={toggleActiveMutation.isPending}
+          loading={pendingToggleUserId === record.id}
+          disabled={pendingToggleUserId === record.id}
         />
       ),
     },

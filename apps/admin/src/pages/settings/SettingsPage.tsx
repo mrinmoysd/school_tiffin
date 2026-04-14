@@ -217,6 +217,10 @@ const SettingsPage = () => {
     createMutation.mutate(payload);
   };
 
+  const pendingToggleMealPlanTypeId = toggleMutation.isPending
+    ? (toggleMutation.variables?.id ?? null)
+    : null;
+
   const columns: ColumnsType<MealPlanTypeMaster> = [
     {
       title: 'Display Name',
@@ -252,7 +256,8 @@ const SettingsPage = () => {
       render: (isActive: boolean, record) => (
         <Switch
           checked={isActive}
-          loading={toggleMutation.isPending}
+          loading={pendingToggleMealPlanTypeId === record.id}
+          disabled={pendingToggleMealPlanTypeId === record.id}
           onChange={checked => toggleMutation.mutate({ id: record.id, isActive: checked })}
         />
       ),

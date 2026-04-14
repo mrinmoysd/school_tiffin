@@ -54,6 +54,11 @@ body {
   padding-bottom: 6px;
 }
 
+:root {
+  /* Global vertical cap for all grids so tables don't grow with row count */
+  --st-grid-max-y: clamp(220px, calc(100vh - 420px), 560px);
+}
+
 /* Hide native horizontal scrollbar in table containers (keep custom control visible) */
 .table-scrollbar::-webkit-scrollbar:horizontal,
 .table-scrollbar .ant-table-content::-webkit-scrollbar:horizontal,
@@ -67,8 +72,13 @@ body {
 
 .table-scrollbar .ant-table-content,
 .table-scrollbar .ant-table-body {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  -ms-overflow-style: auto;
+}
+
+/* Keep all grid bodies within viewport-like bounds and show vertical scrolling when needed */
+.table-scrollbar .ant-table-body {
+  max-height: var(--st-grid-max-y) !important;
+  overflow-y: auto !important;
 }
 
 /* Hide Ant Design's built-in sticky horizontal scrollbar when using custom one */
