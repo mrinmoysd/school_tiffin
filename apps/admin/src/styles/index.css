@@ -23,7 +23,11 @@
 
 /* Custom styles */
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -39,7 +43,9 @@ body {
 
 .ant-card {
   border-radius: 12px;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.1),
+    0 1px 2px -1px rgb(0 0 0 / 0.1);
 }
 
 .ant-table-thead > tr > th {
@@ -47,27 +53,51 @@ body {
   font-weight: 600;
 }
 
+/* Remove extra vertical spacing around page titles */
+.page-transition :is(h1, h2, h3, h4, h5).ant-typography {
+  margin-top: 10px !important;
+}
+
+/* Tighten the first page header block spacing below title/subtitle */
+.page-transition > div > .mb-6:first-child {
+  margin-bottom: 16px !important;
+}
+
 /* Horizontal scroll host for wide tables/grids */
 .table-scrollbar {
   overflow-x: auto;
   scrollbar-gutter: stable both-edges;
-  padding-bottom: 6px;
+  padding-bottom: 2px;
 }
 
 :root {
-  /* Global vertical cap for all grids so tables don't grow with row count */
-  --st-grid-max-y: clamp(220px, calc(100vh - 420px), 560px);
+  /* Global vertical cap for all grids so table containers stay within viewport */
+  --st-grid-max-y: clamp(180px, calc(100vh - 500px), 520px);
 }
 
-/* Hide native horizontal scrollbar in table containers (keep custom control visible) */
+/* Hide native horizontal scrollbar by default, reveal on hover so users can use it */
 .table-scrollbar::-webkit-scrollbar:horizontal,
 .table-scrollbar .ant-table-content::-webkit-scrollbar:horizontal,
 .table-scrollbar .ant-table-body::-webkit-scrollbar:horizontal {
-  height: 0 !important;
+  height: 0;
 }
 
-.table-scrollbar {
+.table-scrollbar:hover::-webkit-scrollbar:horizontal,
+.table-scrollbar .ant-table-content:hover::-webkit-scrollbar:horizontal,
+.table-scrollbar .ant-table-body:hover::-webkit-scrollbar:horizontal {
+  height: 10px;
+}
+
+.table-scrollbar,
+.table-scrollbar .ant-table-content,
+.table-scrollbar .ant-table-body {
   scrollbar-width: none;
+}
+
+.table-scrollbar:hover,
+.table-scrollbar:hover .ant-table-content,
+.table-scrollbar:hover .ant-table-body {
+  scrollbar-width: thin;
 }
 
 .table-scrollbar .ant-table-content,
@@ -81,6 +111,13 @@ body {
   overflow-y: auto !important;
 }
 
+/* Fallback for tables rendered without explicit scroll.y:
+   cap table content height and enable vertical scrolling. */
+.table-scrollbar .ant-table-container > .ant-table-content {
+  max-height: var(--st-grid-max-y);
+  overflow-y: auto;
+}
+
 /* Hide Ant Design's built-in sticky horizontal scrollbar when using custom one */
 .table-scrollbar .ant-table-sticky-scroll {
   display: none !important;
@@ -88,13 +125,18 @@ body {
 
 /* Custom horizontal scrollbar (native-like) */
 .st-horizontal-scrollbar {
-  margin-top: 8px;
+  margin-top: 0;
   padding: 0 6px;
   display: grid;
   grid-template-columns: 34px 1fr 34px;
   align-items: center;
   gap: 10px;
   width: 100%;
+}
+
+/* Keep original spacing in dashboard cards */
+.st-dashboard-scroll-wrap .st-horizontal-scrollbar {
+  margin-top: 8px;
 }
 
 .st-horizontal-scrollbar-arrow {
@@ -108,7 +150,9 @@ body {
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  transition: color 160ms ease, opacity 160ms ease;
+  transition:
+    color 160ms ease,
+    opacity 160ms ease;
 }
 
 .st-horizontal-scrollbar-arrow:disabled {
@@ -174,7 +218,9 @@ body {
 
 /* Stats card hover effect */
 .stats-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .stats-card:hover {
