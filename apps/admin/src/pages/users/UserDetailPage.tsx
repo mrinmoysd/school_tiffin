@@ -11,6 +11,7 @@ import {
   message,
   Avatar,
   Image,
+  Modal,
 } from 'antd';
 import {
   ArrowLeftOutlined,
@@ -21,6 +22,7 @@ import {
   ShoppingCartOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { userService } from '@/services';
 import { UserRole, SubscriptionStatus, OrderStatus } from '@/types';
 import HorizontalScrollContainer from '@/components/HorizontalScrollContainer';
@@ -33,6 +35,7 @@ const UserDetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const [isProfileImagePreviewOpen, setIsProfileImagePreviewOpen] = useState(false);
 
   // Fetch user
   const { data: user, isLoading } = useQuery({
@@ -119,6 +122,8 @@ const UserDetailPage = () => {
       </div>
     );
   }
+
+  const canPreviewProfileImage = Boolean(user.profileImageUrl);
 
   // Students columns
   const studentColumns = [
@@ -341,12 +346,24 @@ const UserDetailPage = () => {
         {/* Profile Card */}
         <Card>
           <div className="text-center mb-6">
-            <Avatar
-              size={80}
-              src={user.profileImageUrl || undefined}
-              icon={!user.profileImageUrl ? <UserOutlined /> : undefined}
-              style={{ backgroundColor: '#16a34a' }}
-            />
+            <button
+              type="button"
+              className="bg-transparent border-0 p-0"
+              disabled={!canPreviewProfileImage}
+              onClick={() => {
+                if (!canPreviewProfileImage) return;
+                setIsProfileImagePreviewOpen(true);
+              }}
+              aria-label="Preview profile image"
+            >
+              <Avatar
+                size={80}
+                src={user.profileImageUrl || undefined}
+                icon={!user.profileImageUrl ? <UserOutlined /> : undefined}
+                style={{ backgroundColor: '#16a34a' }}
+                className={canPreviewProfileImage ? 'cursor-zoom-in' : ''}
+              />
+            </button>
             <Title level={4} className="!mt-4 !mb-1">
               {formatUserName(user)}
             </Title>
@@ -403,6 +420,23 @@ const UserDetailPage = () => {
           </Card>
         </div>
       </div>
+
+      <Modal
+        open={isProfileImagePreviewOpen}
+        footer={null}
+        onCancel={() => setIsProfileImagePreviewOpen(false)}
+        centered
+        width={520}
+      >
+        {user.profileImageUrl && (
+          <Image
+            src={user.profileImageUrl}
+            alt={`${formatUserName(user)} profile image`}
+            preview={false}
+            className="w-full rounded-lg"
+          />
+        )}
+      </Modal>
     </div>
   );
 };
