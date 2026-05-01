@@ -1,5 +1,5 @@
 /* global Event, HTMLDivElement, HTMLElement, HTMLOListElement, Node, Range, requestAnimationFrame */
-import { DragEvent, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { CSSProperties, DragEvent, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import {
   App as AntdApp,
   Alert,
@@ -11,6 +11,7 @@ import {
   Input,
   Select,
   Space,
+  Switch,
   Tooltip,
   Typography,
   Upload,
@@ -37,11 +38,13 @@ import {
   uploadService,
 } from '@/services';
 import {
+  CmsImageBlock,
   CmsVisualBlock,
   CmsVisualBlockType,
   createVisualBlock,
   deserializeVisualBuilderContent,
   renderVisualBlocksToHtml,
+  sanitizeCmsCodeBlockHtml,
   serializeVisualBuilderContent,
 } from './visualBuilder';
 
@@ -117,6 +120,60 @@ const LIST_TYPE_OPTIONS: Array<{ label: string; value: ListFormat }> = [
   { label: 'Roman', value: 'upper-roman' },
   { label: 'Alphabet', value: 'upper-alpha' },
 ];
+
+const IMAGE_OBJECT_FIT_OPTIONS = [
+  { label: 'Cover', value: 'cover' },
+  { label: 'Contain', value: 'contain' },
+  { label: 'Fill', value: 'fill' },
+] as const;
+
+const IMAGE_ALIGNMENT_OPTIONS = [
+  { label: 'Left', value: 'left' },
+  { label: 'Center', value: 'center' },
+  { label: 'Right', value: 'right' },
+] as const;
+
+const IMAGE_POSITION_OPTIONS = [
+  { label: 'Static', value: 'static' },
+  { label: 'Relative', value: 'relative' },
+  { label: 'Absolute', value: 'absolute' },
+  { label: 'Fixed', value: 'fixed' },
+] as const;
+
+const IMAGE_BORDER_STYLE_OPTIONS = [
+  { label: 'None', value: 'none' },
+  { label: 'Solid', value: 'solid' },
+  { label: 'Dashed', value: 'dashed' },
+  { label: 'Dotted', value: 'dotted' },
+  { label: 'Double', value: 'double' },
+] as const;
+
+const IMAGE_SHADOW_PRESETS = [
+  { label: 'None', value: '' },
+  { label: 'Soft', value: '0px 2px 8px rgba(15,23,42,0.15)' },
+  { label: 'Medium', value: '0px 6px 20px rgba(15,23,42,0.18)' },
+  { label: 'Strong', value: '0px 12px 28px rgba(15,23,42,0.22)' },
+] as const;
+
+const IMAGE_COMMON_WIDTH_OPTIONS = [
+  '100%',
+  '80%',
+  '60%',
+  '50%',
+  '320px',
+  '480px',
+  '640px',
+] as const;
+const IMAGE_COMMON_HEIGHT_OPTIONS = [
+  'auto',
+  '180px',
+  '220px',
+  '280px',
+  '320px',
+  '400px',
+  '50%',
+] as const;
+const IMAGE_ASPECT_RATIO_OPTIONS = ['16/9', '4/3', '1/1', '3/2', '21/9', '9/16', '2/3'] as const;
 
 const DEFAULT_FORMATTING_STATE: FormattingState = {
   heading: 'p',
@@ -546,6 +603,11 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
   const [imageUploadingByBlockId, setImageUploadingByBlockId] = useState<Record<string, boolean>>(
     {},
   );
+  const [htmlSanitizedByBlockId, setHtmlSanitizedByBlockId] = useState<Record<string, boolean>>({});
+  const [sidebarActiveKeys, setSidebarActiveKeys] = useState<string[]>([
+    'text-markup',
+    'add-widgets',
+  ]);
   const lastSerializedRef = useRef(value ?? '');
   const editorElementsRef = useRef<Record<string, HTMLDivElement | null>>({});
   const editorRangesRef = useRef<Record<string, Range | null>>({});
@@ -876,6 +938,45 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
     return activeEditorId;
   }, [activeEditorId, blocksBySection]);
   const livePreviewHtml = useMemo(() => renderVisualBlocksToHtml(blocks), [blocks]);
+  const selectedImageBlock = useMemo(() => {
+    if (!expandedBlockId) {
+      return null;
+    }
+    const matched = blocks.find(block => block.id === expandedBlockId);
+    if (!matched || matched.type !== 'image') {
+      return null;
+    }
+    return matched as CmsImageBlock;
+  }, [blocks, expandedBlockId]);
+
+  useEffect(() => {
+    if (!selectedImageBlock) {
+      return;
+    }
+
+    setSidebarActiveKeys(prev => {
+      const withoutMarkup = prev.filter(key => key !== 'text-markup');
+      if (withoutMarkup.includes('image-settings')) {
+        return withoutMarkup;
+      }
+      return [...withoutMarkup, 'image-settings'];
+    });
+  }, [selectedImageBlock]);
+
+  const handleSidebarCollapseChange = (keys: string | string[]) => {
+    const normalized = Array.isArray(keys) ? keys : [keys];
+
+    if (selectedImageBlock) {
+      const filtered = normalized.filter(key => key !== 'text-markup');
+      if (!filtered.includes('image-settings')) {
+        filtered.push('image-settings');
+      }
+      setSidebarActiveKeys(filtered);
+      return;
+    }
+
+    setSidebarActiveKeys(normalized);
+  };
 
   useEffect(() => {
     const incoming = value ?? '';
@@ -887,6 +988,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
     setBlocks(parsed.blocks.map(block => ensureBlockSection(block)));
     setIsLegacyHtml(parsed.isLegacyHtml);
     setImageUploadingByBlockId({});
+    setHtmlSanitizedByBlockId({});
     uploadedImageKeysRef.current = {};
     lastSerializedRef.current = incoming;
   }, [value]);
@@ -937,6 +1039,11 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
   const removeBlock = (id: string) => {
     void removeTemporaryUploadedImage(id);
     setImageUploadingByBlockId(prev => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    setHtmlSanitizedByBlockId(prev => {
       const next = { ...prev };
       delete next[id];
       return next;
@@ -1232,6 +1339,440 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
   };
 
   const isEditorActive = (editorId: string) => activeEditorId === editorId;
+
+  const renderImageSettingsEditor = (imageBlock: CmsImageBlock) => {
+    const updateImage = (patch: Partial<CmsImageBlock>) => {
+      updateBlock(imageBlock.id, current =>
+        current.type === 'image' ? ({ ...current, ...patch } as CmsImageBlock) : current,
+      );
+    };
+    const shadowPresetValue =
+      IMAGE_SHADOW_PRESETS.find(preset => preset.value === imageBlock.boxShadow)?.value ??
+      '__custom__';
+    const widthOptions = Array.from(
+      new Set(
+        [imageBlock.width, ...IMAGE_COMMON_WIDTH_OPTIONS]
+          .filter(Boolean)
+          .map(value => String(value).trim()),
+      ),
+    ).map(value => ({ label: value, value }));
+    const heightOptions = Array.from(
+      new Set(
+        [imageBlock.height, ...IMAGE_COMMON_HEIGHT_OPTIONS]
+          .filter(Boolean)
+          .map(value => String(value).trim()),
+      ),
+    ).map(value => ({ label: value, value }));
+    const aspectRatioOptions = Array.from(
+      new Set(
+        [imageBlock.aspectRatio, ...IMAGE_ASPECT_RATIO_OPTIONS]
+          .filter(Boolean)
+          .map(value => String(value).trim()),
+      ),
+    ).map(value => ({ label: value, value }));
+    const previewAlign =
+      imageBlock.alignment === 'left'
+        ? 'left'
+        : imageBlock.alignment === 'right'
+          ? 'right'
+          : 'center';
+    const settingsLabelStyle: CSSProperties = {
+      width: 110,
+      flexShrink: 0,
+      fontWeight: 600,
+      color: '#111827',
+    };
+    const renderSettingsRow = (
+      label: string,
+      control: ReactNode,
+      alignItems: 'center' | 'flex-start' = 'center',
+    ) => (
+      <div style={{ display: 'flex', alignItems, gap: 12 }}>
+        <div style={settingsLabelStyle}>{label}</div>
+        <div style={{ flex: 1 }}>{control}</div>
+      </div>
+    );
+
+    return (
+      <Space direction="vertical" className="w-full" size={10}>
+        <Space wrap>
+          <Upload
+            beforeUpload={handleImageUpload(imageBlock.id)}
+            showUploadList={false}
+            accept="image/png,image/jpeg"
+          >
+            <Button
+              icon={<UploadOutlined />}
+              loading={Boolean(imageUploadingByBlockId[imageBlock.id])}
+            >
+              Upload Image
+            </Button>
+          </Upload>
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            disabled={!imageBlock.imageUrl || Boolean(imageUploadingByBlockId[imageBlock.id])}
+            onClick={() => void handleRemoveUploadedImage(imageBlock.id)}
+          >
+            Remove Image
+          </Button>
+        </Space>
+
+        {imageBlock.imageUrl ? (
+          <div
+            style={{
+              border: '1px solid #e5e7eb',
+              borderRadius: 8,
+              padding: 10,
+              background: '#fafafa',
+              textAlign: previewAlign,
+            }}
+          >
+            <img
+              src={imageBlock.imageUrl}
+              alt={imageBlock.altText || 'Uploaded image preview'}
+              style={{
+                width: imageBlock.width || '100%',
+                height: imageBlock.height || 'auto',
+                maxWidth: imageBlock.maxWidth || undefined,
+                minWidth: imageBlock.minWidth || undefined,
+                maxHeight: imageBlock.maxHeight || undefined,
+                minHeight: imageBlock.minHeight || undefined,
+                aspectRatio: imageBlock.lockAspectRatio ? imageBlock.aspectRatio : undefined,
+                objectFit: imageBlock.objectFit,
+                position: imageBlock.position,
+                borderWidth: imageBlock.borderWidth || '1px',
+                borderStyle: imageBlock.borderStyle,
+                borderColor: imageBlock.borderColor || '#e5e7eb',
+                borderRadius: imageBlock.borderRadius || '6px',
+                boxShadow: imageBlock.boxShadow || undefined,
+                opacity: imageBlock.opacity,
+                backgroundColor: imageBlock.backgroundColor || undefined,
+                padding: imageBlock.padding || '0px',
+                margin: imageBlock.margin || '0px',
+                filter: `brightness(${imageBlock.brightness}%) contrast(${imageBlock.contrast}%) blur(${imageBlock.blur}px) grayscale(${imageBlock.grayscale}%) sepia(${imageBlock.sepia}%)`,
+                display: 'inline-block',
+              }}
+            />
+          </div>
+        ) : null}
+
+        <Card size="small" title="Layout & Size">
+          <Space direction="vertical" className="w-full" size={10}>
+            {renderSettingsRow(
+              'Alt Text',
+              <Input
+                placeholder="Describe this image"
+                value={imageBlock.altText}
+                onChange={event => updateImage({ altText: event.target.value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Caption',
+              <Input
+                placeholder="Write caption"
+                value={imageBlock.caption}
+                onChange={event => updateImage({ caption: event.target.value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Width',
+              <Select
+                value={imageBlock.width}
+                options={widthOptions}
+                onChange={value => updateImage({ width: value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Height',
+              <Select
+                value={imageBlock.height}
+                options={heightOptions}
+                onChange={value => updateImage({ height: value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Max Width',
+              <Input
+                placeholder="e.g., 640px"
+                value={imageBlock.maxWidth}
+                onChange={event => updateImage({ maxWidth: event.target.value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Min Width',
+              <Input
+                placeholder="e.g., 200px"
+                value={imageBlock.minWidth}
+                onChange={event => updateImage({ minWidth: event.target.value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Max Height',
+              <Input
+                placeholder="e.g., 400px"
+                value={imageBlock.maxHeight}
+                onChange={event => updateImage({ maxHeight: event.target.value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Min Height',
+              <Input
+                placeholder="e.g., 140px"
+                value={imageBlock.minHeight}
+                onChange={event => updateImage({ minHeight: event.target.value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Aspect Ratio Lock',
+              <Switch
+                checked={imageBlock.lockAspectRatio}
+                onChange={checked => updateImage({ lockAspectRatio: checked })}
+              />,
+            )}
+            {renderSettingsRow(
+              'Aspect Ratio',
+              <Select
+                value={imageBlock.aspectRatio}
+                options={aspectRatioOptions}
+                disabled={!imageBlock.lockAspectRatio}
+                onChange={value => updateImage({ aspectRatio: value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Object Fit',
+              <Select
+                value={imageBlock.objectFit}
+                options={
+                  IMAGE_OBJECT_FIT_OPTIONS as unknown as Array<{ label: string; value: string }>
+                }
+                onChange={value => updateImage({ objectFit: value as CmsImageBlock['objectFit'] })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Alignment',
+              <Select
+                value={imageBlock.alignment}
+                options={
+                  IMAGE_ALIGNMENT_OPTIONS as unknown as Array<{ label: string; value: string }>
+                }
+                onChange={value => updateImage({ alignment: value as CmsImageBlock['alignment'] })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Position',
+              <Select
+                value={imageBlock.position}
+                options={
+                  IMAGE_POSITION_OPTIONS as unknown as Array<{ label: string; value: string }>
+                }
+                onChange={value => updateImage({ position: value as CmsImageBlock['position'] })}
+                style={{ width: '100%' }}
+              />,
+            )}
+          </Space>
+        </Card>
+
+        <Card size="small" title="Styling Options">
+          <Space direction="vertical" className="w-full" size={10}>
+            {renderSettingsRow(
+              'Border Width',
+              <Input
+                placeholder="Border width (e.g., 1px)"
+                value={imageBlock.borderWidth}
+                onChange={event => updateImage({ borderWidth: event.target.value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Border Style',
+              <Select
+                value={imageBlock.borderStyle}
+                options={
+                  IMAGE_BORDER_STYLE_OPTIONS as unknown as Array<{ label: string; value: string }>
+                }
+                onChange={value =>
+                  updateImage({ borderStyle: value as CmsImageBlock['borderStyle'] })
+                }
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Border Color',
+              <Input
+                placeholder="Border color (#e2e8f0)"
+                value={imageBlock.borderColor}
+                onChange={event => updateImage({ borderColor: event.target.value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Border Radius',
+              <Input
+                placeholder="Border radius (e.g., 12px)"
+                value={imageBlock.borderRadius}
+                onChange={event => updateImage({ borderRadius: event.target.value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Shadow Preset',
+              <Select
+                value={shadowPresetValue}
+                options={[
+                  ...IMAGE_SHADOW_PRESETS.map(item => ({ label: item.label, value: item.value })),
+                  { label: 'Custom', value: '__custom__' },
+                ]}
+                onChange={value => {
+                  if (value === '__custom__') return;
+                  updateImage({ boxShadow: value });
+                }}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Custom Shadow',
+              <Input
+                placeholder="Custom box-shadow"
+                value={imageBlock.boxShadow}
+                onChange={event => updateImage({ boxShadow: event.target.value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Opacity',
+              <Input
+                type="number"
+                min={0}
+                max={1}
+                step={0.05}
+                value={imageBlock.opacity}
+                onChange={event =>
+                  updateImage({
+                    opacity: Math.max(0, Math.min(1, Number(event.target.value) || 0)),
+                  })
+                }
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Background',
+              <Input
+                placeholder="Background color (optional)"
+                value={imageBlock.backgroundColor}
+                onChange={event => updateImage({ backgroundColor: event.target.value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Padding',
+              <Input
+                placeholder="Padding (e.g., 8px)"
+                value={imageBlock.padding}
+                onChange={event => updateImage({ padding: event.target.value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Margin',
+              <Input
+                placeholder="Margin (e.g., 0px)"
+                value={imageBlock.margin}
+                onChange={event => updateImage({ margin: event.target.value })}
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Brightness (%)',
+              <Input
+                type="number"
+                min={0}
+                max={200}
+                value={imageBlock.brightness}
+                onChange={event =>
+                  updateImage({
+                    brightness: Math.max(0, Math.min(200, Number(event.target.value) || 0)),
+                  })
+                }
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Contrast (%)',
+              <Input
+                type="number"
+                min={0}
+                max={200}
+                value={imageBlock.contrast}
+                onChange={event =>
+                  updateImage({
+                    contrast: Math.max(0, Math.min(200, Number(event.target.value) || 0)),
+                  })
+                }
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Blur (px)',
+              <Input
+                type="number"
+                min={0}
+                max={20}
+                value={imageBlock.blur}
+                onChange={event =>
+                  updateImage({
+                    blur: Math.max(0, Math.min(20, Number(event.target.value) || 0)),
+                  })
+                }
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Grayscale (%)',
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={imageBlock.grayscale}
+                onChange={event =>
+                  updateImage({
+                    grayscale: Math.max(0, Math.min(100, Number(event.target.value) || 0)),
+                  })
+                }
+                style={{ width: '100%' }}
+              />,
+            )}
+            {renderSettingsRow(
+              'Sepia (%)',
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={imageBlock.sepia}
+                onChange={event =>
+                  updateImage({
+                    sepia: Math.max(0, Math.min(100, Number(event.target.value) || 0)),
+                  })
+                }
+                style={{ width: '100%' }}
+              />,
+            )}
+          </Space>
+        </Card>
+      </Space>
+    );
+  };
 
   const renderBlockEditor = (block: CmsVisualBlock) => {
     switch (block.type) {
@@ -1541,91 +2082,42 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
 
       case 'image':
         return (
-          <Space direction="vertical" className="w-full" size={10}>
-            <Space wrap>
-              <Upload
-                beforeUpload={handleImageUpload(block.id)}
-                showUploadList={false}
-                accept="image/png,image/jpeg"
-              >
-                <Button
-                  icon={<UploadOutlined />}
-                  loading={Boolean(imageUploadingByBlockId[block.id])}
-                >
-                  Upload Image
-                </Button>
-              </Upload>
-              <Button
-                danger
-                icon={<DeleteOutlined />}
-                disabled={!block.imageUrl || Boolean(imageUploadingByBlockId[block.id])}
-                onClick={() => void handleRemoveUploadedImage(block.id)}
-              >
-                Remove Image
-              </Button>
-            </Space>
-
-            {block.imageUrl ? (
-              <div
-                style={{
-                  border: '1px solid #e5e7eb',
-                  borderRadius: 8,
-                  padding: 10,
-                  background: '#fafafa',
-                }}
-              >
-                <img
-                  src={block.imageUrl}
-                  alt={block.altText || 'Uploaded image preview'}
-                  style={{
-                    width: '100%',
-                    maxHeight: 240,
-                    objectFit: 'cover',
-                    borderRadius: 6,
-                    border: '1px solid #e5e7eb',
-                  }}
-                />
-              </div>
-            ) : null}
-
-            <Input
-              placeholder="Alt text"
-              value={block.altText}
-              onChange={event =>
-                updateBlock(block.id, current =>
-                  current.type === 'image' ? { ...current, altText: event.target.value } : current,
-                )
-              }
-            />
-            <MarkupSelectionEditor
-              editorId={`${block.id}-caption`}
-              value={block.caption}
-              minHeight={88}
-              placeholder="Caption rich text"
-              isActive={isEditorActive(`${block.id}-caption`)}
-              onEditorActivate={handleEditorActivate}
-              onEditorSelectionChange={handleEditorSelectionChange}
-              onChange={nextValue =>
-                updateBlock(block.id, current =>
-                  current.type === 'image' ? { ...current, caption: nextValue } : current,
-                )
-              }
-            />
-          </Space>
+          <Alert
+            type="info"
+            showIcon
+            message="Image settings moved to right sidebar."
+            description="Select this image block and use the 'Image Settings' accordion panel to update upload, size, alignment, style, and filters."
+          />
         );
 
       case 'html':
         return (
-          <Input.TextArea
-            placeholder="Paste custom HTML/CSS/JS code"
-            autoSize={{ minRows: 6, maxRows: 14 }}
-            value={block.html}
-            onChange={event =>
-              updateBlock(block.id, current =>
-                current.type === 'html' ? { ...current, html: event.target.value } : current,
-              )
-            }
-          />
+          <Space direction="vertical" className="w-full" size={8}>
+            <Input.TextArea
+              placeholder="Paste custom HTML/CSS/JS code"
+              autoSize={{ minRows: 6, maxRows: 14 }}
+              value={block.html}
+              onChange={event => {
+                const { sanitized, wasModified } = sanitizeCmsCodeBlockHtml(event.target.value);
+                setHtmlSanitizedByBlockId(prev => ({ ...prev, [block.id]: wasModified }));
+                updateBlock(block.id, current =>
+                  current.type === 'html' ? { ...current, html: sanitized } : current,
+                );
+              }}
+            />
+            {htmlSanitizedByBlockId[block.id] ? (
+              <Alert
+                showIcon
+                type="warning"
+                message="Unsafe code was removed."
+                description="Script tags, event handlers, form actions, and unsafe URL protocols are blocked in Code blocks."
+              />
+            ) : (
+              <Text type="secondary">
+                Unsafe scripts and external query-style injections are blocked automatically.
+              </Text>
+            )}
+          </Space>
         );
 
       default:
@@ -1643,7 +2135,7 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
         />
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-4 items-start">
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-4 items-start">
         <Card
           size="small"
           title="Page Builder Canvas"
@@ -1821,251 +2313,291 @@ const VisualPageBuilder = ({ value, onChange }: VisualPageBuilderProps) => {
               }
             `}
           </style>
-          <Collapse
-            className="cms-sidebar-collapse"
-            defaultActiveKey={['text-markup', 'add-widgets']}
-            bordered={false}
-            style={{ background: 'transparent' }}
-            items={[
-              {
-                key: 'text-markup',
-                label: (
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                    <span>Text Markup</span>
-                    <Tooltip title="Select text in any block to apply styles. If you pick styles first, your next typed text will use them.">
-                      <QuestionCircleOutlined style={{ color: '#4b5563' }} />
-                    </Tooltip>
-                  </div>
-                ),
-                children: (
-                  <Space direction="vertical" className="w-full" size={10}>
-                    <div>
-                      <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                        Heading
-                      </Text>
-                      <Select
-                        value={formattingState.heading}
-                        options={HEADING_OPTIONS}
-                        onChange={value => onHeadingChange(value as HeadingFormat)}
-                        style={{ width: '100%' }}
-                      />
+          <div
+            style={{
+              maxHeight: 'calc(100vh - 48px)',
+              overflowY: 'auto',
+              paddingRight: 4,
+            }}
+          >
+            <Collapse
+              className="cms-sidebar-collapse"
+              activeKey={sidebarActiveKeys}
+              onChange={handleSidebarCollapseChange}
+              bordered={false}
+              style={{ background: 'transparent' }}
+              items={[
+                {
+                  key: 'text-markup',
+                  label: (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                      <span>Text Markup</span>
+                      <Tooltip title="Select text in any block to apply styles. If you pick styles first, your next typed text will use them.">
+                        <QuestionCircleOutlined style={{ color: '#4b5563' }} />
+                      </Tooltip>
                     </div>
-
-                    <div>
-                      <div
-                        style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}
-                      >
-                        <Text strong style={{ marginRight: 8 }}>
-                          Quick Styles
+                  ),
+                  children: (
+                    <Space direction="vertical" className="w-full" size={10}>
+                      <div>
+                        <Text strong style={{ display: 'block', marginBottom: 8 }}>
+                          Heading
                         </Text>
-                        <Space wrap size={10}>
-                          <Button
-                            type={formattingState.bold ? 'primary' : 'default'}
-                            onClick={onBoldToggle}
-                            style={{ fontWeight: 700 }}
-                          >
-                            B
-                          </Button>
-                          <Button
-                            type={formattingState.italic ? 'primary' : 'default'}
-                            onClick={onItalicToggle}
-                            style={{ fontStyle: 'italic' }}
-                          >
-                            I
-                          </Button>
-                          <Button
-                            type={formattingState.underline ? 'primary' : 'default'}
-                            onClick={onUnderlineToggle}
-                            style={{ textDecoration: 'underline' }}
-                          >
-                            U
-                          </Button>
-                          <Button
-                            type={formattingState.strikeThrough ? 'primary' : 'default'}
-                            onClick={onStrikeThroughToggle}
-                            style={{ textDecoration: 'line-through' }}
-                          >
-                            S
-                          </Button>
-                          <Button
-                            type={formattingState.code ? 'primary' : 'default'}
-                            onClick={onCodeToggle}
-                            style={{ fontFamily: '"Courier New", monospace' }}
-                          >
-                            {'</>'}
-                          </Button>
-                        </Space>
+                        <Select
+                          value={formattingState.heading}
+                          options={HEADING_OPTIONS}
+                          onChange={value => onHeadingChange(value as HeadingFormat)}
+                          style={{ width: '100%' }}
+                        />
                       </div>
-                    </div>
 
-                    <div>
-                      <div
-                        style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}
-                      >
-                        <Text strong style={{ marginRight: 8 }}>
-                          Text Align
-                        </Text>
-                        <Space wrap size={10}>
-                          {TEXT_ALIGN_OPTIONS.map(option => (
-                            <Button
-                              key={option.value}
-                              type={
-                                formattingState.textAlign === option.value ? 'primary' : 'default'
-                              }
-                              onClick={() => onTextAlignChange(option.value)}
-                            >
-                              {option.label}
-                            </Button>
-                          ))}
-                        </Space>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                        Bulletin
-                      </Text>
-                      <Select
-                        value={formattingState.listType}
-                        options={LIST_TYPE_OPTIONS}
-                        onChange={value => onListTypeChange(value as ListFormat)}
-                        style={{ width: '100%' }}
-                      />
-                    </div>
-
-                    <div>
-                      <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                        Color
-                      </Text>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <input
-                          type="color"
-                          value={normalizeHexColor(colorHexInput) || formattingState.color}
-                          onChange={event => onColorPickerChange(event.target.value)}
+                      <div>
+                        <div
                           style={{
-                            width: 52,
-                            height: 34,
-                            border: '1px solid #d9d9d9',
-                            borderRadius: 6,
-                            background: '#fff',
-                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 12,
+                            flexWrap: 'wrap',
                           }}
-                        />
-                        <Input
-                          value={colorHexInput}
-                          onChange={event => onColorHexInputChange(event.target.value)}
-                          onBlur={onColorHexBlur}
-                          placeholder="#1f2937"
-                          maxLength={7}
+                        >
+                          <Text strong style={{ marginRight: 8 }}>
+                            Quick Styles
+                          </Text>
+                          <Space wrap size={10}>
+                            <Button
+                              type={formattingState.bold ? 'primary' : 'default'}
+                              onClick={onBoldToggle}
+                              style={{ fontWeight: 700 }}
+                            >
+                              B
+                            </Button>
+                            <Button
+                              type={formattingState.italic ? 'primary' : 'default'}
+                              onClick={onItalicToggle}
+                              style={{ fontStyle: 'italic' }}
+                            >
+                              I
+                            </Button>
+                            <Button
+                              type={formattingState.underline ? 'primary' : 'default'}
+                              onClick={onUnderlineToggle}
+                              style={{ textDecoration: 'underline' }}
+                            >
+                              U
+                            </Button>
+                            <Button
+                              type={formattingState.strikeThrough ? 'primary' : 'default'}
+                              onClick={onStrikeThroughToggle}
+                              style={{ textDecoration: 'line-through' }}
+                            >
+                              S
+                            </Button>
+                            <Button
+                              type={formattingState.code ? 'primary' : 'default'}
+                              onClick={onCodeToggle}
+                              style={{ fontFamily: '"Courier New", monospace' }}
+                            >
+                              {'</>'}
+                            </Button>
+                          </Space>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 12,
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          <Text strong style={{ marginRight: 8 }}>
+                            Text Align
+                          </Text>
+                          <Space wrap size={10}>
+                            {TEXT_ALIGN_OPTIONS.map(option => (
+                              <Button
+                                key={option.value}
+                                type={
+                                  formattingState.textAlign === option.value ? 'primary' : 'default'
+                                }
+                                onClick={() => onTextAlignChange(option.value)}
+                              >
+                                {option.label}
+                              </Button>
+                            ))}
+                          </Space>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Text strong style={{ display: 'block', marginBottom: 8 }}>
+                          Bulletin
+                        </Text>
+                        <Select
+                          value={formattingState.listType}
+                          options={LIST_TYPE_OPTIONS}
+                          onChange={value => onListTypeChange(value as ListFormat)}
+                          style={{ width: '100%' }}
                         />
                       </div>
-                    </div>
 
-                    <div>
-                      <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                        Font Family
+                      <div>
+                        <Text strong style={{ display: 'block', marginBottom: 8 }}>
+                          Color
+                        </Text>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <input
+                            type="color"
+                            value={normalizeHexColor(colorHexInput) || formattingState.color}
+                            onChange={event => onColorPickerChange(event.target.value)}
+                            style={{
+                              width: 52,
+                              height: 34,
+                              border: '1px solid #d9d9d9',
+                              borderRadius: 6,
+                              background: '#fff',
+                              cursor: 'pointer',
+                            }}
+                          />
+                          <Input
+                            value={colorHexInput}
+                            onChange={event => onColorHexInputChange(event.target.value)}
+                            onBlur={onColorHexBlur}
+                            placeholder="#1f2937"
+                            maxLength={7}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Text strong style={{ display: 'block', marginBottom: 8 }}>
+                          Font Family
+                        </Text>
+                        <Select
+                          value={formattingState.fontFamily}
+                          options={FONT_FAMILY_OPTIONS.map(option => ({
+                            label: option,
+                            value: option,
+                          }))}
+                          onChange={onFontFamilyChange}
+                          style={{ width: '100%' }}
+                        />
+                      </div>
+
+                      <div>
+                        <Text strong style={{ display: 'block', marginBottom: 8 }}>
+                          Font Size
+                        </Text>
+                        <Select
+                          value={formattingState.fontSize}
+                          options={FONT_SIZE_OPTIONS.map(option => ({
+                            label: `${option}px`,
+                            value: option,
+                          }))}
+                          onChange={onFontSizeChange}
+                          style={{ width: '100%' }}
+                        />
+                      </div>
+
+                      <Text type="secondary">
+                        <strong>Active editor:</strong> {activeEditorLabel}
                       </Text>
-                      <Select
-                        value={formattingState.fontFamily}
-                        options={FONT_FAMILY_OPTIONS.map(option => ({
-                          label: option,
-                          value: option,
-                        }))}
-                        onChange={onFontFamilyChange}
-                        style={{ width: '100%' }}
-                      />
+                    </Space>
+                  ),
+                },
+                {
+                  key: 'image-settings',
+                  label: (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                      <span>Image Settings</span>
+                      <Tooltip title="Open an image block in the canvas, then manage all image attributes from here.">
+                        <QuestionCircleOutlined style={{ color: '#4b5563' }} />
+                      </Tooltip>
                     </div>
-
-                    <div>
-                      <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                        Font Size
-                      </Text>
-                      <Select
-                        value={formattingState.fontSize}
-                        options={FONT_SIZE_OPTIONS.map(option => ({
-                          label: `${option}px`,
-                          value: option,
-                        }))}
-                        onChange={onFontSizeChange}
-                        style={{ width: '100%' }}
-                      />
+                  ),
+                  children: selectedImageBlock ? (
+                    renderImageSettingsEditor(selectedImageBlock)
+                  ) : (
+                    <Alert
+                      type="info"
+                      showIcon
+                      message="No image block selected"
+                      description="Click Edit on any Image + Text block in the canvas to manage its upload, layout, sizing, style, and filters here."
+                    />
+                  ),
+                },
+                {
+                  key: 'add-widgets',
+                  label: (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                      <span>Add Widgets</span>
+                      <Tooltip
+                        title={`Click or drag a widget into the canvas. Current target section: ${activeSectionId}`}
+                      >
+                        <QuestionCircleOutlined style={{ color: '#4b5563' }} />
+                      </Tooltip>
                     </div>
+                  ),
+                  children: (
+                    <>
+                      <div>
+                        <Space direction="vertical" className="w-full" size={8}>
+                          {WIDGET_LIBRARY.map(widget => {
+                            const isDraggingWidget =
+                              dragState?.kind === 'widget' && dragState.widgetId === widget.id;
 
-                    <Text type="secondary">
-                      <strong>Active editor:</strong> {activeEditorLabel}
-                    </Text>
-                  </Space>
-                ),
-              },
-              {
-                key: 'add-widgets',
-                label: (
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                    <span>Add Widgets</span>
-                    <Tooltip
-                      title={`Click or drag a widget into the canvas. Current target section: ${activeSectionId}`}
-                    >
-                      <QuestionCircleOutlined style={{ color: '#4b5563' }} />
-                    </Tooltip>
-                  </div>
-                ),
-                children: (
-                  <>
-                    <div>
-                      <Space direction="vertical" className="w-full" size={8}>
-                        {WIDGET_LIBRARY.map(widget => {
-                          const isDraggingWidget =
-                            dragState?.kind === 'widget' && dragState.widgetId === widget.id;
-
-                          return (
-                            <Tooltip key={widget.id} title={widget.description} placement="left">
-                              <div
-                                draggable
-                                onDragStart={event => onWidgetDragStart(event, widget.id)}
-                                onDragEnd={clearDragState}
-                                onClick={() => addWidget(widget.id, activeSectionId)}
-                                style={{
-                                  border: '1px solid #e5e7eb',
-                                  borderRadius: 8,
-                                  padding: 8,
-                                  background: isDraggingWidget ? '#eef4ff' : '#fff',
-                                  cursor: 'grab',
-                                  transition: 'all 120ms ease',
-                                }}
-                              >
-                                <div className="flex items-center justify-between gap-2">
-                                  <Space align="start" size={10}>
-                                    <span style={{ marginTop: 2 }}>{widget.icon}</span>
-                                    <div style={{ lineHeight: 1.2 }}>
-                                      <div>
-                                        <Text strong>{widget.title}</Text>
+                            return (
+                              <Tooltip key={widget.id} title={widget.description} placement="left">
+                                <div
+                                  draggable
+                                  onDragStart={event => onWidgetDragStart(event, widget.id)}
+                                  onDragEnd={clearDragState}
+                                  onClick={() => addWidget(widget.id, activeSectionId)}
+                                  style={{
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: 8,
+                                    padding: 8,
+                                    background: isDraggingWidget ? '#eef4ff' : '#fff',
+                                    cursor: 'grab',
+                                    transition: 'all 120ms ease',
+                                  }}
+                                >
+                                  <div className="flex items-center justify-between gap-2">
+                                    <Space align="start" size={10}>
+                                      <span style={{ marginTop: 2 }}>{widget.icon}</span>
+                                      <div style={{ lineHeight: 1.2 }}>
+                                        <div>
+                                          <Text strong>{widget.title}</Text>
+                                        </div>
+                                        <Text type="secondary" style={{ fontSize: 12 }}>
+                                          {widget.shortDescription}
+                                        </Text>
                                       </div>
-                                      <Text type="secondary" style={{ fontSize: 12 }}>
-                                        {widget.shortDescription}
-                                      </Text>
-                                    </div>
-                                  </Space>
-                                  <Button
-                                    type="text"
-                                    size="small"
-                                    icon={<PlusOutlined />}
-                                    onClick={event => {
-                                      event.stopPropagation();
-                                      addWidget(widget.id, activeSectionId);
-                                    }}
-                                  />
+                                    </Space>
+                                    <Button
+                                      type="text"
+                                      size="small"
+                                      icon={<PlusOutlined />}
+                                      onClick={event => {
+                                        event.stopPropagation();
+                                        addWidget(widget.id, activeSectionId);
+                                      }}
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                            </Tooltip>
-                          );
-                        })}
-                      </Space>
-                    </div>
-                  </>
-                ),
-              },
-            ]}
-          />
+                              </Tooltip>
+                            );
+                          })}
+                        </Space>
+                      </div>
+                    </>
+                  ),
+                },
+              ]}
+            />
+          </div>
         </div>
       </div>
 

@@ -3,6 +3,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCmsPageDto, UpdateCmsPageDto } from './dto';
+import { sanitizeCmsHtmlContent } from '../common/utils/cms-content-sanitizer.util';
 
 @Injectable()
 export class CmsService {
@@ -19,6 +20,7 @@ export class CmsService {
    */
   async create(createCmsPageDto: CreateCmsPageDto) {
     const { slug, title, content, isPublished } = createCmsPageDto;
+    const sanitizedContent = sanitizeCmsHtmlContent(content).sanitized;
 
     // Check if slug already exists
     const existing = await this.prisma.cmsPage.findUnique({
@@ -33,7 +35,7 @@ export class CmsService {
       data: {
         slug,
         title,
-        content,
+        content: sanitizedContent,
         isPublished: isPublished || false,
         publishedAt: isPublished ? new Date() : null,
         version: 1,
@@ -149,10 +151,16 @@ export class CmsService {
 
     const publishStatusChanged = typeof updateCmsPageDto.isPublished === 'boolean';
 
+    const sanitizedContent =
+      typeof updateCmsPageDto.content === 'string'
+        ? sanitizeCmsHtmlContent(updateCmsPageDto.content).sanitized
+        : undefined;
+
     const updated = await this.prisma.cmsPage.update({
       where: { slug },
       data: {
         ...updateCmsPageDto,
+        ...(typeof sanitizedContent === 'string' ? { content: sanitizedContent } : {}),
         publishedAt: publishStatusChanged
           ? updateCmsPageDto.isPublished
             ? page.publishedAt || new Date()
